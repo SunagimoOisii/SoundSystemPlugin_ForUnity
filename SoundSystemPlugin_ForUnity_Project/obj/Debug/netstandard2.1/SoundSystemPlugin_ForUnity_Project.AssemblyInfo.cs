@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SoundSystemPlugin_ForUnity_Project")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6e33551f39e550e67f9cf2372f8ee36bf41ddd95")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+953e6cd6f1ba7b6028a4e06ebe5d4ce0bcdb12d5")]
 [assembly: System.Reflection.AssemblyProductAttribute("SoundSystemPlugin_ForUnity_Project")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SoundSystemPlugin_ForUnity_Project")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
