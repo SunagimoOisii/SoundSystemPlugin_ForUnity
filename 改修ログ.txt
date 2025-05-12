@@ -1,0 +1,489 @@
+●大目次
+・SoundSystem
+・SoundPreset
+・BGMManager
+・SEManager
+・AudioSourcePool
+・SoundLoader
+・SoundCache
+・ListenerEffector
+・Log
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+SoundSystem
+/////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+日付：2025/04/28
+タイトル：SoundSystemにプリセット機能の導入、SoundPresetの作成
+//////////////////////////////////////////////////////////////
+[背景]
+・BGM,SE再生のパラメータをプリセットから適用できる仕組みを追加したい
+・プリセット設定自体を管理する専用クラス(SoundSystemPreset)を作成し、エディタ上でプリセットを編集,登録できるようにしたい
+
+[方針]
+・resourceAddressと プリセット名を分けて指定できる形式
+・プリセット名に対応するパラメータを適用することで音声再生が可能な構成
+・SoundSystemPresetクラスを作成、BGM,SE個別のパラメータ設定(BGMSetting,SESetting)と、キャッシュ方式設定(SoundCacheType, param)を一括管理できる仕組みを導入
+・プリセット検索処理(TryRetrieve関数)をSoundSystemに実装し、null安全性を確保
+
+[実装内容]
+・SoundSystemに以下の関数を追加
+　・PlayBGMWithPreset(string resourceAddress, string presetName)
+　・FadeInBGMWithPreset(string resourceAddress, string presetName)
+　・FadeOutBGMWithPreset(string presetName)
+　・CrossFadeBGMWithPreset(string resourceAddress, string presetName)
+　・PlaySEWithPreset(string resourceAddress, string presetName)
+　・TryRetrieveBGMPreset、TryRetrieveSEPreset(プリセット検索用)
+・SoundSystemPresetクラスを新たに作成し、以下のフィールドを定義
+　・BGMSetting(name, volume, fadeInDuration, fadeOutDuration, crossFadeDuration)
+　・SESetting(name, volume, pitch, spatialBlend, position)
+　・SoundCache設定(SoundCacheType, param)
+
+[結果]
+・SoundSystemがプリセット情報に基づいて柔軟な音声再生設定を適用できる構成なった
+・SoundSystemPresetにより、エディタ上でBGM,SE再生パラメータを一括管理できるようになった
+・音源リソースと再生パラメータを分離管理する構造が実現できた
+
+//////////////////////////////////////////////////////////////
+日付：2025/05/01
+タイトル：ログファイル自動クローズ処理の追加
+変更箇所：SoundSystem,Log
+//////////////////////////////////////////////////////////////
+[背景]
+・ログファイルが Log.Close() によって明示的に閉じられない場合、ファイルが使用中のままとなり、競合が発生するリスクがあった
+
+[方針]
+・ログ出力を有効にしたとき、Log.Close() を Application.quitting に登録する
+
+[実装内容]
+・SoundSystem コンストラクタにて if (canLogging)ブロックに Application.quitting += () => Log.Close(); を追加
+・Logクラスに private static bool isInitialized を導入(初期化直後にtrueを代入)
+　・Initalize関数の始めで isInitalized がtrueなら何もしない
+
+[結果]
+・ファイルロックの問題が解消された
+・1シーンでSoundSystemが複数生成された場合のLog初期化重複に対応した
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+SoundPreset
+/////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+日付：2025/05/06
+タイトル：SoundPreset用のDictionaryクラスの作成、BGMSetting,SESettingをstructに変更
+変更箇所：SoundPresetProperty
+新規作成：SerializedBGMSettingDictionary,SerializedSESettingDictionary
+//////////////////////////////////////////////////////////////
+[背景]
+・SoundPresetPropertyクラスでは BGM,SE のプリセット情報を List<BGMSetting>,List<SESetting> で保持し、presetName をキーに Find() を用いて検索していた
+　・これでは探索が(O(n))となるため、Dictionaryに置き換えたかったが、インスペクターでは Dictionaryを表示,編集できないため、単純な置き換えは不可能だった
+・BGMSetting,SESettingはclassだったが、これらプリセットは使い捨てであり、「前回のプリセットを用いて再生」のような機能はないため、struct(値型)にしても問題はなく、むしろメモリ効率が改善すると考えていた
+
+[方針]
+・ISerializationCallbackReceiverを実装した専用クラスを用意し、エディター上では List、実行時には Dictionary<string, Preset> に変換する設計
+・presetName をキーとして Dictionary を構築
+・BGMSetting,SESettingをclassからstructに変更
+・BGMSetting,SESetting を BGMPreset,SEPreset に改名
+
+[実装内容]
+・SerializedBGMSettingDictionary,SerializedSESettingDictionary を新規作成
+　・インスペクター表示用の List<BGMPreset>,List<SEPreset> を presetList として保持
+　・デシリアライズ後に presetName をキーとして Dictionary を構築するよう OnAfterDeserialize() を実装
+　・presetDict.TryGetValue() によって SoundSystem 側から高速にアクセスできるよう設計
+・SoundPresetPropertyのList<BGMSetting>,List<SEPreset> を SerializedBGMSettingDictionary , SerializedSESettingDictionary に置き換え
+
+[結果]
+・インスペクターでプリセットを操作できる機能はそのままに、Dictionary による高速なプリセットの検索(O(1))を実装
+・BGMPreset,SEPresetをstructに変更
+
+[参考]
+・たむぼー, 【Unity】Inspectorで設定できるDictionaryを作りたい, https://zenn.dev/tmb/articles/9b4c532da8d467#serializabledictionary-1
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+BGMManager
+/////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+日付：2025/04/20
+タイトル：AudioSourceの生成処理の整理  
+変更箇所：BGMManager
+//////////////////////////////////////////////////////////////
+【背景】
+・CreateAudioSource関数が内部でGameObject生成とAudioSource設定の両方を行っており、命名と挙動に乖離があった
+・sourceRootの役割が関数内部でも処理されており、責務の範囲が曖昧だった
+・関数を分けた場合、処理が分散しすぎてコンストラクタの読みやすさが低下していた
+
+【方針】
+・AudioSourceの生成処理をコンストラクタ1か所にまとめ、処理の流れを明示
+・小規模かつ再利用されない処理であるため、関数分割ではなくローカル関数による整理を選択
+・sourceRootの生成とAudioSourceの生成をセットで可視化し、責務の一貫性を保つ
+
+【実装内容】
+・CreateAudioSourceObj関数を廃止し、BGMManagerのコンストラクタ内にローカル関数として再構築
+
+【結果】
+・BGMManagerのAudioSource初期化処理がコンパクトかつ読みやすくなった
+・「GameObject生成＋AudioSource設定」の責務がひとまとまりになり、意図が明確に
+
+//////////////////////////////////////////////////////////////
+日付：2025/04/22
+タイトル：ExecuteFade関数とCrossFade関数の統合(ExecuteVolumeTransitionの導入)
+変更箇所：BGMManager
+//////////////////////////////////////////////////////////////
+【背景】
+・FadeIn, FadeOut と CrossFade で実質的に同様の補間処理が繰り返されており、コードが重複していた  
+・CrossFade においては、完了後のsourceの切り替えなどの副作用処理を持つため、処理の統合が難しかった  
+
+【方針】
+・「毎フレーム行う音量補間処理(フェード本体)」と「付随処理」を分離
+・共通化可能な部分(時間管理,Lerp処理,キャンセル)を ExecuteVolumeTransition に抽出
+・ラムダ式(Action<float>)を利用して補間ロジックを外部指定できる構成に変更
+・終了時処理も引数(Action)として受け取る構成に変更
+
+【実装内容】
+・private async UniTask ExecuteVolumeTransition(...) を実装(フェード汎用関数)
+　- float → float の補間処理は Action<float> onProgress によって注入
+　- フェード終了時に必要な処理は Action onComplete によって外部から定義
+・FadeIn, FadeOut から ExecuteFadeを排除し、ExecuteVolumeTransition に置換
+・CrossFade もフェード部分を 同様に置き換え、source切り替え等は onComplete にて定義
+
+【結果】
+・フェード処理における重複コードが削減され、保守性・可読性が向上
+・onProgress, onComplete による外部注入の設計はなかなかスゴイ
+
+//////////////////////////////////////////////////////////////
+日付：2025/04/22
+タイトル：BGMManagerにおける状態管理設計の導入
+変更箇所：BGMManager
+//////////////////////////////////////////////////////////////
+【背景】
+・再生,フェードなど、複数の処理が非同期かつ連続的に行われる設計で、実行中の状態が外部,内部からともに把握しにくかった
+・同一命令の重複実行や、状態の競合によるバグ発生の可能性があった
+
+【方針】
+・各BGM処理の状態を明示的に表現する列挙型 BGMState を定義
+・各命令の開始時に State を設定し、完了,中断時に Idle に戻す
+・状態を参照することで、無効な命令(例：再生中にFadeIn)を弾くことが可能に  
+
+【実装内容】
+・enum BGMState を定義(Idle, Play, FadeIn, FadeOut, CrossFade)
+・publicプロパティ State を導入(private get; set;)
+・各操作の開始時に適切な BGMState を設定
+・ExecuteVolumeTransition の finally 内にて Idle へ戻す
+・FadeIn, FadeOut などの処理内で、現在の State に応じて命令を弾く条件チェックを実装  
+
+【結果】
+・重複命令の防止
+・BGMManagerの実行状態が明示的に管理されるようになり、信頼性と可読性が向上  
+・BGMStateによってコード上でも「何をしているか」がわかりやすくなった？
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+SEManager
+/////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+日付：2025/04/21
+タイトル：AudioSource管理機構のクラス分離(AudioSourcePool導入)
+変更箇所：SEManager,AudioSourcePool
+//////////////////////////////////////////////////////////////
+【背景】
+・SEManagerクラスがAudioSourceの生成,再利用,削除を直接行っており、責務過多だった
+・プールの管理処理が肥大化しており、Play処理の可読性・意図の把握が難しくなっていた
+
+【方針】
+・AudioSourceの生成〜破棄までのロジックを AudioSourcePool クラスとして分離
+・SEManagerはプールの使用だけを担う構造へ移行 
+・削除タイミングや最大数などの設定は、AudioSourcePool生成時に一括指定可能にする
+
+【実装内容】
+・AudioSourcePool.cs を新規作成し、以下の処理を委譲：
+　- AudioSourceの生成(CreateSource)
+　- 再利用判定,取得(Retrieve)
+　- 使用時間の記録(MarkUsed)
+　- 未使用ソースの自動削除(CleanupPeriodically)
+・SEManager.cs から該当処理をすべて削除し、sourcePool経由での利用に変更
+
+【結果】
+・SEManagerの責務が明確化し、再生処理に集中できる構造に改善  
+・AudioSourceの管理ロジックが分離され、仕様変更やデバッグが容易になった  
+
+//////////////////////////////////////////////////////////////
+日付：2025/04/25  
+タイトル：SEの一時停止・再開機能の追加とAudioSourcePoolの列挙API提供
+変更箇所：SEManager, AudioSourcePool
+//////////////////////////////////////////////////////////////
+[背景]
+・ポーズ機能等に対応するため、再生中のSEを一括で一時停止,再開する処理が必要
+・SEManagerからAudioSourcePoolのAudioSourceにアクセスする手段が存在していなかった
+
+[方針]
+・SEManagerにPauseAll , ResumeAll関数を追加し、AudioSourcePoolのAudioSourceに一括操作を行う
+・AudioSourcePoolに GetAllResources() を実装し、カプセル化を維持しつつ外部からのアクセスを可能とする
+・Queueを直接公開するのではなく、IEnumerableを返すことで読み取り専用の意図を明確化
+
+[実装内容]
+・SEManagerにPauseAll, ResumeAll関数を実装
+・AudioSourcePoolにGetAllResources関数を追加
+・GetAllResourcesは IEnumerable<AudioSource> を返すことで、使用者に不要な操作(Enqueueとか)を防止
+
+[結果]
+・ポーズ時などにSEの再生状態を制御可能となった
+・AudioSourcePoolの内部構造を保護しつつ、外部への公開ができた
+
+[参考]
+・https://qiita.com/lobin-z0x50/items/248db6d0629c7abe47dd
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+AudioSourcePool
+/////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+日付：2025/04/21
+タイトル：AudioSourcePool運用方式選択対応の設計、AudioSourcePool_Base,AudioSourcePool_OldestReuse,AudioSourcePoolFactoryの作成
+変更箇所：AudioSourcePool(AudioSourcePool_Baseに改修)
+新規作成：AudioSourcePool_Base,AudioSourcePool_OldestReuse,AudioSourcePoolFactory
+//////////////////////////////////////////////////////////////
+[背景]
+・従来のAudioSourcePoolはOldestReuse方式のみ対応だった
+・SoundCache(SoundCacheFactory)のように、外部からプールの運用方式を選択して生成できるようにしたかった
+
+[方針]
+・AudioSourcePoolの運用方式を切り替え可能にするため、IAudioSourcePoolを定義
+・共通処理をAudioSourcePool_Baseに集約し、Retrieve()のみを方式ごとにオーバーライドする
+・現状存在するOldestReuse方式用に、AudioSourcePool_OldestReuseクラスを作成
+・方式に応じたインスタンス生成のため、AudioSourcePoolFactoryを作成し、方式ごとにメソッドを分離
+
+[実装内容]
+・IAudioSourcePoolを作成し、Retrieve(), Reinitialize(), GetAllResources()を定義
+・AudioSourcePool_Baseを作成し、AudioSource共通管理処理(生成,初期化,クリーンアップ)を集約
+・AudioSourcePool_OldestReuseを作成し、最古のAudioSourceを再利用するRetrieve実装を定義
+・AudioSourcePoolFactoryを作成し、CreateOldestReuseメソッド経由でAudioSourcePool_OldestReuseを生成できるように
+　・将来的にはSoundCacheFactoryのように単一のメソッドから柔軟に複数通り作成できるようにしたい
+
+[結果]
+・AudioSourcePool管理方式選択の設計が整った(外部から方式を指定することが可能になった)
+
+//////////////////////////////////////////////////////////////
+日付：2025/05/02
+タイトル：AudioSourcePool_Strictの作成
+変更箇所：AudioSourcePool_Strict
+//////////////////////////////////////////////////////////////
+[背景]
+・AudioSourcePool_Baseの派生クラスとしてAudioSourcePool_FIFO以外を作成しておきたかった(その1クラスしかなかった)
+
+[方針]
+・最大数を超えての再利用を行わないStrict方式を実装
+・全て使用中かつプールが最大数に達している場合は null を返し、呼び出し側で再生中断を判断させる構成
+・従来方式と同様にFIFO探索を行い、未使用ソースを優先して再利用するロジックを導入
+
+[実装内容]
+・AudioSourcePool_Strict クラスを新規作成
+　・未使用ソースがある場合はそれを返却
+　・最大数未満なら新規作成し登録
+　・全て使用中かつ最大数なら null を返す
+　・大部分の動き方はFIFOの方と似ている
+・SEManagerでAudioSourcePoolのRetrieveに対して null チェックを導入
+
+[結果]
+・「最大数制限付きのSE再生」が可能になった
+
+//////////////////////////////////////////////////////////////
+日付：2025/05/02
+タイトル：AudioSourcePoolFactoryのCreate一本化
+変更箇所：AudioSourcePoolFactory
+//////////////////////////////////////////////////////////////
+[背景]
+・CreateOldestReuse() のように方式ごとに別のファクトリーメソッドが存在していた
+・SoundCacheFactoryと同様に、方式を enum で指定し、単一の Create() で切り替え可能にしたい
+
+[方針]
+・PoolType enumを定義し、AudioSourcePoolの方式を識別可能にする
+　・将来的な方式追加にも対応できるしやすい
+・既存のFIFO、Strict方式は switch 文で生成処理を振り分ける構成に統一
+　・ここもSoundCacheFactoryと同じ
+
+[実装内容]
+・AudioSourcePoolFactory.PoolType enumを追加(FIFO , Strict)
+・Create(AudioMixerGroup, int, int, PoolType) を実装
+　・type に応じて AudioSourcePool_FIFO または AudioSourcePool_Strict を生成
+・既存の CreateOldestReuse は削除
+
+[結果]
+・将来の方式追加にも対応しやすくなった(拡張性が向上)
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+SoundLoader
+/////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+日付：2025/04/27
+タイトル：LoadClip関数の強化(失敗時エラー処理、安全性向上)
+変更箇所：ISoundLoader,SoundLoader,BGMManager,SEManager
+//////////////////////////////////////////////////////////////
+[背景]
+・従来のLoadClip関数ではロード失敗時、例外(InvalidOperationException)をスローしており、アプリ全体への波及リスクがあった。
+・また、ロード失敗時にAsyncOperationHandleをReleaseしていなかったため、リソースリーク(メモリリーク？)のリスクもあった
+
+[方針]
+・ロードの流れなど、LoadClip関数の大部分は変更しない
+・失敗時に例外を投げず、戻り値によって成功,失敗を判断可能な設計にする
+・失敗時、原因を特定しやすくするためStatus情報を含めたログを出力
+・失敗時のAsyncOperationHandle解放処理を実装
+
+[実装内容]
+・ISoundLoaderの UniTask<AudioClip> LoadClip(string resourceAddress) を UniTask<(bool success, AudioClip clip)> TryLoadClip(string resourceAddress) に変更
+・SoundLoaderでTryLoadClip関数を実装
+　- Addressablesロード後にhandle.Statusおよびclipのnullチェックを実施
+　- 成功時はcacheに登録し、(true, clip)を返却
+　- 失敗時は詳細ログを出力後、handleをReleaseし、(false, null)を返却
+・ログにはリソースアドレスおよびhandle.Statusを明記して出力
+
+[結果]
+・例外スローに依存しない、安全なロードAPIが追加されたことで、ロード時の安定性が向上
+・失敗原因がログ出力されるため、トラブルシューティングの効率が高まった
+・リソースリークのリスクを排除できた
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+SoundCache
+/////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+日付：2025/04/28
+タイトル：SoundCache_Base作成、SoundCache_IdleTime作成
+新規作成：SoundCache_Base,SoundCache_IdleTime
+//////////////////////////////////////////////////////////////
+[背景]
+・これまでSoundCacheは単一の実装のみ存在し、方式の切り替えができなかった
+・キャッシュ削除条件(未使用時間超過など)に依存した方式を柔軟に管理できる設計にしたいと考えた
+・将来的に、IdleTime方式以外(例：LRU)の導入を見据え、拡張性の高い基盤を用意する必要があった
+
+[方針]
+・キャッシュ管理の基本機能(Retrieve, Add, Remove, Clear)を共通化し、削除方式だけを個別クラスで持つ構成にする
+・基底と派生でアンダースコア区切り(SoundCache_Base, SoundCache_IdleTime)を採用
+
+[実装内容]
+・SoundCache_Base クラスをISoundCacheを用いて作成し、Retrieve, Add, Remove, ClearAll を実装
+・Evict()関数を abstract とし、各方式に実装を委譲
+・SoundCache_IdleTime クラスを新規作成、コンストラクタで idleTimeThreshold を受け取り、Evict()で最終アクセス時間との差分が閾値を超えたリソースを削除する処理を実装
+
+[結果]
+・SoundCacheにおける基本機能と削除ポリシーが明確に分離され、拡張性が向上した
+・将来的に別の削除方式を追加する場合も、SoundCache_Baseを継承するだけで対応可能となった
+・呼び出し側はEvict()を呼ぶだけでよくなり、使用が簡潔化された
+
+//////////////////////////////////////////////////
+日付：2025/04/28
+タイトル：SoundCache_LRU(旧IdleTime版)、SoundCache_TTL作成
+変更箇所：SoundCache_IdleTime(SoundCache_LRUに改名)
+新規作成：SoundCache_LRU,SoundCache_TTL
+//////////////////////////////////////////////////
+[背景]
+・SoundCache_IdleTimeは、最終アクセス時間を基準に未使用リソースを削除する仕組みだった。この方式は実質LRU(Least Resource Used)の考えに基づくものだったため、より正確な名前(SoundCache_LRU)に改名することにした
+・また、TTL(Time To Live)方式によるキャッシュ破棄機能を導入し、SoundCache_TTLクラスを作成することにした
+・SoundCache_BaseからlastAccessTime管理を削除し、各派生クラスが必要なデータのみを自前で管理する設計に整理した
+
+[方針]
+・SoundCache_LRUでは、リソース最終アクセス時間を記録し、一定時間以上未使用だったものを削除する
+・SoundCache_TTLでは、リソースの登録時刻を記録し、一定時間(TTL)を超えたリソースを削除する
+・SoundCache_Baseでは、基本的なキャッシュ管理(Add, Remove, ClearAll)のみを担当し、削除ポリシーに関するデータ管理は各派生クラスに任せる
+
+[実装内容]
+・SoundCache_IdleTimeクラスをSoundCache_LRUに改名
+　・最終アクセス時刻を保持するDictionaryを内部に持ち、RetrieveやAdd時に更新
+　・Evict()時に、idleTimeThresholdを超えたリソースをリストアップして削除。
+・SoundCache_TTLクラスを作成
+　・リソースの登録時刻を保持し、Add時に記録
+　・Evict()時に、ttlSecondsを超えたリソースをリストアップして削除
+
+・SoundCache_BaseからlastAccessTime管理機構を削除し、cache（resourceAddress→AudioClip）のみを保持するシンプルな構成に変更
+
+[結果]
+・SoundCache_LRU、SoundCache_TTLともにSoundCache_Baseを継承し、それぞれの削除ポリシーを持つクラスとして整理された
+・SoundCache_Baseは最小限の責務に限定され、派生クラスの自由度と拡張性が向上
+
+//////////////////////////////////////////////////
+日付：2025/04/28
+タイトル：SoundCacheFactoryクラスの作成
+新規作成：SounCacheFactory
+//////////////////////////////////////////////////
+[背景]
+・SoundSystemが利用するISoundCacheインスタンスには異なる削除方式(LRU方式、TTL方式、Random方式)を選択できるようになった。しかし、これらの具象クラス(SoundCache_LRU,SoundCache_TTL,SoundCache_Random)はinternalとする方針で、外部コードから直接newできない構成にしている。そのため、外部にはインターフェース(ISoundCache)だけを見せつつ、
+選択的に内部具体クラスを生成できる仕組みが必要だった
+
+[方針]
+・SoundCacheFactoryクラスを作成し、ISoundCacheインスタンスの生成を一元管理する
+・外部からは、キャッシュ方式を指定し、それに応じたインスタンスを取得できる設計とする
+・Factory内部で具体クラスに依存させ、外部には型情報を漏らさないようにする
+
+[実装内容]
+・SoundCacheFactoryクラスをpublic staticで作成
+・SoundCacheType enumを定義(LRU / TTL / Random)
+Create(SoundCacheType type, float param)メソッドを実装、typeごとのインスタンスを作成する
+・不明な方式が指定された場合は例外を投げる
+
+[結果]
+・SoundSystemを構成するために必要なISoundCacheインスタンスを、用途に応じて生成できるようになった
+・外部コード(Unityプロジェクト側)からはSoundCache内部を意識せずに利用できる設計となった
+・将来的に新たなキャッシュ削除方式を追加する場合も、SoundCacheFactoryのswitch文に追記するだけで対応可能となった
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+ListenerEffector
+/////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+日付：2025/04/21
+タイトル：Listenerの差し替えに対応するプロパティ化
+変更箇所：ListenerEffector
+//////////////////////////////////////////////////////////////
+【背景】
+・AudioListenerを動的に差し替えたいケース（カメラ切り替えなど）への対応が必要だった
+
+【実装内容】
+・Listener変数をpublicなプロパティ(private get; set;)に変更し、外部からの差し替えを可能にした
+
+【実装内容】
+・任意のAudioListenerを動的に設定できるようになり、マルチシーンなどへの対応がしやすくなった
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+Log
+/////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+日付：2025/04/30
+タイトル：Logクラスにおけるカテゴリ自動推定機能の導入
+新規作成：Log
+//////////////////////////////////////////////////////////////
+[背景]
+・ログ出力時のカテゴリ指定が毎回手動で必要だったため、開発効率や可読性の面で冗長性があった
+・多くのログ出力は「クラス名＝ファイル名」の前提で自動化できると判断した
+・ただし、1ファイルに複数クラスを定義している場合を考慮し、クラスにその旨を表記
+
+[方針]
+・Safe, Warn, Error の各メソッドで、カテゴリ未指定時は [CallerFilePath] 属性を使用し、呼び出し元のファイル名(拡張子なし)からカテゴリを設定
+・ファイル名とクラス名が一致しないケースに備え、引数 string でカテゴリを設定可能にする
+
+[実装内容]
+・Safe, Warn, Error の各メソッドに [CallerFilePath] を追加し、Path.GetFileNameWithoutExtension でカテゴリ名を取得
+・Log.cs の <summary> コメントに、1ファイル＝1クラス構成を前提とする設計の意図を明記
+
+[結果]
+・ログ出力時に明示的なカテゴリ指定が不要になった
+
+//////////////////////////////////////////////////////////////
+日付：2025/05/01  
+タイトル：各主要クラスへのログ出力追加(ロギング粒度の最適化) 
+変更箇所：SoundLoader, SEManager, BGMManager, SoundCache系, AudioSourcePool_Base, ListenerEffector  
+//////////////////////////////////////////////////////////////
+[背景]  
+・ロギングの目的は「実行フローの可視化」「例外,中断時の原因特定」
+
+[方針]  
+・ロギング設計ルールに基づき、ログを必要最小限に絞りつつ出力箇所を明確化
+・副作用を伴う操作、非同期処理、重要な状態遷移にはログを追加
+・高頻度呼び出し箇所(Retrieve, Addなど)や内部処理のみの補助関数にはログを付けない
+
+[実装内容]  
+・SoundLoader：TryLoadClip成功,失敗 のログを実装
+・SEManager：Play成功,失敗、StopAll実行、ResumeAll実行、PauseAll実行 のログを実装
+・BGMManager：Play成功,失敗、Stop実行、Resume実行、Pause実行、FadeIn実行,中断,失敗,終了、FadeOut実行,中断,終了、CrossFade実行,中断,失敗,終了、ExecuteVolumeTransition中断 のログを実装
+・SoundCache_Base：Remove実行、ClearAll実行 のログを実装
+・SoundCache_TTL,LRU,Random：Evict実行 のログを実装
+・AudioSourcePool_Base：Reinitialize実行 のログを実装
+・ListenerEffector：ApplyFilter実行, DisableAllFilters実行 のログを実装
+　・また、コンストラクタでAudioListener未検出時のログも実装
+
+[結果]  
+・[方針]にあるようにログを実装できた
