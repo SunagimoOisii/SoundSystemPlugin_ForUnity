@@ -1,0 +1,17 @@
+# Visual Studio 関連
+.vs/
+
+# ビルド成果物
+bin/
+obj/
+ref/
+
+# その他の一般的なキャッシュや生成ファイル
+*.csproj
+*.sln
+*.suo
+*.user
+*.db
+*.log
+*.tmp
+*.userprefs
