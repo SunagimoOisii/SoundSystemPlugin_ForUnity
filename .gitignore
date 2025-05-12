@@ -15,3 +15,5 @@ ref/
 *.log
 *.tmp
 *.userprefs
+SoundSystemPlugin_ForUnity_Project/obj/Debug/netstandard2.1/SoundSystemPlugin_ForUnity_Project.AssemblyInfo.cs
+SoundSystemPlugin_ForUnity_Project/obj/Debug/netstandard2.1/SoundSystemPlugin_ForUnity_Project.AssemblyInfoInputs.cache
