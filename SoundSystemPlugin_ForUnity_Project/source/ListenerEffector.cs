@@ -14,13 +14,9 @@ internal sealed class ListenerEffector
 
     private readonly Dictionary<Type, Component> filterDict = new();
 
-    public ListenerEffector()
+    public ListenerEffector(AudioListener l)
     {
-        Listener = UnityEngine.Object.FindObjectOfType<AudioListener>();
-        if (Listener == null)
-        {
-            Log.Warn("AudioListenerがシーン内で見つからない");
-        }
+        Listener = l;
     }
 
     /// <typeparam name="FilterT">適用するフィルターの型</typeparam>

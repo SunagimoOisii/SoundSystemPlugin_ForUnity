@@ -432,11 +432,39 @@ ListenerEffector
 【背景】
 ・AudioListenerを動的に差し替えたいケース（カメラ切り替えなど）への対応が必要だった
 
-【実装内容】
+[実装内容]
 ・Listener変数をpublicなプロパティ(private get; set;)に変更し、外部からの差し替えを可能にした
 
-【実装内容】
+[結果]
 ・任意のAudioListenerを動的に設定できるようになり、マルチシーンなどへの対応がしやすくなった
+
+//////////////////////////////////////////////////////////////
+日付：2025/05/13
+タイトル：AudioListener注入方式への変更、SetAudioListener関数実装
+変更箇所：ListenerEffector, SoundSystem
+//////////////////////////////////////////////////////////////
+[背景]
+・ListenerEffector が初期化時に FindObjectOfType<AudioListener> を使用して AudioListener を探索していた
+・これには以下の問題があった
+　- パフォーマンス低下：シーン内の全オブジェクトを検索するため、初期化が遅延
+　- テスト困難：AudioListener のモック化が難しく、ユニットテストでの柔軟性が低い
+　- 動的差し替え困難：シーン内でリスナーを動的に切り替えにくい
+・ListenerEffector の AudioListener プロパティはsetがpublicだが、ListenerEffector が internal クラスのため外部から差し替え不可能だった
+
+[方針]
+・AudioListener をコンストラクタ引数で受け取り、外部から注入する方式に変更
+・ListenerEffector の変更について、SoundSystem も対応する(内部で ListenerEffector を生成しているため)
+・SoundSystem で ListenerEffector の AudioListener をセットする機能を実装
+
+[実装内容]
+・ListenerEffector.cs
+　- コンストラクタをAudioListener引数付きに変更  
+・SoundSystem.cs
+　- SetAudioListener 関数を実装(既存の ListenerEffector インスタンスに対してリスナーを設定)
+
+[結果]
+・AudioListenerの探索コストが削減され、初期化速度が向上
+・AudioListenerの差し替えやテストが容易になった
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 Log

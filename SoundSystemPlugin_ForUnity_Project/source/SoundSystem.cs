@@ -1,6 +1,5 @@
 using Cysharp.Threading.Tasks;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -20,8 +19,8 @@ public sealed class SoundSystem
     private SerializedBGMSettingDictionary bgmPresets;
     private SerializedSESettingDictionary  sePresets;
 
-    public SoundSystem(ISoundCache cache, IAudioSourcePool sourcePool, AudioMixer mixer,
-        AudioMixerGroup bgmGroup, bool canLogging = true)
+    public SoundSystem(ISoundCache cache, IAudioSourcePool pool, AudioListener listener,
+        AudioMixer mixer, AudioMixerGroup bgmGroup, bool canLogging = true)
     {
         if (canLogging)
         {
@@ -31,20 +30,20 @@ public sealed class SoundSystem
 
         var loader = new SoundLoader(cache);
         bgm        = new(bgmGroup, loader);
-        se         = new(sourcePool, loader);
-        effector   = new();
+        se         = new(pool, loader);
+        effector   = new(listener);
         this.mixer = mixer;
     }
 
-    public static SoundSystem CreateFromPreset(SoundPresetProperty preset, IAudioSourcePool sourcePool,
-        AudioMixer mixer, AudioMixerGroup bgmGroup)
+    public static SoundSystem CreateFromPreset(SoundPresetProperty preset, IAudioSourcePool pool,
+        AudioListener listener, AudioMixer mixer, AudioMixerGroup bgmGroup)
     {
         var cache = SoundCacheFactory.Create(
             preset.param,
             preset.cacheType
         );
 
-        var ss = new SoundSystem(cache, sourcePool, mixer, bgmGroup);
+        var ss = new SoundSystem(cache, pool, listener, mixer, bgmGroup);
         ss.SetPresets(preset.bgmPresets, preset.sePresets);
         return ss;
     }
@@ -197,6 +196,11 @@ public sealed class SoundSystem
     #endregion
 
     #region ListenerEffector
+    public void SetAudioListener(AudioListener l)
+    {
+        effector.Listener = l;
+    }
+
     public void ApplyEffectFilter<T>(Action<T> configure) where T : Behaviour
     {
         effector.ApplyFilter(configure);
