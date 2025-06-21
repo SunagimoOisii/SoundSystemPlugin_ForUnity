@@ -69,7 +69,7 @@ public sealed class SoundSystem
         }
     }
 
-    public void RetrieveMixerParameter(string exposedParamName, float value)
+    public void SetMixerParameter(string exposedParamName, float value)
     {
         if (mixer.SetFloat(exposedParamName, value) == false)
         {
@@ -206,7 +206,7 @@ public sealed class SoundSystem
         effector.ApplyFilter(configure);
     }
 
-    public void DisableEffecteFilter<T>() where T : Behaviour
+    public void DisableEffectFilter<T>() where T : Behaviour
     {
         effector.DisableFilter<T>();
     }
