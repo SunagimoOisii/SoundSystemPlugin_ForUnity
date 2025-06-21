@@ -20,7 +20,7 @@ public class SoundPresetProperty : ScriptableObject
         [Range(0f, 1f)] public float volume;
         [Range(0f, 1f)] public float pitch;
         [Range(0f, 1f)] public float spatialBlend; //0 = 2D, 1 = 3D
-        [Range(0f, 1f)] public Vector3 position;
+        public Vector3 position;
     }
 
     [Header("BGMİ’èƒŠƒXƒg")]
