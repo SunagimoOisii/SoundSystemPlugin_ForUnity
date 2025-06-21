@@ -194,6 +194,7 @@ internal sealed class BGMManager
     {
         //既にフェード処理が行われていた場合は上書き
         fadeCTS?.Cancel();
+        fadeCTS?.Dispose();
         fadeCTS = new();
         var token = fadeCTS.Token;
 
@@ -221,7 +222,6 @@ internal sealed class BGMManager
         finally
         {
             State = BGMState.Idle;
-            fadeCTS?.Dispose();
         }
     }
 }
