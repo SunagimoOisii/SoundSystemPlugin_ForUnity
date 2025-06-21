@@ -25,6 +25,7 @@ internal sealed class AudioSourcePool_Strict : AudioSourcePool_Base
             var source = pool.Dequeue();
             if (source.isPlaying == false)
             {
+                pool.Enqueue(source);
                 return source;
             }
 

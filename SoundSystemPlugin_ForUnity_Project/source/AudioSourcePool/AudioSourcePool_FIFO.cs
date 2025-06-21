@@ -25,16 +25,18 @@ internal sealed class AudioSourcePool_FIFO : AudioSourcePool_Base
             var source = pool.Dequeue();
             if (source.isPlaying == false)
             {
+                pool.Enqueue(source);
                 return source;
             }
 
             pool.Enqueue(source);
         }
 
-        //プールが最大サイズの場合、最古のものを再利用
+        //プールが最大サイズの場合、最古のものを強制的に中断して利用
         if (pool.Count >= maxSize)
         {
             var oldest = pool.Dequeue();
+            oldest.Stop();
             pool.Enqueue(oldest);
             return oldest;
         }
