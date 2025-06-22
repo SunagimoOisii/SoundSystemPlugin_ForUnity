@@ -6,7 +6,7 @@ namespace SoundSystem
     /// <summary>
     /// SoundPresetPropertyで使用されるSEプリセット群を保持,操作するクラス<para/>
     /// - インスペクターでは編集可能なListとして管理される<para/>
-    /// - 実行時には、presetNameをキーとするDictionaryへ変換し、高速な参照が可能<para/>Add commentMore actions
+    /// - 実行時には、presetNameをキーとするDictionaryへ変換し、高速な参照が可能<para/>
     /// - Dictionaryへの変換はISerializationCallbackReceiver.OnAfterDeserialize()内で行う
     /// </summary>
     [System.Serializable]

@@ -5,7 +5,7 @@ namespace SoundSystem
     using UnityEngine.AddressableAssets;
     using UnityEngine.ResourceManagement.AsyncOperations;
     
-    /// <summary>Add commentMore actions
+    /// <summary>
     /// サウンドリソースのロード,アンロードを担うクラス<para></para>
     /// - Addressableを介してAudioClipを非同期にロード<para></para>
     /// - ロード結果をキャッシュ管理クラス(ISoundCache)に委譲

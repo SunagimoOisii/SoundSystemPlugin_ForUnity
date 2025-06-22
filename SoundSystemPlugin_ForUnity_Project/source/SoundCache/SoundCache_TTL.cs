@@ -40,7 +40,6 @@ namespace SoundSystem
             var currentTime = Time.time;
             var toRemove = new List<string>();
     
-            Log.Safe($"Evict実行:{toRemove.Count}件削除, ttl = {ttlSeconds}");
             foreach (var entry in registerTime)
             {
                 if (currentTime - entry.Value > ttlSeconds)
@@ -48,6 +47,7 @@ namespace SoundSystem
                     toRemove.Add(entry.Key);
                 }
             }
+            Log.Safe($"Evict実行:{toRemove.Count}件削除, ttl = {ttlSeconds}");
     
             foreach (var key in toRemove)
             {

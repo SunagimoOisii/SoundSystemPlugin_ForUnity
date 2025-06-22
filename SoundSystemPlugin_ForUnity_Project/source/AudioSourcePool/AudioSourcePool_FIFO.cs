@@ -3,7 +3,7 @@ namespace SoundSystem
     using UnityEngine;
     using UnityEngine.Audio;
     
-    /// <summary>Add commentMore actions
+    /// <summary>
     /// SE向けにAudioSourceをプールで管理するクラス<para></para>
     /// - 未使用のAudioSourceがあればそれを返す<para></para>
     /// - 全て使用中で最大サイズなら最古のものを再利用<para></para>

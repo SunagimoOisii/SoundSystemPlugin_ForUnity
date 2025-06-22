@@ -44,7 +44,7 @@ namespace SoundSystem
         }
     
         /// <summary>
-        /// キャッシュ内のAudioSourceを全て破棄する
+        /// キャッシュ内のAudioClipを全て破棄する
         /// </summary>
         public virtual void ClearAll()
         {

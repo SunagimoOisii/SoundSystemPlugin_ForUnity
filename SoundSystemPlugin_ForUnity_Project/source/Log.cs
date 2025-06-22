@@ -5,7 +5,7 @@ namespace SoundSystem
     using System.Runtime.CompilerServices;
     using UnityEngine;
     
-    /// <summary>Add commentMore actions
+    /// <summary>
     /// サウンドシステム専用のロギングクラス<para></para>
     /// - エディタ上のログに加え、ログファイルを残す<para></para>
     ///   エディタでのパス：Application.dataPath, "../Logs"<para></para>

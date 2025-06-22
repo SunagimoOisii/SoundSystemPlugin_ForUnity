@@ -50,7 +50,6 @@ namespace SoundSystem
             var currentTime = Time.time;
             var toRemove = new List<string>();
     
-            Log.Safe($"Evict実行:{toRemove.Count}件削除,idle = {idleTimeThreshold}");
             foreach (var entry in lastAccessTime)
             {
                 if (currentTime - entry.Value > idleTimeThreshold)
@@ -58,6 +57,7 @@ namespace SoundSystem
                     toRemove.Add(entry.Key);
                 }
             }
+            Log.Safe($"Evict実行:{toRemove.Count}件削除,idle = {idleTimeThreshold}");
     
             foreach (var key in toRemove)
             {
