@@ -1,58 +1,61 @@
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.AddressableAssets;
-
-/// <summary>
-/// ƒTƒEƒ“ƒhƒŠƒ\[ƒX‚ÌƒLƒƒƒbƒVƒ…ŠÇ—‚ğ’S‚¤ƒNƒ‰ƒX‚ÌŠî’êƒNƒ‰ƒX<para></para>
-/// - ”h¶ƒNƒ‰ƒX‚Ìíœ•ûj‚²‚Æ‚ÉEvictŠÖ”‚ğƒI[ƒo[ƒ‰ƒCƒh‚³‚¹‚é
-/// </summary>
-internal abstract class SoundCache_Base : ISoundCache
+namespace SoundSystem
 {
-    protected readonly Dictionary<string, AudioClip> cache = new();
-
+    using System.Collections.Generic;
+    using UnityEngine;
+    using UnityEngine.AddressableAssets;
+    
     /// <summary>
-    /// w’èƒŠƒ\[ƒX‚ğƒLƒƒƒbƒVƒ…‚©‚çæ“¾‚·‚é<para></para>
-    /// æ“¾‚ÉÅIƒAƒNƒZƒXŠÔ‚àXV‚·‚é
+    /// TEh\[XÌƒLbVÇ—SNXÌŠNX<para></para>
+    /// - hNXÌíœjÆ‚EvictÖI[o[Ch
     /// </summary>
-    public virtual AudioClip Retrieve(string resourceAddress)
+    internal abstract class SoundCache_Base : ISoundCache
     {
-        if (cache.TryGetValue(resourceAddress, out var clip))
+        protected readonly Dictionary<string, AudioClip> cache = new();
+    
+        /// <summary>
+        /// wèƒŠ\[XLbVæ“¾<para></para>
+        /// æ“¾ÉÅIANZXÔ‚XV
+        /// </summary>
+        public virtual AudioClip Retrieve(string resourceAddress)
         {
-            return clip;
+            if (cache.TryGetValue(resourceAddress, out var clip))
+            {
+                return clip;
+            }
+            return null;
         }
-        return null;
-    }
-
-    /// <summary>
-    /// w’èƒŠƒ\[ƒX‚ğƒLƒƒƒbƒVƒ…‚É’Ç‰Á‚·‚é<para></para>
-    /// </summary>
-    public virtual void Add(string resourceAddress, AudioClip clip)
-    {
-        cache[resourceAddress] = clip;
-    }
-
-    public virtual void Remove(string resourceAddress)
-    {
-        if (cache.TryGetValue(resourceAddress, out var clip))
+    
+        /// <summary>
+        /// wèƒŠ\[XLbVÉ’Ç‰<para></para>
+        /// </summary>
+        public virtual void Add(string resourceAddress, AudioClip clip)
         {
-            Log.Safe($"RemoveÀs:{resourceAddress}");
-            Addressables.Release(clip);
-            cache.Remove(resourceAddress);
+            cache[resourceAddress] = clip;
         }
-    }
-
-    /// <summary>
-    /// ƒLƒƒƒbƒVƒ…“à‚ÌAudioSource‚ğ‘S‚Ä”jŠü‚·‚é
-    /// </summary>
-    public virtual void ClearAll()
-    {
-        Log.Safe("ClearAllÀs");
-        foreach (var clip in cache.Values)
+    
+        public virtual void Remove(string resourceAddress)
         {
-            Addressables.Release(clip);
+            if (cache.TryGetValue(resourceAddress, out var clip))
+            {
+                Log.Safe($"Removes:{resourceAddress}");
+                Addressables.Release(clip);
+                cache.Remove(resourceAddress);
+            }
         }
-        cache.Clear();
+    
+        /// <summary>
+        /// LbVAudioSourceSÄ”j
+        /// </summary>
+        public virtual void ClearAll()
+        {
+            Log.Safe("ClearAlls");
+            foreach (var clip in cache.Values)
+            {
+                Addressables.Release(clip);
+            }
+            cache.Clear();
+        }
+    
+        public abstract void Evict();
     }
-
-    public abstract void Evict();
 }

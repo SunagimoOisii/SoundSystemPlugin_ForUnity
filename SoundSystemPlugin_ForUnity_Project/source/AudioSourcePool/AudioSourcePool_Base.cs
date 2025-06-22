@@ -1,70 +1,73 @@
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Audio;
-
-/// <summary>
-/// SEŒü‚¯‚ÉAudioSource‚ğƒv[ƒ‹‚ÅŠÇ—‚·‚éƒNƒ‰ƒX‚ÌŠî’êƒNƒ‰ƒX<para></para>
-/// - ”h¶ƒNƒ‰ƒX‚Ì•ûj‚²‚Æ‚ÉRetrieveŠÖ”‚ğƒI[ƒo[ƒ‰ƒCƒh‚³‚¹‚é
-/// </summary>
-internal abstract class AudioSourcePool_Base : IAudioSourcePool
+namespace SoundSystem
 {
-    protected readonly GameObject sourceRoot;
-    protected readonly AudioMixerGroup mixerGroup;
-
-    protected Queue<AudioSource> pool;
-    protected readonly int maxSize;
-    protected readonly int initSize;
-    public IEnumerable<AudioSource> GetAllResources() => pool;
-
-    public AudioSourcePool_Base(AudioMixerGroup mixerG, int initSize, int maxSize)
+    using System.Collections.Generic;
+    using UnityEngine;
+    using UnityEngine.Audio;
+    
+    /// <summary>
+    /// SEAudioSourcev[ÅŠÇ—NXÌŠNX<para></para>
+    /// - hNXÌ•jÆ‚RetrieveÖI[o[Ch
+    /// </summary>
+    internal abstract class AudioSourcePool_Base : IAudioSourcePool
     {
-        pool         = new();
-        sourceRoot   = new("SE_AudioSources");
-        this.maxSize = maxSize;
-        this.initSize = initSize;
-        this.mixerGroup = mixerG;
-
-        //ƒv[ƒ‹‰Šú‰»
-        for (int i = 0; i < initSize; i++)
+        protected readonly GameObject sourceRoot;
+        protected readonly AudioMixerGroup mixerGroup;
+    
+        protected Queue<AudioSource> pool;
+        protected readonly int maxSize;
+        protected readonly int initSize;
+        public IEnumerable<AudioSource> GetAllResources() => pool;
+    
+        public AudioSourcePool_Base(AudioMixerGroup mixerG, int initSize, int maxSize)
         {
-            var source = CreateSourceWithOwnerGameObject();
-            pool.Enqueue(source);
+            pool         = new();
+            sourceRoot   = new("SE_AudioSources");
+            this.maxSize = maxSize;
+            this.initSize = initSize;
+            this.mixerGroup = mixerG;
+    
+            //v[
+            for (int i = 0; i < initSize; i++)
+            {
+                var source = CreateSourceWithOwnerGameObject();
+                pool.Enqueue(source);
+            }
         }
-    }
-
-    public void Reinitialize()
-    {
-        Log.Safe("ReinitializeÀs");
-
-        //ƒv[ƒ‹“à‚Ì—v‘f‚ğ‘S‚Ä–¢g—p‚É‚·‚é
-        foreach (var source in pool)
+    
+        public void Reinitialize()
         {
-            source.Stop();
-            source.clip = null;
+            Log.Safe("Reinitializes");
+    
+            //v[Ì—vfSÄ–gpÉ‚
+            foreach (var source in pool)
+            {
+                source.Stop();
+                source.clip = null;
+            }
+    
+            //v[TCYÌ’lÉ–ß‚
+            while (pool.Count > initSize) //ß
+            {
+                var source = pool.Dequeue();
+                Object.Destroy(source.gameObject);
+            }
+            while (pool.Count < initSize) //s
+            {
+                pool.Enqueue(CreateSourceWithOwnerGameObject());
+            }
         }
-
-        //ƒv[ƒ‹ƒTƒCƒY‚ğ‰Šú‰»‚Ì’l‚É–ß‚·
-        while (pool.Count > initSize) //’´‰ß
+    
+        public abstract AudioSource Retrieve();
+    
+        protected AudioSource CreateSourceWithOwnerGameObject()
         {
-            var source = pool.Dequeue();
-            Object.Destroy(source.gameObject);
+            var obj = new GameObject("SESource");
+            obj.transform.parent = sourceRoot.transform;
+    
+            var source = obj.AddComponent<AudioSource>();
+            source.playOnAwake = false;
+            source.outputAudioMixerGroup = mixerGroup;
+            return source;
         }
-        while (pool.Count < initSize) //•s‘«
-        {
-            pool.Enqueue(CreateSourceWithOwnerGameObject());
-        }
-    }
-
-    public abstract AudioSource Retrieve();
-
-    protected AudioSource CreateSourceWithOwnerGameObject()
-    {
-        var obj = new GameObject("SESource");
-        obj.transform.parent = sourceRoot.transform;
-
-        var source = obj.AddComponent<AudioSource>();
-        source.playOnAwake = false;
-        source.outputAudioMixerGroup = mixerGroup;
-        return source;
     }
 }

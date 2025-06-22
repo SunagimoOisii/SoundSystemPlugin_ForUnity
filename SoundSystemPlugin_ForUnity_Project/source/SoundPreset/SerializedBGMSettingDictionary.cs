@@ -1,45 +1,48 @@
-using System.Collections.Generic;
-using UnityEngine;
-
-/// <summary>
-/// SoundPresetProperty‚Åg—p‚³‚ê‚éBGMƒvƒŠƒZƒbƒgŒQ‚ğ•Û,‘€ì‚·‚éƒNƒ‰ƒX<para/>
-/// - ƒCƒ“ƒXƒyƒNƒ^[‚Å‚Í•ÒW‰Â”\‚ÈList‚Æ‚µ‚ÄŠÇ—‚³‚ê‚é<para/>
-/// - Às‚É‚ÍApresetName‚ğƒL[‚Æ‚·‚éDictionary‚Ö•ÏŠ·‚µA‚‘¬‚ÈQÆ‚ª‰Â”\<para/>
-/// - Dictionary‚Ö‚Ì•ÏŠ·‚ÍISerializationCallbackReceiver.OnAfterDeserialize()“à‚Ås‚¤
-/// </summary>
-[System.Serializable]
-public class SerializedBGMSettingDictionary : ISerializationCallbackReceiver
+namespace SoundSystem
 {
-	[SerializeField]
-	private List<SoundPresetProperty.BGMPreset> presetList = new();
-
-	private Dictionary<string, SoundPresetProperty.BGMPreset> presetDict = new();
-
-	public bool TryGetValue(string key, out SoundPresetProperty.BGMPreset value)
-	{
-		return presetDict.TryGetValue(key, out value);
-	}
-
-	void ISerializationCallbackReceiver.OnAfterDeserialize()
-	{
-		presetDict.Clear();
-		foreach (var preset in presetList)
-		{
-			if (string.IsNullOrEmpty(preset.presetName))
-			{
-				continue;
-			}
-
-			if (presetDict.ContainsKey(preset.presetName))
-			{
-				Debug.LogWarning($"ƒL[‚Ìd•¡:presetName = {preset.presetName}");
-				continue;
-			}
-
-			presetDict.Add(preset.presetName, preset);
-		}
-	}
-
-	//ˆ—ƒiƒV
-	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
+    using System.Collections.Generic;
+    using UnityEngine;
+    
+    /// <summary>
+    /// SoundPresetPropertyÅgpBGMvZbgQÛ,ì‚·NX<para/>
+    /// - CXyN^[Å‚Í•ÒWÂ”\ListÆ‚ÄŠÇ—<para/>
+    /// - sÉ‚ÍApresetNameL[Æ‚DictionaryÖ•ÏŠAÈQÆ‚Â”\<para/>
+    /// - DictionaryÖ‚Ì•ÏŠISerializationCallbackReceiver.OnAfterDeserialize()Ås
+    /// </summary>
+    [System.Serializable]
+    public class SerializedBGMSettingDictionary : ISerializationCallbackReceiver
+    {
+    	[SerializeField]
+    	private List<SoundPresetProperty.BGMPreset> presetList = new();
+    
+    	private Dictionary<string, SoundPresetProperty.BGMPreset> presetDict = new();
+    
+    	public bool TryGetValue(string key, out SoundPresetProperty.BGMPreset value)
+    	{
+    		return presetDict.TryGetValue(key, out value);
+    	}
+    
+    	void ISerializationCallbackReceiver.OnAfterDeserialize()
+    	{
+    		presetDict.Clear();
+    		foreach (var preset in presetList)
+    		{
+    			if (string.IsNullOrEmpty(preset.presetName))
+    			{
+    				continue;
+    			}
+    
+    			if (presetDict.ContainsKey(preset.presetName))
+    			{
+    				Debug.LogWarning($"L[Ìd:presetName = {preset.presetName}");
+    				continue;
+    			}
+    
+    			presetDict.Add(preset.presetName, preset);
+    		}
+    	}
+    
+    	//iV
+    	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
+    }
 }

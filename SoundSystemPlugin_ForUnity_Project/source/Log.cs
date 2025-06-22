@@ -1,116 +1,119 @@
-using System;
-using System.IO;
-using System.Runtime.CompilerServices;
-using UnityEngine;
-
-/// <summary>
-/// ƒTƒEƒ“ƒhƒVƒXƒeƒ€ê—p‚ÌƒƒMƒ“ƒOƒNƒ‰ƒX<para></para>
-/// - ƒGƒfƒBƒ^ã‚ÌƒƒO‚É‰Á‚¦AƒƒOƒtƒ@ƒCƒ‹‚ğc‚·<para></para>
-///   ƒGƒfƒBƒ^‚Å‚ÌƒpƒXFApplication.dataPath, "../Logs"<para></para>
-///   ƒrƒ‹ƒh”Å‚Å‚ÌƒpƒXFApplication.persistentDataPath<para></para>
-/// - ƒJƒeƒSƒŠ–¼‚É‚ÍŒ´‘¥‚Æ‚µ‚ÄŒÄ‚Ño‚µŒ³‚ÌƒXƒNƒŠƒvƒg–¼(Šg’£q‚È‚µ)‚ğg—p<para></para>
-/// - SoundSystemŒn‚Ì“à•”İŒv‚É‚¨‚¢‚Ä1ƒtƒ@ƒCƒ‹ = 1ƒNƒ‰ƒX\¬‚Å‚ ‚é‚±‚Æ‚ğ‘O’ñ‚Æ‚µ‚Ä‚¢‚é<para></para>
-/// - •¡”ƒNƒ‰ƒX‚ğ1ƒtƒ@ƒCƒ‹‚É’è‹`‚µ‚½ê‡AƒƒOƒJƒeƒSƒŠ‚ªB–†‚É‚È‚é‰Â”\«‚ª‚ ‚é
-/// (•K—v‚Å‚ ‚ê‚ÎƒƒOŒÄ‚Ño‚µ‚ÉƒJƒeƒSƒŠ‚ğ–¾¦“I‚Éw’è‚µ‘Îˆ‰Â”\)
-/// </summary>
-internal static class Log
+namespace SoundSystem
 {
-    private static StreamWriter fileWriter;
-    private static readonly object locker = new();
-    private static bool isInitialized = false;
-
-    public enum LogLevel
+    using System;
+    using System.IO;
+    using System.Runtime.CompilerServices;
+    using UnityEngine;
+    
+    /// <summary>
+    /// TEhVXepÌƒMONX<para></para>
+    /// - GfB^ÌƒOÉ‰AOt@Cc<para></para>
+    ///   GfB^Å‚ÌƒpXFApplication.dataPath, "../Logs"<para></para>
+    ///   rhÅ‚Å‚ÌƒpXFApplication.persistentDataPath<para></para>
+    /// - JeSÉ‚ÍŒÆ‚ÄŒÄ‚ÑoÌƒXNvg(gqÈ‚)gp<para></para>
+    /// - SoundSystemnÌ“İŒvÉ‚1t@C = 1NX\Å‚é‚±Æ‚OÆ‚Ä‚<para></para>
+    /// - NX1t@CÉ’`ê‡AOJeSBÉ‚È‚Â”\
+    /// (KvÅ‚ÎƒOÄ‚ÑoÉƒJeSğ–¾IÉwè‚µÎÂ”\)
+    /// </summary>
+    internal static class Log
     {
-        Info,
-        Warn,
-        Error
-    }
-
-    public static void Initialize(string fileName = "SoundLog.txt")
-    {
-        if(isInitialized) return;
-
-        string logDirectory;
-#if UNITY_EDITOR
-        logDirectory = Path.Combine(Application.dataPath, "../Logs");
-#else
-        logDirectory = Application.persistentDataPath;
-#endif
-        Directory.CreateDirectory(logDirectory);
-        string logPath = Path.Combine(logDirectory, fileName);
-
-        try
+        private static StreamWriter fileWriter;
+        private static readonly object locker = new();
+        private static bool isInitialized = false;
+    
+        public enum LogLevel
         {
-            fileWriter = new(logPath, append: true);
-            fileWriter.AutoFlush = true;
-            isInitialized = true;
-            Safe($"Initialize¬Œ÷: {logPath}");
+            Info,
+            Warn,
+            Error
         }
-        catch (Exception e)
+    
+        public static void Initialize(string fileName = "SoundLog.txt")
         {
-            Error($"Initialize¸”s,{e.Message}");
+            if(isInitialized) return;
+    
+            string logDirectory;
+    #if UNITY_EDITOR
+            logDirectory = Path.Combine(Application.dataPath, "../Logs");
+    #else
+            logDirectory = Application.persistentDataPath;
+    #endif
+            Directory.CreateDirectory(logDirectory);
+            string logPath = Path.Combine(logDirectory, fileName);
+    
+            try
+            {
+                fileWriter = new(logPath, append: true);
+                fileWriter.AutoFlush = true;
+                isInitialized = true;
+                Safe($"Initialize: {logPath}");
+            }
+            catch (Exception e)
+            {
+                Error($"Initializes,{e.Message}");
+            }
         }
-    }
-
-    /// <param name="category">–¢“ü—Í‚È‚çŒÄ‚Ño‚µŒ³‚ÌƒNƒ‰ƒX–¼‚ª“ü‚é</param>
-    public static void Safe(string message, [CallerFilePath] string category = "")
-    {
-        category = Path.GetFileNameWithoutExtension(category);
-        Output(LogLevel.Info, category, message);
-    }
-
-    /// <param name="category">–¢“ü—Í‚È‚çŒÄ‚Ño‚µŒ³‚ÌƒNƒ‰ƒX–¼‚ª“ü‚é</param>
-    public static void Warn(string message, [CallerFilePath] string category = "")
-    {
-        category = Path.GetFileNameWithoutExtension(category);
-        Output(LogLevel.Warn, category, message);
-    }
-
-    /// <param name="category">–¢“ü—Í‚È‚çŒÄ‚Ño‚µŒ³‚ÌƒNƒ‰ƒX–¼‚ª“ü‚é</param>
-    public static void Error(string message, [CallerFilePath] string category = "")
-    {
-        category = Path.GetFileNameWithoutExtension(category);
-        Output(LogLevel.Error, category, message);
-    }
-
-    private static void Output(LogLevel level, string category, string message)
-    {
-        if (fileWriter == null)
+    
+        /// <param name="category">Í‚È‚Ä‚ÑoÌƒNX</param>
+        public static void Safe(string message, [CallerFilePath] string category = "")
         {
-            return;
+            category = Path.GetFileNameWithoutExtension(category);
+            Output(LogLevel.Info, category, message);
         }
-
-        string timestamp   = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-        string fullMessage = $"[{timestamp}] [{level}] [{category}] {message}";
-
-#if UNITY_EDITOR
-        switch (level)
+    
+        /// <param name="category">Í‚È‚Ä‚ÑoÌƒNX</param>
+        public static void Warn(string message, [CallerFilePath] string category = "")
         {
-            case LogLevel.Info:
-                Debug.Log(fullMessage);
-                break;
-
-            case LogLevel.Warn:
-                Debug.LogWarning(fullMessage);
-                break;
-
-            case LogLevel.Error:
-                Debug.LogError(fullMessage);
-                break;
+            category = Path.GetFileNameWithoutExtension(category);
+            Output(LogLevel.Warn, category, message);
         }
-#endif
-
-        //ŒÄ‚Ño‚µ‘¤(—áFSEManager)‚É”ñ“¯Šúˆ—‚ª‘½‚¢‚Ì‚ÅA‹£‡‚Ì—\–h
-        lock (locker)
+    
+        /// <param name="category">Í‚È‚Ä‚ÑoÌƒNX</param>
+        public static void Error(string message, [CallerFilePath] string category = "")
         {
-            fileWriter.WriteLine(fullMessage);
+            category = Path.GetFileNameWithoutExtension(category);
+            Output(LogLevel.Error, category, message);
         }
-    }
-
-    public static void Close()
-    {
-        fileWriter?.Flush();
-        fileWriter?.Close();
-        fileWriter = null;
+    
+        private static void Output(LogLevel level, string category, string message)
+        {
+            if (fileWriter == null)
+            {
+                return;
+            }
+    
+            string timestamp   = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+            string fullMessage = $"[{timestamp}] [{level}] [{category}] {message}";
+    
+    #if UNITY_EDITOR
+            switch (level)
+            {
+                case LogLevel.Info:
+                    Debug.Log(fullMessage);
+                    break;
+    
+                case LogLevel.Warn:
+                    Debug.LogWarning(fullMessage);
+                    break;
+    
+                case LogLevel.Error:
+                    Debug.LogError(fullMessage);
+                    break;
+            }
+    #endif
+    
+            //Ä‚Ño(FSEManager)É”ñ“¯ŠÌ‚ÅAÌ—\h
+            lock (locker)
+            {
+                fileWriter.WriteLine(fullMessage);
+            }
+        }
+    
+        public static void Close()
+        {
+            fileWriter?.Flush();
+            fileWriter?.Close();
+            fileWriter = null;
+        }
     }
 }
