@@ -17,7 +17,6 @@ namespace SoundSystem
         private (AudioSource active, AudioSource inactive) bgmSources;
 
         private CancellationTokenSource fadeCTS;
-        private string currentBGMAddress;
 
         private enum BGMState
         {
@@ -158,13 +157,6 @@ namespace SoundSystem
         {
             Log.Safe($"CrossFade実行:{resourceAddress}");
 
-            if (resourceAddress == currentBGMAddress)
-            {
-                Log.Warn($"CrossFade中断:同BGM {resourceAddress} が指定されたため中断");
-                State = BGMState.Idle;
-                return;
-            }
-
             var (success, clip) = await loader.TryLoadClip(resourceAddress);
             if (success == false)
             {
@@ -186,7 +178,6 @@ namespace SoundSystem
                 {
                     bgmSources.active.Stop();
                     bgmSources = (bgmSources.inactive, bgmSources.active);
-                    currentBGMAddress = resourceAddress;
                 });
             Log.Safe($"CrossFade終了:{resourceAddress}");
         }
