@@ -4,7 +4,7 @@ namespace SoundSystem
     using UnityEngine.Audio;
     
     /// <summary>
-    /// IAudioSourcePoolCX^X𐶐t@Ng[NX
+    /// IAudioSourcePoolインスタンスを生成するファクトリークラス
     /// </summary>
     public static class AudioSourcePoolFactory
     {
@@ -15,7 +15,7 @@ namespace SoundSystem
         }
     
         /// <summary>
-        /// wv[ǗɉIAudioSourcePoolCX^X𐶐
+        /// 指定プール管理方式に応じたIAudioSourcePoolインスタンスを生成
         /// </summary>
         public static IAudioSourcePool Create(AudioMixerGroup seMixerG,
             int initSize, int maxSize, PoolType type = PoolType.FIFO)

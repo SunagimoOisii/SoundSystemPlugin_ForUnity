@@ -4,10 +4,10 @@ namespace SoundSystem
     using UnityEngine;
     
     /// <summary>
-    /// SoundPresetPropertyŎgpBGMvZbgQێ,삷NX<para/>
-    /// - CXyN^[ł͕ҏW\ListƂĊǗ<para/>
-    /// - sɂ́ApresetNameL[ƂDictionary֕ϊAȎQƂ\<para/>
-    /// - Dictionaryւ̕ϊISerializationCallbackReceiver.OnAfterDeserialize()ōs
+    /// SoundPresetPropertyで使用されるBGMプリセット群を保持,操作するクラス<para/>
+    /// - インスペクターでは編集可能なListとして管理される<para/>
+    /// - 実行時には、presetNameをキーとするDictionaryへ変換し、高速な参照が可能<para/>
+    /// - Dictionaryへの変換はISerializationCallbackReceiver.OnAfterDeserialize()内で行う
     /// </summary>
     [System.Serializable]
     public class SerializedBGMSettingDictionary : ISerializationCallbackReceiver
@@ -34,7 +34,7 @@ namespace SoundSystem
     
     			if (presetDict.ContainsKey(preset.presetName))
     			{
-    				Debug.LogWarning($"L[̏d:presetName = {preset.presetName}");
+    				Debug.LogWarning($"キーの重複:presetName = {preset.presetName}");
     				continue;
     			}
     
@@ -42,7 +42,7 @@ namespace SoundSystem
     		}
     	}
     
-    	//iV
+    	//処理ナシ
     	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
     }
 }

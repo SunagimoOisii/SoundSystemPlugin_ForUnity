@@ -3,7 +3,7 @@ namespace SoundSystem
     using System;
     
     /// <summary>
-    /// ISoundCacheCX^X𐶐t@Ng[NX
+    /// ISoundCacheインスタンスを生成するファクトリークラス
     /// </summary>
     public static class SoundCacheFactory
     {
@@ -15,9 +15,9 @@ namespace SoundSystem
         }
     
         /// <summary>
-        /// wLbVɉISoundCacheCX^X𐶐
+        /// 指定キャッシュ方式に応じたISoundCacheインスタンスを生成する
         /// </summary>
-        /// <param name="param">ɉp[^(b܂͍ő吔)</param>
+        /// <param name="param">方式に応じたパラメータ(秒数または最大数)</param>
         public static ISoundCache Create(float param,
             SoundCacheType type = SoundCacheType.LRU)
         {

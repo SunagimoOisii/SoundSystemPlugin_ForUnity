@@ -4,10 +4,10 @@ namespace SoundSystem
     using UnityEngine.Audio;
     
     /// <summary>
-    /// SEAudioSourcev[ŊǗNX<para></para>
-    /// - gpAudioSource΂Ԃ<para></para>
-    /// - SĎgpōőTCYȂVK쐬̂Ԃ<para></para>
-    /// - SĎgpōőTCYȂnullԂ
+    /// SE向けにAudioSourceをプールで管理するクラス<para></para>
+    /// - 未使用のAudioSourceがあればそれを返す<para></para>
+    /// - 全て使用中で最大サイズ未満なら新規作成したものを返す<para></para>
+    /// - 全て使用中で最大サイズならnullを返す
     /// </summary>
     internal sealed class AudioSourcePool_Strict : AudioSourcePool_Base
     {
@@ -19,9 +19,9 @@ namespace SoundSystem
     
         public override AudioSource Retrieve()
         {
-            Log.Safe("Retrieves");
+            Log.Safe("Retrieves実行");
     
-            //gpAudioSource΁AԂ
+            //未使用のAudioSourceがあれば、それを返す
             for (int i = 0; i < pool.Count; i++)
             {
                 var source = pool.Dequeue();
@@ -34,15 +34,14 @@ namespace SoundSystem
                 pool.Enqueue(source);
             }
     
-            //v[őTCYȂVK쐬̂Ԃ
+            //プールが最大サイズ未満なら新規作成したものを返す
+            //最大サイズで全て使用中ならnull
             if (pool.Count < maxSize)
             {
                 var created = CreateSourceWithOwnerGameObject();
                 pool.Enqueue(created);
                 return created;
-            }
-    
-            //őTCYőSĎgpȂnull
+            }            
             return null;
         }
     }

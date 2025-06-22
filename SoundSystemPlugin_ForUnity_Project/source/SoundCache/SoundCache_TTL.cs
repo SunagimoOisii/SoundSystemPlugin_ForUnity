@@ -4,8 +4,8 @@ namespace SoundSystem
     using UnityEngine;
     
     /// <summary>
-    /// TEh\[X̃LbVǗSNX<para></para>
-    /// - o^w莞Ԃ𒴂\[X폜ΏۂƂ
+    /// サウンドリソースのキャッシュ管理を担うクラス<para></para>
+    /// - 登録時刻から指定時間を超えたリソースを削除対象とする
     /// </summary>
     internal sealed class SoundCache_TTL : SoundCache_Base
     {
@@ -40,7 +40,7 @@ namespace SoundSystem
             var currentTime = Time.time;
             var toRemove = new List<string>();
     
-            Log.Safe($"Evicts:{toRemove.Count}폜,ttl = {ttlSeconds}");
+            Log.Safe($"Evict実行:{toRemove.Count}件削除, ttl = {ttlSeconds}");
             foreach (var entry in registerTime)
             {
                 if (currentTime - entry.Value > ttlSeconds)

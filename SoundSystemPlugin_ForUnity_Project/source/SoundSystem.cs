@@ -6,9 +6,9 @@ namespace SoundSystem
     using UnityEngine.Audio;
     
     /// <summary>
-    /// TEhǗ̃Gg[|Cg񋟂NX<para></para>
-    /// - e}l[WƋ@\C^[tF[XO󂯎蓝IɊǗ<para></para>
-    /// - {W[ɓAudioMixerIuWFNg̎gpOƂĂ
+    /// サウンド管理のエントリーポイントを提供するクラス<para></para>
+    /// - 各マネージャと機能インターフェースを外部から受け取り統一的に管理<para></para>
+    /// - 本モジュールに同梱のAudioMixerオブジェクトの使用を前提としている
     /// </summary>
     public sealed class SoundSystem
     {
@@ -50,7 +50,7 @@ namespace SoundSystem
             return ss;
         }
     
-        //CreateFromPreset֐̂߂Ɏ
+        //CreateFromPreset関数のために実装
         private void SetPresets(SerializedBGMSettingDictionary bgmList,
             SerializedSESettingDictionary seList)
         {
@@ -66,7 +66,7 @@ namespace SoundSystem
             }
             else
             {
-                Debug.LogWarning($"SoundSystem: p[^ '{exposedParamName}' ̎擾Ɏs");
+                Debug.LogWarning($"SoundSystem: パラメータ '{exposedParamName}' の取得に失敗");
                 return null;
             }
         }
@@ -75,7 +75,7 @@ namespace SoundSystem
         {
             if (mixer.SetFloat(exposedParamName, value) == false)
             {
-                Debug.LogWarning($"SoundSystem: p[^ '{exposedParamName}' ̐ݒɎs");
+                Debug.LogWarning($"SoundSystem: パラメータ '{exposedParamName}' の設定に失敗");
             }
         }
     

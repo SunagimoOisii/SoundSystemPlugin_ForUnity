@@ -5,10 +5,10 @@ namespace SoundSystem
     using UnityEngine.AddressableAssets;
     using UnityEngine.ResourceManagement.AsyncOperations;
     
-    /// <summary>
-    /// TEh\[X̃[h,A[hSNX<para></para>
-    /// - AddressableAudioClip񓯊Ƀ[h<para></para>
-    /// - [hʂLbVǗNX(ISoundCache)ɈϏ
+    /// <summary>Add commentMore actions
+    /// サウンドリソースのロード,アンロードを担うクラス<para></para>
+    /// - Addressableを介してAudioClipを非同期にロード<para></para>
+    /// - ロード結果をキャッシュ管理クラス(ISoundCache)に委譲
     /// </summary>
     public class SoundLoader : ISoundLoader
     {
@@ -21,7 +21,7 @@ namespace SoundSystem
     
         public async UniTask<(bool success, AudioClip clip)> TryLoadClip(string resourceAddress)
         {
-            Log.Safe($"TryLoadClips:{resourceAddress}");
+            Log.Safe($"TryLoadClip実行:{resourceAddress}");
             var handle = Addressables.LoadAssetAsync<AudioClip>(resourceAddress);
             var clip   = await handle.Task;
     
@@ -29,12 +29,12 @@ namespace SoundSystem
                 handle.Status == AsyncOperationStatus.Succeeded)
             {
                 cache.Add(resourceAddress, clip);
-                Log.Safe($"TryLoadClip:{resourceAddress}");
+                Log.Safe($"TryLoadClip成功:{resourceAddress}");
                 return (success: true, clip);
             }
             else
             {
-                Log.Error($"TryLoadClips:{resourceAddress},Status = {handle.Status}");
+                Log.Error($"TryLoadClip失敗:{resourceAddress},Status = {handle.Status}");
                 cache.Remove(resourceAddress);
                 Addressables.Release(handle);
                 return (success: false, null);
@@ -43,7 +43,7 @@ namespace SoundSystem
     
         public void UnloadClip(string resourceAddress)
         {
-            Log.Safe($"UnloadClips:{resourceAddress}");
+            Log.Safe($"UnloadClip実行:{resourceAddress}");
             cache.Remove(resourceAddress);
         }
     }

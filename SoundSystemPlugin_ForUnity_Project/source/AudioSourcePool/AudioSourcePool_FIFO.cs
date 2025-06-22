@@ -3,11 +3,11 @@ namespace SoundSystem
     using UnityEngine;
     using UnityEngine.Audio;
     
-    /// <summary>
-    /// SEAudioSourcev[ŊǗNX<para></para>
-    /// - gpAudioSource΂Ԃ<para></para>
-    /// - SĎgpōőTCYȂŌÂ̂̂ėp<para></para>
-    /// - SĎgpōőTCYȂVK쐬̂Ԃ
+    /// <summary>Add commentMore actions
+    /// SE向けにAudioSourceをプールで管理するクラス<para></para>
+    /// - 未使用のAudioSourceがあればそれを返す<para></para>
+    /// - 全て使用中で最大サイズなら最古のものを再利用<para></para>
+    /// - 全て使用中で最大サイズ未満なら新規作成したものを返す
     /// </summary>
     internal sealed class AudioSourcePool_FIFO : AudioSourcePool_Base
     {
@@ -19,9 +19,9 @@ namespace SoundSystem
     
         public override AudioSource Retrieve()
         {
-            Log.Safe("Retrieves");
+            Log.Safe("Retrieves実行");
     
-            //gpAudioSource΁AԂ
+            //未使用のAudioSourceがあれば、それを返す
             for (int i = 0; i < pool.Count; i++)
             {
                 var source = pool.Dequeue();
@@ -34,7 +34,7 @@ namespace SoundSystem
                 pool.Enqueue(source);
             }
     
-            //v[őTCY̏ꍇAŌÂ̂̂Iɒfėp
+            //プールが最大サイズの場合、最古のものを再利用
             if (pool.Count >= maxSize)
             {
                 var oldest = pool.Dequeue();
@@ -42,7 +42,7 @@ namespace SoundSystem
                 pool.Enqueue(oldest);
                 return oldest;
             }
-            else //őTCYȂVK쐬
+            else //最大サイズ未満なら新規作成
             {
                 var created = CreateSourceWithOwnerGameObject();
                 pool.Enqueue(created);

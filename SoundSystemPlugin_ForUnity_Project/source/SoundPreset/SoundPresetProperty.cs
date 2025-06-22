@@ -25,14 +25,14 @@ namespace SoundSystem
             public Vector3 position;
         }
     
-        [Header("BGMݒ胊Xg")]
+        [Header("BGM設定リスト")]
         public SerializedBGMSettingDictionary bgmPresets = new();
     
-        [Header("SEݒ胊Xg")]
+        [Header("SE設定リスト")]
         public SerializedSESettingDictionary sePresets = new();
     
-        [Header("SoundCacheݒ")]
+        [Header("SoundCache設定")]
         public SoundCacheFactory.SoundCacheType cacheType = SoundCacheFactory.SoundCacheType.LRU;
-        public float param = 30f; //idleTimeThresholdttlSecondsɎg
+        public float param = 30f; //idleTimeThresholdやttlSecondsに使う
     }
 }

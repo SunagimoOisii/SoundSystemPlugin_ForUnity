@@ -5,8 +5,8 @@ namespace SoundSystem
     using UnityEngine.Audio;
     
     /// <summary>
-    /// SEAudioSourcev[ŊǗNX̊NX<para></para>
-    /// - hNX̕jƂRetrieve֐I[o[Ch
+    /// SE向けにAudioSourceをプールで管理するクラスの基底クラス<para></para>
+    /// - 派生クラスの方針ごとにRetrieve関数をオーバーライドさせる
     /// </summary>
     internal abstract class AudioSourcePool_Base : IAudioSourcePool
     {
@@ -26,7 +26,7 @@ namespace SoundSystem
             this.initSize = initSize;
             this.mixerGroup = mixerG;
     
-            //v[
+            //プール初期化
             for (int i = 0; i < initSize; i++)
             {
                 var source = CreateSourceWithOwnerGameObject();
@@ -36,22 +36,22 @@ namespace SoundSystem
     
         public void Reinitialize()
         {
-            Log.Safe("Reinitializes");
+            Log.Safe("Reinitializes実行");
     
-            //v[̗vfSĖgpɂ
+            //プール内の要素を全て未使用にする
             foreach (var source in pool)
             {
                 source.Stop();
                 source.clip = null;
             }
     
-            //v[TCY̒lɖ߂
-            while (pool.Count > initSize) //ߎ
+            //プールサイズを初期化時の値に戻す
+            while (pool.Count > initSize) //超過時
             {
                 var source = pool.Dequeue();
                 Object.Destroy(source.gameObject);
             }
-            while (pool.Count < initSize) //s
+            while (pool.Count < initSize) //不足時
             {
                 pool.Enqueue(CreateSourceWithOwnerGameObject());
             }

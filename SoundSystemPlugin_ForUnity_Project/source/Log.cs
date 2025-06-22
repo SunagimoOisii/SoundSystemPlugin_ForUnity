@@ -5,15 +5,15 @@ namespace SoundSystem
     using System.Runtime.CompilerServices;
     using UnityEngine;
     
-    /// <summary>
-    /// TEhVXep̃MONX<para></para>
-    /// - GfB^̃OɉAOt@Cc<para></para>
-    ///   GfB^ł̃pXFApplication.dataPath, "../Logs"<para></para>
-    ///   rhłł̃pXFApplication.persistentDataPath<para></para>
-    /// - JeSɂ͌ƂČĂяõXNvg(gqȂ)gp<para></para>
-    /// - SoundSystemn̓݌vɂ1t@C = 1NX\ł邱ƂOƂĂ<para></para>
-    /// - NX1t@Cɒ`ꍇAOJeSBɂȂ\
-    /// (Kvł΃OĂяoɃJeS𖾎IɎw肵Ώ\)
+    /// <summary>Add commentMore actions
+    /// サウンドシステム専用のロギングクラス<para></para>
+    /// - エディタ上のログに加え、ログファイルを残す<para></para>
+    ///   エディタでのパス：Application.dataPath, "../Logs"<para></para>
+    ///   ビルド版でのパス：Application.persistentDataPath<para></para>
+    /// - カテゴリ名には原則として呼び出し元のスクリプト名(拡張子なし)を使用<para></para>
+    /// - SoundSystem系の内部設計において1ファイル = 1クラス構成であることを前提としている<para></para>
+    /// - 複数クラスを1ファイルに定義した場合、ログカテゴリが曖昧になる可能性がある
+    /// (必要であればログ呼び出し時にカテゴリを明示的に指定し対処可能)
     /// </summary>
     internal static class Log
     {
@@ -46,29 +46,29 @@ namespace SoundSystem
                 fileWriter = new(logPath, append: true);
                 fileWriter.AutoFlush = true;
                 isInitialized = true;
-                Safe($"Initialize: {logPath}");
+                Safe($"Initialize成功: {logPath}");
             }
             catch (Exception e)
             {
-                Error($"Initializes,{e.Message}");
+                Error($"Initialize失敗,{e.Message}");
             }
         }
     
-        /// <param name="category">͂ȂĂяõNX</param>
+        /// <param name="category">未入力なら呼び出し元のクラス名が入る</param>
         public static void Safe(string message, [CallerFilePath] string category = "")
         {
             category = Path.GetFileNameWithoutExtension(category);
             Output(LogLevel.Info, category, message);
         }
     
-        /// <param name="category">͂ȂĂяõNX</param>
+        /// <param name="category">未入力なら呼び出し元のクラス名が入る</param>
         public static void Warn(string message, [CallerFilePath] string category = "")
         {
             category = Path.GetFileNameWithoutExtension(category);
             Output(LogLevel.Warn, category, message);
         }
     
-        /// <param name="category">͂ȂĂяõNX</param>
+        /// <param name="category">未入力なら呼び出し元のクラス名が入る</param>
         public static void Error(string message, [CallerFilePath] string category = "")
         {
             category = Path.GetFileNameWithoutExtension(category);
@@ -102,7 +102,7 @@ namespace SoundSystem
             }
     #endif
     
-            //Ăяo(FSEManager)ɔ񓯊̂ŁA̗\h
+            //競合防止(呼び出し側に非同期処理が多いため)
             lock (locker)
             {
                 fileWriter.WriteLine(fullMessage);

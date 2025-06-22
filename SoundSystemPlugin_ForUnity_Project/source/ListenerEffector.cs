@@ -5,10 +5,10 @@ namespace SoundSystem
     using System.Collections.Generic;
     
     /// <summary>
-    /// SoundSystem삷NX̂P<para></para>
-    /// AudioListenerɃGtFNgtB^[𓮓Iɒǉs
-    /// (GtFNgtB^[ƂAudioReverbFilterAudioEchoFilterȂǂŁA
-    /// {NXłBehaviourNX^ƂēIɈ)
+    /// SoundSystemが操作するクラスの１つ<para></para>
+    /// AudioListenerにエフェクトフィルターを動的に追加し制御を行う
+    /// (エフェクトフィルターとはAudioReverbFilterやAudioEchoFilterなどで、
+    /// 本クラスではBehaviourクラスを基底型として統一的に扱う)
     /// </summary>
     internal sealed class ListenerEffector
     {
@@ -21,12 +21,12 @@ namespace SoundSystem
             Listener = l;
         }
     
-        /// <typeparam name="FilterT">KptB^[̌^</typeparam>
-        /// <param name="configure">tB^[̐ݒsANV</param>
-        /// <remarks>gp: effector.ApplyFilter<AudioReverbFilter>(filter => filter.reverbLevel = Mathf.Clamp(reverbLevel, -10000f, 2000f));</remarks>
+        /// <typeparam name="FilterT">適用するフィルターの型</typeparam>
+        /// <param name="configure">フィルターの設定を行うアクション</param>
+        /// <remarks>使用例: effector.ApplyFilter<AudioReverbFilter>(filter => filter.reverbLevel = Mathf.Clamp(reverbLevel, -10000f, 2000f));</remarks>
         public void ApplyFilter<FilterT>(Action<FilterT> configure) where FilterT : Behaviour
         {
-            Log.Safe($"ApplyFilters:{typeof(FilterT).Name}");
+            Log.Safe($"ApplyFilter実行:{typeof(FilterT).Name}");
             if (filterDict.TryGetValue(typeof(FilterT), out var component) == false)
             {
                 component = Listener.gameObject.AddComponent<FilterT>();
@@ -40,7 +40,7 @@ namespace SoundSystem
     
         public void DisableFilter<FilterT>() where FilterT : Behaviour
         {
-            Log.Safe($"DisableFilters:{typeof(FilterT).Name}");
+            Log.Safe($"DisableFilter実行:{typeof(FilterT).Name}");
             if (filterDict.TryGetValue(typeof(FilterT), out var component))
             {
                 var filter = component as FilterT;
