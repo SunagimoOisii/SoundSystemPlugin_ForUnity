@@ -6,7 +6,7 @@ namespace SoundSystem
     public interface ISoundLoader
     {
         UniTask<(bool success, AudioClip clip)> TryLoadClip(string resourceAddress);
-    
-        void UnloadClip(string resourceAddress);
+
+        void ReleaseClip(AudioClip clip);
     }
 }
