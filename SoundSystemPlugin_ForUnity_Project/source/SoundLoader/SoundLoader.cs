@@ -1,47 +1,50 @@
-using Cysharp.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.AddressableAssets;
-using UnityEngine.ResourceManagement.AsyncOperations;
-
-/// <summary>
-/// ƒTƒEƒ“ƒhƒŠƒ\[ƒX‚Ìƒ[ƒh,ƒAƒ“ƒ[ƒh‚ğ’S‚¤ƒNƒ‰ƒX<para></para>
-/// - Addressable‚ğ‰î‚µ‚ÄAudioClip‚ğ”ñ“¯Šú‚Éƒ[ƒh<para></para>
-/// - ƒ[ƒhŒ‹‰Ê‚ğƒLƒƒƒbƒVƒ…ŠÇ—ƒNƒ‰ƒX(ISoundCache)‚ÉˆÏ÷
-/// </summary>
-public class SoundLoader : ISoundLoader
+namespace SoundSystem
 {
-    private readonly ISoundCache cache;
-
-    public SoundLoader(ISoundCache cache)
+    using Cysharp.Threading.Tasks;
+    using UnityEngine;
+    using UnityEngine.AddressableAssets;
+    using UnityEngine.ResourceManagement.AsyncOperations;
+    
+    /// <summary>
+    /// TEh\[XÌƒ[h,A[hSNX<para></para>
+    /// - Addressableî‚µAudioClipñ“¯ŠÉƒ[h<para></para>
+    /// - [hÊ‚LbVÇ—NX(ISoundCache)ÉˆÏ
+    /// </summary>
+    public class SoundLoader : ISoundLoader
     {
-        this.cache = cache;
-    }
-
-    public async UniTask<(bool success, AudioClip clip)> TryLoadClip(string resourceAddress)
-    {
-        Log.Safe($"TryLoadClipÀs:{resourceAddress}");
-        var handle = Addressables.LoadAssetAsync<AudioClip>(resourceAddress);
-        var clip   = await handle.Task;
-
-        if (clip != null &&
-            handle.Status == AsyncOperationStatus.Succeeded)
+        private readonly ISoundCache cache;
+    
+        public SoundLoader(ISoundCache cache)
         {
-            cache.Add(resourceAddress, clip);
-            Log.Safe($"TryLoadClip¬Œ÷:{resourceAddress}");
-            return (success: true, clip);
+            this.cache = cache;
         }
-        else
+    
+        public async UniTask<(bool success, AudioClip clip)> TryLoadClip(string resourceAddress)
         {
-            Log.Error($"TryLoadClip¸”s:{resourceAddress},Status = {handle.Status}");
+            Log.Safe($"TryLoadClips:{resourceAddress}");
+            var handle = Addressables.LoadAssetAsync<AudioClip>(resourceAddress);
+            var clip   = await handle.Task;
+    
+            if (clip != null &&
+                handle.Status == AsyncOperationStatus.Succeeded)
+            {
+                cache.Add(resourceAddress, clip);
+                Log.Safe($"TryLoadClip:{resourceAddress}");
+                return (success: true, clip);
+            }
+            else
+            {
+                Log.Error($"TryLoadClips:{resourceAddress},Status = {handle.Status}");
+                cache.Remove(resourceAddress);
+                Addressables.Release(handle);
+                return (success: false, null);
+            }
+        }
+    
+        public void UnloadClip(string resourceAddress)
+        {
+            Log.Safe($"UnloadClips:{resourceAddress}");
             cache.Remove(resourceAddress);
-            Addressables.Release(handle);
-            return (success: false, null);
         }
-    }
-
-    public void UnloadClip(string resourceAddress)
-    {
-        Log.Safe($"UnloadClipÀs:{resourceAddress}");
-        cache.Remove(resourceAddress);
     }
 }

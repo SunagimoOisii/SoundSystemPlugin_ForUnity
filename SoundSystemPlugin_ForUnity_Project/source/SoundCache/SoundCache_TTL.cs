@@ -1,55 +1,58 @@
-using System.Collections.Generic;
-using UnityEngine;
-
-/// <summary>
-/// ƒTƒEƒ“ƒhƒŠƒ\[ƒX‚ÌƒLƒƒƒbƒVƒ…ŠÇ—‚ğ’S‚¤ƒNƒ‰ƒX<para></para>
-/// - “o˜^‚©‚çw’èŠÔ‚ğ’´‚¦‚½ƒŠƒ\[ƒX‚ğíœ‘ÎÛ‚Æ‚·‚é
-/// </summary>
-internal sealed class SoundCache_TTL : SoundCache_Base
+namespace SoundSystem
 {
-    private readonly float ttlSeconds;
-    private readonly Dictionary<string, float> registerTime = new();
-
-    public SoundCache_TTL(float ttlSeconds)
+    using System.Collections.Generic;
+    using UnityEngine;
+    
+    /// <summary>
+    /// TEh\[XÌƒLbVÇ—SNX<para></para>
+    /// - o^wèÔ‚ğ’´‚\[XíœÎÛ‚Æ‚
+    /// </summary>
+    internal sealed class SoundCache_TTL : SoundCache_Base
     {
-        this.ttlSeconds = ttlSeconds;
-    }
-
-    public override void Add(string resourceAddress, AudioClip clip)
-    {
-        base.Add(resourceAddress, clip);
-        registerTime[resourceAddress] = Time.time;
-    }
-
-    public override void Remove(string resourceAddress)
-    {
-        base.Remove(resourceAddress);
-        registerTime.Remove(resourceAddress);
-    }
-
-    public override void ClearAll()
-    {
-        base.ClearAll();
-        registerTime.Clear();
-    }
-
-    public override void Evict()
-    {
-        var currentTime = Time.time;
-        var toRemove = new List<string>();
-
-        Log.Safe($"EvictÀs:{toRemove.Count}Œíœ,ttl = {ttlSeconds}");
-        foreach (var entry in registerTime)
+        private readonly float ttlSeconds;
+        private readonly Dictionary<string, float> registerTime = new();
+    
+        public SoundCache_TTL(float ttlSeconds)
         {
-            if (currentTime - entry.Value > ttlSeconds)
-            {
-                toRemove.Add(entry.Key);
-            }
+            this.ttlSeconds = ttlSeconds;
         }
-
-        foreach (var key in toRemove)
+    
+        public override void Add(string resourceAddress, AudioClip clip)
         {
-            Remove(key);
+            base.Add(resourceAddress, clip);
+            registerTime[resourceAddress] = Time.time;
+        }
+    
+        public override void Remove(string resourceAddress)
+        {
+            base.Remove(resourceAddress);
+            registerTime.Remove(resourceAddress);
+        }
+    
+        public override void ClearAll()
+        {
+            base.ClearAll();
+            registerTime.Clear();
+        }
+    
+        public override void Evict()
+        {
+            var currentTime = Time.time;
+            var toRemove = new List<string>();
+    
+            Log.Safe($"Evicts:{toRemove.Count}íœ,ttl = {ttlSeconds}");
+            foreach (var entry in registerTime)
+            {
+                if (currentTime - entry.Value > ttlSeconds)
+                {
+                    toRemove.Add(entry.Key);
+                }
+            }
+    
+            foreach (var key in toRemove)
+            {
+                Remove(key);
+            }
         }
     }
 }

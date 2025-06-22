@@ -1,28 +1,31 @@
-using System;
-using UnityEngine.Audio;
-
-/// <summary>
-/// IAudioSourcePoolƒCƒ“ƒXƒ^ƒ“ƒX‚ğ¶¬‚·‚éƒtƒ@ƒNƒgƒŠ[ƒNƒ‰ƒX
-/// </summary>
-public static class AudioSourcePoolFactory
+namespace SoundSystem
 {
-    public enum PoolType
-    {
-        FIFO,
-        Strict
-    }
-
+    using System;
+    using UnityEngine.Audio;
+    
     /// <summary>
-    /// w’èƒv[ƒ‹ŠÇ—•û®‚É‰‚¶‚½IAudioSourcePoolƒCƒ“ƒXƒ^ƒ“ƒX‚ğ¶¬‚·‚é
+    /// IAudioSourcePoolCX^Xğ¶t@Ng[NX
     /// </summary>
-    public static IAudioSourcePool Create(AudioMixerGroup seMixerG,
-        int initSize, int maxSize, PoolType type = PoolType.FIFO)
+    public static class AudioSourcePoolFactory
     {
-        return type switch
+        public enum PoolType
         {
-            PoolType.FIFO   => new AudioSourcePool_FIFO(seMixerG, initSize, maxSize),
-            PoolType.Strict => new AudioSourcePool_Strict(seMixerG, initSize, maxSize),
-            _ => throw new ArgumentOutOfRangeException(nameof(type)),
-        };
+            FIFO,
+            Strict
+        }
+    
+        /// <summary>
+        /// wv[Ç—É‰IAudioSourcePoolCX^Xğ¶
+        /// </summary>
+        public static IAudioSourcePool Create(AudioMixerGroup seMixerG,
+            int initSize, int maxSize, PoolType type = PoolType.FIFO)
+        {
+            return type switch
+            {
+                PoolType.FIFO   => new AudioSourcePool_FIFO(seMixerG, initSize, maxSize),
+                PoolType.Strict => new AudioSourcePool_Strict(seMixerG, initSize, maxSize),
+                _ => throw new ArgumentOutOfRangeException(nameof(type)),
+            };
+        }
     }
 }

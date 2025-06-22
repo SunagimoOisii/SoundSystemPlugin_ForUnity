@@ -1,65 +1,68 @@
-using System.Collections.Generic;
-using UnityEngine;
-
-/// <summary>
-/// ƒTƒEƒ“ƒhƒŠƒ\[ƒX‚ÌƒLƒƒƒbƒVƒ…ŠÇ—‚ğ’S‚¤ƒNƒ‰ƒX<para></para>
-/// - ÅIƒAƒNƒZƒXŠÔ‚ÉŠî‚Ã‚«Aw’èŠÔ–¢g—p‚ÌƒŠƒ\[ƒX‚ğíœ‘ÎÛ‚Æ‚·‚é
-/// </summary>
-internal sealed class SoundCache_LRU : SoundCache_Base
+namespace SoundSystem
 {
-    private readonly float idleTimeThreshold;
-    private readonly Dictionary<string, float> lastAccessTime = new();
-
-    public SoundCache_LRU(float idleTimeThreshold)
+    using System.Collections.Generic;
+    using UnityEngine;
+    
+    /// <summary>
+    /// TEh\[XÌƒLbVÇ—SNX<para></para>
+    /// - ÅIANZXÔ‚ÉŠÃ‚AwèÔ–gpÌƒ\[XíœÎÛ‚Æ‚
+    /// </summary>
+    internal sealed class SoundCache_LRU : SoundCache_Base
     {
-        this.idleTimeThreshold = idleTimeThreshold;
-    }
-
-    public override AudioClip Retrieve(string resourceAddress)
-    {
-        var clip = base.Retrieve(resourceAddress);
-        if (clip != null)
+        private readonly float idleTimeThreshold;
+        private readonly Dictionary<string, float> lastAccessTime = new();
+    
+        public SoundCache_LRU(float idleTimeThreshold)
         {
+            this.idleTimeThreshold = idleTimeThreshold;
+        }
+    
+        public override AudioClip Retrieve(string resourceAddress)
+        {
+            var clip = base.Retrieve(resourceAddress);
+            if (clip != null)
+            {
+                lastAccessTime[resourceAddress] = Time.time;
+            }
+            return clip;
+        }
+    
+        public override void Add(string resourceAddress, AudioClip clip)
+        {
+            base.Add(resourceAddress, clip);
             lastAccessTime[resourceAddress] = Time.time;
         }
-        return clip;
-    }
-
-    public override void Add(string resourceAddress, AudioClip clip)
-    {
-        base.Add(resourceAddress, clip);
-        lastAccessTime[resourceAddress] = Time.time;
-    }
-
-    public override void Remove(string resourceAddress)
-    {
-        base.Remove(resourceAddress);
-        lastAccessTime.Remove(resourceAddress);
-    }
-
-    public override void ClearAll()
-    {
-        base.ClearAll();
-        lastAccessTime.Clear();
-    }
-
-    public override void Evict()
-    {
-        var currentTime = Time.time;
-        var toRemove = new List<string>();
-
-        Log.Safe($"EvictÀs:{toRemove.Count}Œíœ,idle = {idleTimeThreshold}");
-        foreach (var entry in lastAccessTime)
+    
+        public override void Remove(string resourceAddress)
         {
-            if (currentTime - entry.Value > idleTimeThreshold)
-            {
-                toRemove.Add(entry.Key);
-            }
+            base.Remove(resourceAddress);
+            lastAccessTime.Remove(resourceAddress);
         }
-
-        foreach (var key in toRemove)
+    
+        public override void ClearAll()
         {
-            Remove(key);
+            base.ClearAll();
+            lastAccessTime.Clear();
+        }
+    
+        public override void Evict()
+        {
+            var currentTime = Time.time;
+            var toRemove = new List<string>();
+    
+            Log.Safe($"Evicts:{toRemove.Count}íœ,idle = {idleTimeThreshold}");
+            foreach (var entry in lastAccessTime)
+            {
+                if (currentTime - entry.Value > idleTimeThreshold)
+                {
+                    toRemove.Add(entry.Key);
+                }
+            }
+    
+            foreach (var key in toRemove)
+            {
+                Remove(key);
+            }
         }
     }
 }

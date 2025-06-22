@@ -1,56 +1,59 @@
-using UnityEngine;
-using System;
-using System.Collections.Generic;
-
-/// <summary>
-/// SoundSystem‚ª‘€ì‚·‚éƒNƒ‰ƒX‚Ì‚P‚Â<para></para>
-/// AudioListener‚ÉƒGƒtƒFƒNƒgƒtƒBƒ‹ƒ^[‚ğ“®“I‚É’Ç‰Á‚µ§Œä‚ğs‚¤
-/// (ƒGƒtƒFƒNƒgƒtƒBƒ‹ƒ^[‚Æ‚ÍAudioReverbFilter‚âAudioEchoFilter‚È‚Ç‚ÅA
-/// –{ƒNƒ‰ƒX‚Å‚ÍBehaviourƒNƒ‰ƒX‚ğŠî’êŒ^‚Æ‚µ‚Ä“ˆê“I‚Éˆµ‚¤)
-/// </summary>
-internal sealed class ListenerEffector
+namespace SoundSystem
 {
-    public AudioListener Listener { private get; set; }
-
-    private readonly Dictionary<Type, Component> filterDict = new();
-
-    public ListenerEffector(AudioListener l)
+    using UnityEngine;
+    using System;
+    using System.Collections.Generic;
+    
+    /// <summary>
+    /// SoundSystemì‚·NXÌ‚P<para></para>
+    /// AudioListenerÉƒGtFNgtB^[ğ“®“IÉ’Ç‰s
+    /// (GtFNgtB^[Æ‚AudioReverbFilterAudioEchoFilterÈ‚Ç‚ÅA
+    /// {NXÅ‚BehaviourNX^Æ‚Ä“IÉˆ)
+    /// </summary>
+    internal sealed class ListenerEffector
     {
-        Listener = l;
-    }
-
-    /// <typeparam name="FilterT">“K—p‚·‚éƒtƒBƒ‹ƒ^[‚ÌŒ^</typeparam>
-    /// <param name="configure">ƒtƒBƒ‹ƒ^[‚Ìİ’è‚ğs‚¤ƒAƒNƒVƒ‡ƒ“</param>
-    /// <remarks>g—p—á: effector.ApplyFilter<AudioReverbFilter>(filter => filter.reverbLevel = Mathf.Clamp(reverbLevel, -10000f, 2000f));</remarks>
-    public void ApplyFilter<FilterT>(Action<FilterT> configure) where FilterT : Behaviour
-    {
-        Log.Safe($"ApplyFilterÀs:{typeof(FilterT).Name}");
-        if (filterDict.TryGetValue(typeof(FilterT), out var component) == false)
+        public AudioListener Listener { private get; set; }
+    
+        private readonly Dictionary<Type, Component> filterDict = new();
+    
+        public ListenerEffector(AudioListener l)
         {
-            component = Listener.gameObject.AddComponent<FilterT>();
-            filterDict[typeof(FilterT)] = component;
+            Listener = l;
         }
-
-        var filter = component as FilterT;
-        filter.enabled = true;
-        configure?.Invoke(filter);
-    }
-
-    public void DisableFilter<FilterT>() where FilterT : Behaviour
-    {
-        Log.Safe($"DisableFilterÀs:{typeof(FilterT).Name}");
-        if (filterDict.TryGetValue(typeof(FilterT), out var component))
+    
+        /// <typeparam name="FilterT">KptB^[ÌŒ^</typeparam>
+        /// <param name="configure">tB^[Ìİ’sANV</param>
+        /// <remarks>gp: effector.ApplyFilter<AudioReverbFilter>(filter => filter.reverbLevel = Mathf.Clamp(reverbLevel, -10000f, 2000f));</remarks>
+        public void ApplyFilter<FilterT>(Action<FilterT> configure) where FilterT : Behaviour
         {
+            Log.Safe($"ApplyFilters:{typeof(FilterT).Name}");
+            if (filterDict.TryGetValue(typeof(FilterT), out var component) == false)
+            {
+                component = Listener.gameObject.AddComponent<FilterT>();
+                filterDict[typeof(FilterT)] = component;
+            }
+    
             var filter = component as FilterT;
-            filter.enabled = false;
+            filter.enabled = true;
+            configure?.Invoke(filter);
         }
-    }
-
-    public void DisableAllFilters()
-    {
-        foreach (var filter in filterDict.Values)
+    
+        public void DisableFilter<FilterT>() where FilterT : Behaviour
         {
-            if (filter is Behaviour b) b.enabled = false;
+            Log.Safe($"DisableFilters:{typeof(FilterT).Name}");
+            if (filterDict.TryGetValue(typeof(FilterT), out var component))
+            {
+                var filter = component as FilterT;
+                filter.enabled = false;
+            }
+        }
+    
+        public void DisableAllFilters()
+        {
+            foreach (var filter in filterDict.Values)
+            {
+                if (filter is Behaviour b) b.enabled = false;
+            }
         }
     }
 }

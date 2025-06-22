@@ -1,46 +1,49 @@
-using UnityEngine;
-using UnityEngine.Audio;
-
-/// <summary>
-/// SEŒü‚¯‚ÉAudioSource‚ğƒv[ƒ‹‚ÅŠÇ—‚·‚éƒNƒ‰ƒX<para></para>
-/// - –¢g—p‚ÌAudioSource‚ª‚ ‚ê‚Î‚»‚ê‚ğ•Ô‚·<para></para>
-/// - ‘S‚Äg—p’†‚ÅÅ‘åƒTƒCƒY–¢–‚È‚çV‹Kì¬‚µ‚½‚à‚Ì‚ğ•Ô‚·<para></para>
-/// - ‘S‚Äg—p’†‚ÅÅ‘åƒTƒCƒY‚È‚çnull‚ğ•Ô‚·
-/// </summary>
-internal sealed class AudioSourcePool_Strict : AudioSourcePool_Base
+namespace SoundSystem
 {
-    public AudioSourcePool_Strict(AudioMixerGroup mixerG, int initSize,
-        int maxSize)
-        : base(mixerG, initSize, maxSize)
+    using UnityEngine;
+    using UnityEngine.Audio;
+    
+    /// <summary>
+    /// SEAudioSourcev[ÅŠÇ—NX<para></para>
+    /// - gpAudioSourceÎ‚Ô‚<para></para>
+    /// - SÄgpÅÅ‘TCYÈ‚VKì¬Ì‚Ô‚<para></para>
+    /// - SÄgpÅÅ‘TCYÈ‚nullÔ‚
+    /// </summary>
+    internal sealed class AudioSourcePool_Strict : AudioSourcePool_Base
     {
-    }
-
-    public override AudioSource Retrieve()
-    {
-        Log.Safe("RetrieveÀs");
-
-        //–¢g—p‚ÌAudioSource‚ª‚ ‚ê‚ÎA‚»‚ê‚ğ•Ô‚·
-        for (int i = 0; i < pool.Count; i++)
+        public AudioSourcePool_Strict(AudioMixerGroup mixerG, int initSize,
+            int maxSize)
+            : base(mixerG, initSize, maxSize)
         {
-            var source = pool.Dequeue();
-            if (source.isPlaying == false)
+        }
+    
+        public override AudioSource Retrieve()
+        {
+            Log.Safe("Retrieves");
+    
+            //gpAudioSourceÎAÔ‚
+            for (int i = 0; i < pool.Count; i++)
             {
+                var source = pool.Dequeue();
+                if (source.isPlaying == false)
+                {
+                    pool.Enqueue(source);
+                    return source;
+                }
+    
                 pool.Enqueue(source);
-                return source;
             }
-
-            pool.Enqueue(source);
+    
+            //v[Å‘TCYÈ‚VKì¬Ì‚Ô‚
+            if (pool.Count < maxSize)
+            {
+                var created = CreateSourceWithOwnerGameObject();
+                pool.Enqueue(created);
+                return created;
+            }
+    
+            //Å‘TCYÅ‘SÄgpÈ‚null
+            return null;
         }
-
-        //ƒv[ƒ‹‚ªÅ‘åƒTƒCƒY–¢–‚È‚çV‹Kì¬‚µ‚½‚à‚Ì‚ğ•Ô‚·
-        if (pool.Count < maxSize)
-        {
-            var created = CreateSourceWithOwnerGameObject();
-            pool.Enqueue(created);
-            return created;
-        }
-
-        //Å‘åƒTƒCƒY‚Å‘S‚Äg—p’†‚È‚çnull
-        return null;
     }
 }

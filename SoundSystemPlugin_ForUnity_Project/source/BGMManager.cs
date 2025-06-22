@@ -1,227 +1,230 @@
-using System;
-using UnityEngine;
-using Cysharp.Threading.Tasks;
-using UnityEngine.Audio;
-using System.Threading;
-
-/// <summary>
-/// BGMÇÃçƒê∂ÅAí‚é~ÅAÉtÉFÅ[Éhã@î\ÇíÒãüÇ∑ÇÈÉNÉâÉX<para></para>
-/// </summary>
-internal sealed class BGMManager
+namespace SoundSystem
 {
-    private readonly ISoundLoader loader;
-
-    private readonly GameObject sourceRoot = null;
-    private (AudioSource active, AudioSource inactive) bgmSources;
-
-    private CancellationTokenSource fadeCTS;
-    private string currentBGMAddress;
-
-    private enum BGMState
+    using System;
+    using UnityEngine;
+    using Cysharp.Threading.Tasks;
+    using UnityEngine.Audio;
+    using System.Threading;
+    
+    /// <summary>
+    /// BGMÃçƒêA~AtF[h@\ÒãüÇNX<para></para>
+    /// </summary>
+    internal sealed class BGMManager
     {
-        Idle,
-        Play,
-        Pause,
-        FadeIn,
-        FadeOut,
-        CrossFade
-    }
-    private BGMState State { get; set; } = BGMState.Idle;
-
-    /// <param name="mixerGroup">BGMèoóÕêÊÇÃAudioMixerGroup</param>
-    public BGMManager(AudioMixerGroup mixerGroup, ISoundLoader loader)
-    {
-        this.loader = loader;
-
-        //BGMêÍópAudioSourceÇ∆ÇªÇÍÇ™ÉAÉ^ÉbÉ`Ç≥ÇÍÇΩGameObjectÇçÏê¨
-        sourceRoot = new("BGM_AudioSources");
-        bgmSources = 
-        (
-            CreateSourceObj("BGMSource_0"),
-            CreateSourceObj("BGMSource_1")
-        );
-
-        AudioSource CreateSourceObj(string name)
+        private readonly ISoundLoader loader;
+    
+        private readonly GameObject sourceRoot = null;
+        private (AudioSource active, AudioSource inactive) bgmSources;
+    
+        private CancellationTokenSource fadeCTS;
+        private string currentBGMAddress;
+    
+        private enum BGMState
         {
-            var obj = new GameObject(name);
-            obj.transform.parent = sourceRoot.transform;
-
-            var source = obj.AddComponent<AudioSource>();
-            source.loop                  = true;
-            source.playOnAwake           = false;
-            source.outputAudioMixerGroup = mixerGroup;
-            return source;
+            Idle,
+            Play,
+            Pause,
+            FadeIn,
+            FadeOut,
+            CrossFade
         }
-    }
-
-    /// <param name="volume">âπó (îÕàÕ: 0.0Å`1.0)</param>
-    public async UniTask Play(string resourceAddress, float volume)
-    {
-        var (success, clip) = await loader.TryLoadClip(resourceAddress);
-        if (success == false)
+        private BGMState State { get; set; } = BGMState.Idle;
+    
+        /// <param name="mixerGroup">BGMoÕêAudioMixerGroup</param>
+        public BGMManager(AudioMixerGroup mixerGroup, ISoundLoader loader)
         {
-            Log.Error($"Playé∏îs:ÉäÉ\Å[ÉXì«çûÇ…é∏îs,{resourceAddress}");
-            return;
-        }
-
-        State = BGMState.Play;
-        bgmSources.active.clip   = clip;
-        bgmSources.active.volume = volume;
-        bgmSources.active.Play();
-        Log.Safe($"Playê¨å˜:{resourceAddress},vol = {volume}");
-    }
-
-    public void Stop()
-    {
-        Log.Safe("Stopé¿çs");
-        State = BGMState.Idle;
-        bgmSources.active.Stop();
-        bgmSources.active.clip = null;
-    }
-
-    public void Resume()
-    {
-        Log.Safe("Resumeé¿çs");
-
-        if (State != BGMState.Pause)
-        {
-            Log.Warn($"ResumeíÜíf:PauseÉXÉeÅ[Égà»äOÇ≈ÇÕé¿çsïsâ¬");
-            return;
-        }
-
-        State = BGMState.Play;
-        bgmSources.active.UnPause();
-    }
-
-    public void Pause()
-    {
-        Log.Safe($"Pauseé¿çs");
-        State = BGMState.Pause;
-        bgmSources.active.Pause();
-    }
-
-    /// <param name="volume">ñ⁄ïWâπó (îÕàÕ: 0.0Å`1.0)</param>
-    public async UniTask FadeIn(string resourceAddress, float duration, float volume)
-    {
-        Log.Safe($"FadeIné¿çs:{resourceAddress},dura = {duration},vol = {volume}");
-
-        if (State == BGMState.Play || 
-            State == BGMState.CrossFade)
-        {
-            Log.Warn($"FadeIníÜíf:ÉXÉeÅ[ÉgÇÃïsàÍív,State = {State}");
-            return;
-        }
-
-        var (success, clip) = await loader.TryLoadClip(resourceAddress);
-        if (success == false)
-        {
-            Log.Error($"FadeIné∏îs:ÉäÉ\Å[ÉXì«çûÇ…é∏îs,{resourceAddress}");
-            return;
-        }
-        bgmSources.active.clip   = clip;
-        bgmSources.active.volume = 0;
-        bgmSources.active.Play();
-
-        State = BGMState.FadeIn;
-        await ExecuteVolumeTransition(
-            duration,
-            progressRate => bgmSources.active.volume = Mathf.Lerp(0f, volume, progressRate)
+            this.loader = loader;
+    
+            //BGMpAudioSource∆ÇÍÇ™A^b`ÍÇΩGameObjectÏê¨
+            sourceRoot = new("BGM_AudioSources");
+            bgmSources = 
+            (
+                CreateSourceObj("BGMSource_0"),
+                CreateSourceObj("BGMSource_1")
             );
-        Log.Safe($"FadeInèIóπ:{resourceAddress},dura = {duration},vol = {volume}");
-    }
-
-    public async UniTask FadeOut(float duration)
-    {
-        Log.Safe($"FadeOuté¿çs:dura = {duration}");
-
-        if (State != BGMState.Play)
-        {
-            Log.Warn($"FadeOutíÜíf:ÉXÉeÅ[ÉgÇÃïsàÍív,State = {State}");
-            return;
-        }
-        State = BGMState.FadeOut;
-
-        float startVol = bgmSources.active.volume;
-        await ExecuteVolumeTransition(
-            duration,
-            progressRate => bgmSources.active.volume = Mathf.Lerp(startVol, 0.0f, progressRate)
-            );
-
-        bgmSources.active.Stop();
-        bgmSources.active.clip = null;
-        Log.Safe($"FadeOutèIóπ:dura = {duration}");
-    }
-
-    public async UniTask CrossFade(string resourceAddress, float duration)
-    {
-        Log.Safe($"CrossFadeé¿çs:{resourceAddress}");
-
-        if (resourceAddress == currentBGMAddress)
-        {
-            Log.Warn($"CrossFadeíÜíf:ìØBGM {resourceAddress} Ç™éwíËÇ≥ÇÍÇΩÇΩÇﬂíÜíf");
-            State = BGMState.Idle;
-            return;
-        }
-
-        var (success, clip) = await loader.TryLoadClip(resourceAddress);
-        if (success == false)
-        {
-            Log.Error($"CrossFadeé∏îs:ÉäÉ\Å[ÉXì«çûÇ…é∏îs,{resourceAddress}");
-            return;
-        }
-        bgmSources.inactive.clip   = clip;
-        bgmSources.inactive.volume = 0f;
-        bgmSources.inactive.Play();
-
-        await ExecuteVolumeTransition(
-            duration,
-            progressRate =>
+    
+            AudioSource CreateSourceObj(string name)
             {
-                bgmSources.active.volume   = Mathf.Lerp(1f, 0f, progressRate);
-                bgmSources.inactive.volume = Mathf.Lerp(0f, 1f, progressRate);
-            },
-            () => //onComplete
-            {
-                bgmSources.active.Stop();
-                bgmSources = (bgmSources.inactive, bgmSources.active);
-                currentBGMAddress = resourceAddress;
-            });
-        Log.Safe($"CrossFadeèIóπ:{resourceAddress}");
-    }
-
-    private async UniTask ExecuteVolumeTransition(float duration, Action<float> onProgress,
-        Action onComplete = null)
-    {
-        //ä˘Ç…ÉtÉFÅ[ÉhèàóùÇ™çsÇÌÇÍÇƒÇ¢ÇΩèÍçáÇÕè„èëÇ´
-        fadeCTS?.Cancel();
-        fadeCTS?.Dispose();
-        fadeCTS = new();
-        var token = fadeCTS.Token;
-
-        try //ÉtÉFÅ[Éhé¿çs
-        {
-            float elapsed = 0f;
-            while (elapsed < duration)
-            {
-                if (token.IsCancellationRequested) return;
-
-                float t = elapsed / duration;
-                onProgress(t);
-
-                elapsed += Time.deltaTime;
-                await UniTask.Yield();
+                var obj = new GameObject(name);
+                obj.transform.parent = sourceRoot.transform;
+    
+                var source = obj.AddComponent<AudioSource>();
+                source.loop                  = true;
+                source.playOnAwake           = false;
+                source.outputAudioMixerGroup = mixerGroup;
+                return source;
             }
-
-            onProgress(1.0f);
-            onComplete?.Invoke();
         }
-        catch (OperationCanceledException)
+    
+        /// <param name="volume">(Õà: 0.0`1.0)</param>
+        public async UniTask Play(string resourceAddress, float volume)
         {
-            Log.Safe("ExecuteVolumeTransitioníÜíf:OperationCanceledException");
+            var (success, clip) = await loader.TryLoadClip(resourceAddress);
+            if (success == false)
+            {
+                Log.Error($"Plays:\[X«ç…és,{resourceAddress}");
+                return;
+            }
+    
+            State = BGMState.Play;
+            bgmSources.active.clip   = clip;
+            bgmSources.active.volume = volume;
+            bgmSources.active.Play();
+            Log.Safe($"Play:{resourceAddress},vol = {volume}");
         }
-        finally
+    
+        public void Stop()
         {
+            Log.Safe("Stops");
             State = BGMState.Idle;
+            bgmSources.active.Stop();
+            bgmSources.active.clip = null;
+        }
+    
+        public void Resume()
+        {
+            Log.Safe("Resumes");
+    
+            if (State != BGMState.Pause)
+            {
+                Log.Warn($"Resumef:PauseXe[g»äO≈ÇÕéss");
+                return;
+            }
+    
+            State = BGMState.Play;
+            bgmSources.active.UnPause();
+        }
+    
+        public void Pause()
+        {
+            Log.Safe($"Pauses");
+            State = BGMState.Pause;
+            bgmSources.active.Pause();
+        }
+    
+        /// <param name="volume">⁄ïW(Õà: 0.0`1.0)</param>
+        public async UniTask FadeIn(string resourceAddress, float duration, float volume)
+        {
+            Log.Safe($"FadeIns:{resourceAddress},dura = {duration},vol = {volume}");
+    
+            if (State == BGMState.Play || 
+                State == BGMState.CrossFade)
+            {
+                Log.Warn($"FadeInf:Xe[gÃïsv,State = {State}");
+                return;
+            }
+    
+            var (success, clip) = await loader.TryLoadClip(resourceAddress);
+            if (success == false)
+            {
+                Log.Error($"FadeIns:\[X«ç…és,{resourceAddress}");
+                return;
+            }
+            bgmSources.active.clip   = clip;
+            bgmSources.active.volume = 0;
+            bgmSources.active.Play();
+    
+            State = BGMState.FadeIn;
+            await ExecuteVolumeTransition(
+                duration,
+                progressRate => bgmSources.active.volume = Mathf.Lerp(0f, volume, progressRate)
+                );
+            Log.Safe($"FadeInI:{resourceAddress},dura = {duration},vol = {volume}");
+        }
+    
+        public async UniTask FadeOut(float duration)
+        {
+            Log.Safe($"FadeOuts:dura = {duration}");
+    
+            if (State != BGMState.Play)
+            {
+                Log.Warn($"FadeOutf:Xe[gÃïsv,State = {State}");
+                return;
+            }
+            State = BGMState.FadeOut;
+    
+            float startVol = bgmSources.active.volume;
+            await ExecuteVolumeTransition(
+                duration,
+                progressRate => bgmSources.active.volume = Mathf.Lerp(startVol, 0.0f, progressRate)
+                );
+    
+            bgmSources.active.Stop();
+            bgmSources.active.clip = null;
+            Log.Safe($"FadeOutI:dura = {duration}");
+        }
+    
+        public async UniTask CrossFade(string resourceAddress, float duration)
+        {
+            Log.Safe($"CrossFades:{resourceAddress}");
+    
+            if (resourceAddress == currentBGMAddress)
+            {
+                Log.Warn($"CrossFadef:BGM {resourceAddress} wËÇ≥ÍÇΩﬂíf");
+                State = BGMState.Idle;
+                return;
+            }
+    
+            var (success, clip) = await loader.TryLoadClip(resourceAddress);
+            if (success == false)
+            {
+                Log.Error($"CrossFades:\[X«ç…és,{resourceAddress}");
+                return;
+            }
+            bgmSources.inactive.clip   = clip;
+            bgmSources.inactive.volume = 0f;
+            bgmSources.inactive.Play();
+    
+            await ExecuteVolumeTransition(
+                duration,
+                progressRate =>
+                {
+                    bgmSources.active.volume   = Mathf.Lerp(1f, 0f, progressRate);
+                    bgmSources.inactive.volume = Mathf.Lerp(0f, 1f, progressRate);
+                },
+                () => //onComplete
+                {
+                    bgmSources.active.Stop();
+                    bgmSources = (bgmSources.inactive, bgmSources.active);
+                    currentBGMAddress = resourceAddress;
+                });
+            Log.Safe($"CrossFadeI:{resourceAddress}");
+        }
+    
+        private async UniTask ExecuteVolumeTransition(float duration, Action<float> onProgress,
+            Action onComplete = null)
+        {
+            //…ÉtF[hsƒÇÍçáÕè„èë
+            fadeCTS?.Cancel();
+            fadeCTS?.Dispose();
+            fadeCTS = new();
+            var token = fadeCTS.Token;
+    
+            try //tF[hs
+            {
+                float elapsed = 0f;
+                while (elapsed < duration)
+                {
+                    if (token.IsCancellationRequested) return;
+    
+                    float t = elapsed / duration;
+                    onProgress(t);
+    
+                    elapsed += Time.deltaTime;
+                    await UniTask.Yield();
+                }
+    
+                onProgress(1.0f);
+                onComplete?.Invoke();
+            }
+            catch (OperationCanceledException)
+            {
+                Log.Safe("ExecuteVolumeTransitionf:OperationCanceledException");
+            }
+            finally
+            {
+                State = BGMState.Idle;
+            }
         }
     }
 }

@@ -1,40 +1,43 @@
-using System;
-using System.Collections.Generic;
-
-/// <summary>
-/// ƒTƒEƒ“ƒhƒŠƒ\[ƒX‚ÌƒLƒƒƒbƒVƒ…ŠÇ—‚ğ’S‚¤ƒNƒ‰ƒX<para></para>
-/// - ƒLƒƒƒbƒVƒ…”‚ÌãŒÀ‚ğ’´‚¦‚½ê‡Aƒ‰ƒ“ƒ_ƒ€‚ÉƒŠƒ\[ƒX‚ğ‘I‘ğ‚µ‚Äíœ‚ğs‚¤
-/// </summary>
-internal sealed class SoundCache_Random : SoundCache_Base
+namespace SoundSystem
 {
-    private readonly int maxCacheCount;
-    private readonly Random random = new();
-
-    public SoundCache_Random(int maxCacheCount)
+    using System;
+    using System.Collections.Generic;
+    
+    /// <summary>
+    /// TEh\[XÌƒLbVÇ—SNX<para></para>
+    /// - LbVÌğ’´‚ê‡A_Éƒ\[XIÄíœs
+    /// </summary>
+    internal sealed class SoundCache_Random : SoundCache_Base
     {
-        this.maxCacheCount = maxCacheCount;
-    }
-
-    public override void Evict()
-    {
-        if (cache.Count <= maxCacheCount)
+        private readonly int maxCacheCount;
+        private readonly Random random = new();
+    
+        public SoundCache_Random(int maxCacheCount)
         {
-            return;
+            this.maxCacheCount = maxCacheCount;
         }
-
-        int excessCount = cache.Count - maxCacheCount;
-        var keys        = new List<string>(cache.Keys);
-
-        Log.Safe($"EvictÀs:{excessCount}Œíœ,max = {maxCacheCount}");
-        for (int i = 0; i < excessCount; i++)
+    
+        public override void Evict()
         {
-            if (keys.Count == 0) break;
-
-            int randomIndex  = random.Next(keys.Count);
-            string randomKey = keys[randomIndex];
-
-            Remove(randomKey);
-            keys.RemoveAt(randomIndex);
+            if (cache.Count <= maxCacheCount)
+            {
+                return;
+            }
+    
+            int excessCount = cache.Count - maxCacheCount;
+            var keys        = new List<string>(cache.Keys);
+    
+            Log.Safe($"Evicts:{excessCount}íœ,max = {maxCacheCount}");
+            for (int i = 0; i < excessCount; i++)
+            {
+                if (keys.Count == 0) break;
+    
+                int randomIndex  = random.Next(keys.Count);
+                string randomKey = keys[randomIndex];
+    
+                Remove(randomKey);
+                keys.RemoveAt(randomIndex);
+            }
         }
     }
 }

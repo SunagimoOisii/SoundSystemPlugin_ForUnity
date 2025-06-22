@@ -1,9 +1,12 @@
-using Cysharp.Threading.Tasks;
-using UnityEngine;
-
-public interface ISoundLoader
+namespace SoundSystem
 {
-    UniTask<(bool success, AudioClip clip)> TryLoadClip(string resourceAddress);
-
-    void UnloadClip(string resourceAddress);
+    using Cysharp.Threading.Tasks;
+    using UnityEngine;
+    
+    public interface ISoundLoader
+    {
+        UniTask<(bool success, AudioClip clip)> TryLoadClip(string resourceAddress);
+    
+        void UnloadClip(string resourceAddress);
+    }
 }
