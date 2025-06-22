@@ -119,7 +119,7 @@ SoundSystemPreset -->|SEプリセット保持| SerializedSESettingDictionary
 
 ```csharp
 //手動構成の例
-var cache = SoundCacheFactory.Create(SoundCacheType.LRU, 30f);
+var cache = SoundCacheFactory.CreateLRU(30f);
 var pool  = AudioSourcePoolFactory.CreateOldestReuse(mixerGroup, 8, 32);
 var soundSystem = new SoundSystem(
     cache,
@@ -131,6 +131,7 @@ var soundSystem = new SoundSystem(
 //プリセットから生成
 var soundSystem = SoundSystem.CreateFromPreset(
     preset,
+    cache,
     pool,
     mixer,
     mixerGroup,
