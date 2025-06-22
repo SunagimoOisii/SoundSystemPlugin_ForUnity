@@ -18,7 +18,7 @@ namespace SoundSystem
             return type switch
             {
 #if USE_ADDRESSABLES
-                LoaderType.Addressables => new SoundLoader_Addressables(cache),
+                Type.Addressables => new SoundLoader_Addressables(cache),
 #endif
                 Type.Resources    => new SoundLoader_Resources(cache),
                 _ => throw new ArgumentOutOfRangeException(nameof(type))

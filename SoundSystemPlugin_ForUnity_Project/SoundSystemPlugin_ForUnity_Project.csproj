@@ -17,8 +17,17 @@
     <Reference Include="Unity.ResourceManager">
       <HintPath>ref\Unity.ResourceManager.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>ref\UnityEngine.dll</HintPath>
+    <Reference Include="UnityEngine.AssetBundleModule">
+      <HintPath>ref\UnityEngine.AssetBundleModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>ref\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>ref\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestModule">
+      <HintPath>ref\UnityEngine.UnityWebRequestModule.dll</HintPath>
     </Reference>
   </ItemGroup>
 
