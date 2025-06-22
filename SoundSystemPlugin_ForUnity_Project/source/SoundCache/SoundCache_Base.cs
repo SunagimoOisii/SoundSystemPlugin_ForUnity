@@ -2,7 +2,6 @@ namespace SoundSystem
 {
     using System.Collections.Generic;
     using UnityEngine;
-    using UnityEngine.AddressableAssets;
     
     /// <summary>
     /// サウンドリソースのキャッシュ管理を担うクラスの基底クラス<para></para>

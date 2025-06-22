@@ -1,4 +1,4 @@
-#if SOUND_USE_ADDRESSABLES
+#if USE_ADDRESSABLES
 namespace SoundSystem
 {
     using Cysharp.Threading.Tasks;
