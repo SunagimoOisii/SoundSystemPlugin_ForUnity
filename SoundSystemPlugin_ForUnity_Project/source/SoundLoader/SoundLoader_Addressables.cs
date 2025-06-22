@@ -27,6 +27,15 @@ namespace SoundSystem
         public async UniTask<(bool success, AudioClip clip)> TryLoadClip(string resourceAddress)
         {
             Log.Safe($"TryLoadClip実行:{resourceAddress}");
+
+            // キャッシュを参照し、既に存在する場合はそれを返す
+            var cached = cache.Retrieve(resourceAddress);
+            if (cached != null)
+            {
+                Log.Safe($"TryLoadClip成功:CacheHit,{resourceAddress}");
+                return (success: true, cached);
+            }
+
             var handle = Addressables.LoadAssetAsync<AudioClip>(resourceAddress);
             var clip   = await handle.Task;
     
