@@ -7,7 +7,7 @@ namespace SoundSystem
     /// </summary>
     public static class SoundCacheFactory
     {
-        public enum SoundCacheType
+        public enum Type
         {
             LRU,
             TTL,
@@ -19,13 +19,13 @@ namespace SoundSystem
         /// </summary>
         /// <param name="param">方式に応じたパラメータ(秒数または最大数)</param>
         public static ISoundCache Create(float param,
-            SoundCacheType type = SoundCacheType.LRU)
+            Type type = Type.LRU)
         {
             return type switch
             {
-                SoundCacheType.LRU    => new SoundCache_LRU(idleTimeThreshold: param),
-                SoundCacheType.TTL    => new SoundCache_TTL(ttlSeconds: param),
-                SoundCacheType.Random => new SoundCache_Random(maxCacheCount: (int)param),
+                Type.LRU    => new SoundCache_LRU(idleTimeThreshold: param),
+                Type.TTL    => new SoundCache_TTL(ttlSeconds: param),
+                Type.Random => new SoundCache_Random(maxCacheCount: (int)param),
                 _ => throw new ArgumentOutOfRangeException(nameof(type)),
             };
         }

@@ -3,24 +3,24 @@ namespace SoundSystem
     using System;
 
     /// <summary>
-    /// ISoundLoader の生成を担うファクトリー
+    /// ISoundLoader インスタンスを生成するファクトリークラス
     /// </summary>
     public static class SoundLoaderFactory
     {
-        public enum LoaderType
+        public enum Type
         {
             Addressables,
             Resources
         }
 
-        public static ISoundLoader Create(ISoundCache cache, LoaderType type = LoaderType.Addressables)
+        public static ISoundLoader Create(ISoundCache cache, Type type = Type.Addressables)
         {
             return type switch
             {
-#if SOUND_USE_ADDRESSABLES
+#if USE_ADDRESSABLES
                 LoaderType.Addressables => new SoundLoader_Addressables(cache),
 #endif
-                LoaderType.Resources    => new SoundLoader_Resources(cache),
+                Type.Resources    => new SoundLoader_Resources(cache),
                 _ => throw new ArgumentOutOfRangeException(nameof(type))
             };
         }

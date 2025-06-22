@@ -32,7 +32,7 @@ namespace SoundSystem
         public SerializedSESettingDictionary sePresets = new();
     
         [Header("SoundCache設定")]
-        public SoundCacheFactory.SoundCacheType cacheType = SoundCacheFactory.SoundCacheType.LRU;
+        public SoundCacheFactory.Type cacheType = SoundCacheFactory.Type.LRU;
         public float param = 30f; //idleTimeThresholdやttlSecondsに使う
     }
 }
