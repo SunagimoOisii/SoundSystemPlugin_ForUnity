@@ -5,10 +5,12 @@ namespace SoundSystem
     
     public interface IAudioSourcePool
     {
+        IEnumerable<AudioSource> GetAllResources();
+
         AudioSource Retrieve();
     
         void Reinitialize();
-    
-        IEnumerable<AudioSource> GetAllResources();
+
+        void Destroy();
     }
 }

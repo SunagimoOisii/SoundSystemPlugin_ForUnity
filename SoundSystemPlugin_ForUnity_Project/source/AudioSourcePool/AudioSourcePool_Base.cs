@@ -17,7 +17,7 @@ namespace SoundSystem
         protected readonly int maxSize;
         protected readonly int initSize;
         public IEnumerable<AudioSource> GetAllResources() => pool;
-    
+
         public AudioSourcePool_Base(AudioMixerGroup mixerG, int initSize, int maxSize)
         {
             pool         = new();
@@ -33,10 +33,12 @@ namespace SoundSystem
                 pool.Enqueue(source);
             }
         }
+
+        public abstract AudioSource Retrieve();
     
         public void Reinitialize()
         {
-            Log.Safe("Reinitializes実行");
+            Log.Safe("Reinitialize実行");
     
             //プール内の要素を全て未使用にする
             foreach (var source in pool)
@@ -56,8 +58,16 @@ namespace SoundSystem
                 pool.Enqueue(CreateSourceWithOwnerGameObject());
             }
         }
-    
-        public abstract AudioSource Retrieve();
+
+        public void Destroy()
+        {
+            foreach(var source in pool)
+            {
+                Object.Destroy(source.gameObject);
+            }
+            pool.Clear();
+            Object.Destroy(sourceRoot);
+        }
     
         protected AudioSource CreateSourceWithOwnerGameObject()
         {
