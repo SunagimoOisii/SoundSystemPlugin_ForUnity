@@ -11,6 +11,12 @@ namespace SoundSystem
     internal abstract class SoundCache_Base : ISoundCache
     {
         protected readonly Dictionary<string, AudioClip> cache = new();
+        private ISoundLoader loader;
+
+        internal void SetLoader(ISoundLoader l)
+        {
+            loader = l;
+        }
     
         /// <summary>
         /// 指定リソースをキャッシュから取得する<para></para>
@@ -38,7 +44,7 @@ namespace SoundSystem
             if (cache.TryGetValue(resourceAddress, out var clip))
             {
                 Log.Safe($"Remove実行:{resourceAddress}");
-                Addressables.Release(clip);
+                loader?.ReleaseClip(clip);
                 cache.Remove(resourceAddress);
             }
         }
@@ -51,7 +57,7 @@ namespace SoundSystem
             Log.Safe("ClearAll実行");
             foreach (var clip in cache.Values)
             {
-                Addressables.Release(clip);
+                loader?.ReleaseClip(clip);
             }
             cache.Clear();
         }

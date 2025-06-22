@@ -36,7 +36,9 @@ ListenerEffector
 
 %% ローダ・キャッシュ
 ISoundLoader
-SoundLoader
+SoundLoader_Addressables
+SoundLoader_Resources
+SoundLoaderFactory
 ISoundCache
 SoundCache_Base
 SoundCache_LRU
@@ -55,9 +57,12 @@ SoundSystem -->|利用| BGMManager
 SoundSystem -->|利用| SEManager
 SoundSystem -->|利用| ListenerEffector
 SoundSystem -->|プリセット読込| SoundSystemPreset
-SoundSystem -->|生成| SoundLoader
-SoundLoader -->|依存| ISoundCache
-SoundLoader -->|間接依存| SoundCacheFactory
+SoundSystem -->|生成| SoundLoaderFactory
+SoundLoaderFactory -->|生成| SoundLoader_Addressables
+SoundLoaderFactory -->|生成| SoundLoader_Resources
+SoundLoader_Addressables -->|依存| ISoundCache
+SoundLoader_Resources -->|依存| ISoundCache
+SoundLoader_Addressables -->|間接依存| SoundCacheFactory
 BGMManager -->|利用| ISoundLoader
 SEManager -->|利用| ISoundLoader
 SEManager -->|利用| IAudioSourcePool
@@ -86,9 +91,9 @@ SoundSystemPreset -->|SEプリセット保持| SerializedSESettingDictionary
 - BGMは `FadeIn`, `FadeOut`, `CrossFade` に対応  
 - SEは `AudioSourcePool` による再利用・一時停止・一括停止に対応
 
-### SoundLoader.cs  
-- Addressablesを用いた非同期ロード  
-- `TryLoadClip` により失敗時も例外を抑制しログ出力可能  
+### SoundLoaderFactory とローダ実装
+- Addressables版・Resources版のローダを切り替え可能
+- `TryLoadClip` により失敗時も例外を抑制しログ出力
 
 ### SoundCacheFactory.cs + 派生クラス群  
 - LRU, TTL, Random の3種から削除方式を選択可能  
@@ -116,10 +121,20 @@ SoundSystemPreset -->|SEプリセット保持| SerializedSESettingDictionary
 //手動構成の例
 var cache = SoundCacheFactory.Create(SoundCacheType.LRU, 30f);
 var pool  = AudioSourcePoolFactory.CreateOldestReuse(mixerGroup, 8, 32);
-var soundSystem = new SoundSystem(cache, pool, mixer, mixerGroup);
+var soundSystem = new SoundSystem(
+    cache,
+    pool,
+    mixer,
+    mixerGroup,
+    SoundLoaderFactory.LoaderType.Addressables);
 
 //プリセットから生成
-var soundSystem = SoundSystem.CreateFromPreset(preset, pool, mixer, mixerGroup);
+var soundSystem = SoundSystem.CreateFromPreset(
+    preset,
+    pool,
+    mixer,
+    mixerGroup,
+    SoundLoaderFactory.LoaderType.Addressables);
 ```
 
 ## 基本的な使い方

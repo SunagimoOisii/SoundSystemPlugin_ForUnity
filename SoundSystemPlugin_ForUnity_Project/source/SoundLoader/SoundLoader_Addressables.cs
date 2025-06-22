@@ -1,3 +1,4 @@
+#if SOUND_USE_ADDRESSABLES
 namespace SoundSystem
 {
     using Cysharp.Threading.Tasks;
@@ -6,17 +7,21 @@ namespace SoundSystem
     using UnityEngine.ResourceManagement.AsyncOperations;
     
     /// <summary>
-    /// サウンドリソースのロード,アンロードを担うクラス<para></para>
+    /// サウンドリソースのロードを担うクラス<para></para>
     /// - Addressableを介してAudioClipを非同期にロード<para></para>
     /// - ロード結果をキャッシュ管理クラス(ISoundCache)に委譲
     /// </summary>
-    public class SoundLoader : ISoundLoader
+    public class SoundLoader_Addressables : ISoundLoader
     {
         private readonly ISoundCache cache;
-    
-        public SoundLoader(ISoundCache cache)
+
+        public SoundLoader_Addressables(ISoundCache cache)
         {
             this.cache = cache;
+            if (cache is SoundCache_Base baseCache)
+            {
+                baseCache.SetLoader(this);
+            }
         }
     
         public async UniTask<(bool success, AudioClip clip)> TryLoadClip(string resourceAddress)
@@ -41,10 +46,13 @@ namespace SoundSystem
             }
         }
     
-        public void UnloadClip(string resourceAddress)
+        public void ReleaseClip(AudioClip clip)
         {
-            Log.Safe($"UnloadClip実行:{resourceAddress}");
-            cache.Remove(resourceAddress);
+            if (clip != null)
+            {
+                Addressables.Release(clip);
+            }
         }
     }
 }
+#endif

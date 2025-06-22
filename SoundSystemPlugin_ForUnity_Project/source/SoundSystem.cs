@@ -22,7 +22,9 @@ namespace SoundSystem
         private SerializedSESettingDictionary  sePresets;
     
         public SoundSystem(ISoundCache cache, IAudioSourcePool pool, AudioListener listener,
-            AudioMixer mixer, AudioMixerGroup bgmGroup, bool canLogging = true)
+            AudioMixer mixer, AudioMixerGroup bgmGroup,
+            SoundLoaderFactory.LoaderType loaderType = SoundLoaderFactory.LoaderType.Addressables,
+            bool canLogging = true)
         {
             if (canLogging)
             {
@@ -30,7 +32,7 @@ namespace SoundSystem
                 Application.quitting += () => Log.Close();
             }
     
-            var loader = new SoundLoader(cache);
+            var loader = SoundLoaderFactory.Create(cache, loaderType);
             bgm        = new(bgmGroup, loader);
             se         = new(pool, loader);
             effector   = new(listener);
@@ -38,14 +40,15 @@ namespace SoundSystem
         }
     
         public static SoundSystem CreateFromPreset(SoundPresetProperty preset, IAudioSourcePool pool,
-            AudioListener listener, AudioMixer mixer, AudioMixerGroup bgmGroup)
+            AudioListener listener, AudioMixer mixer, AudioMixerGroup bgmGroup,
+            SoundLoaderFactory.LoaderType loaderType = SoundLoaderFactory.LoaderType.Addressables)
         {
             var cache = SoundCacheFactory.Create(
                 preset.param,
                 preset.cacheType
             );
     
-            var ss = new SoundSystem(cache, pool, listener, mixer, bgmGroup);
+            var ss = new SoundSystem(cache, pool, listener, mixer, bgmGroup, loaderType);
             ss.SetPresets(preset.bgmPresets, preset.sePresets);
             return ss;
         }
