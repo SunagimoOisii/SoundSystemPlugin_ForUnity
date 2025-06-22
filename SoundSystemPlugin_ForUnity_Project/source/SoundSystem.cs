@@ -39,15 +39,10 @@ namespace SoundSystem
             this.mixer = mixer;
         }
     
-        public static SoundSystem CreateFromPreset(SoundPresetProperty preset, IAudioSourcePool pool,
-            AudioListener listener, AudioMixer mixer, AudioMixerGroup bgmGroup,
+        public static SoundSystem CreateFromPreset(SoundPresetProperty preset, ISoundCache cache,
+            IAudioSourcePool pool, AudioListener listener, AudioMixer mixer, AudioMixerGroup bgmGroup,
             SoundLoaderFactory.Type loaderType = SoundLoaderFactory.Type.Addressables)
         {
-            var cache = SoundCacheFactory.Create(
-                preset.param,
-                preset.cacheType
-            );
-    
             var ss = new SoundSystem(cache, pool, listener, mixer, bgmGroup, loaderType);
             ss.SetPresets(preset.bgmPresets, preset.sePresets);
             return ss;

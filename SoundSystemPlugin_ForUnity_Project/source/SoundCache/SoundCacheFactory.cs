@@ -1,7 +1,6 @@
 namespace SoundSystem
 {
-    using System;
-    
+
     /// <summary>
     /// ISoundCacheインスタンスを生成するファクトリークラス
     /// </summary>
@@ -15,19 +14,27 @@ namespace SoundSystem
         }
     
         /// <summary>
-        /// 指定キャッシュ方式に応じたISoundCacheインスタンスを生成する
+        /// LRU方式のキャッシュを生成する
         /// </summary>
-        /// <param name="param">方式に応じたパラメータ(秒数または最大数)</param>
-        public static ISoundCache Create(float param,
-            Type type = Type.LRU)
+        public static ISoundCache CreateLRU(float idleTimeThreshold)
         {
-            return type switch
-            {
-                Type.LRU    => new SoundCache_LRU(idleTimeThreshold: param),
-                Type.TTL    => new SoundCache_TTL(ttlSeconds: param),
-                Type.Random => new SoundCache_Random(maxCacheCount: (int)param),
-                _ => throw new ArgumentOutOfRangeException(nameof(type)),
-            };
+            return new SoundCache_LRU(idleTimeThreshold);
+        }
+
+        /// <summary>
+        /// TTL方式のキャッシュを生成する
+        /// </summary>
+        public static ISoundCache CreateTTL(float ttlSeconds)
+        {
+            return new SoundCache_TTL(ttlSeconds);
+        }
+
+        /// <summary>
+        /// ランダム削除方式のキャッシュを生成する
+        /// </summary>
+        public static ISoundCache CreateRandom(int maxCacheCount)
+        {
+            return new SoundCache_Random(maxCacheCount);
         }
     }
 }
