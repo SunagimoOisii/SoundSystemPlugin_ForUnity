@@ -24,6 +24,7 @@ namespace SoundSystem
         public SoundSystem(ISoundCache cache, IAudioSourcePool pool, AudioListener listener,
             AudioMixer mixer, AudioMixerGroup bgmGroup,
             SoundLoaderFactory.Type loaderType = SoundLoaderFactory.Type.Addressables,
+            AudioSourcePoolFactory.Type poolType = AudioSourcePoolFactory.Type.FIFO,
             bool canLogging = true)
         {
             if (canLogging)
@@ -41,9 +42,10 @@ namespace SoundSystem
     
         public static SoundSystem CreateFromPreset(SoundPresetProperty preset, ISoundCache cache,
             IAudioSourcePool pool, AudioListener listener, AudioMixer mixer, AudioMixerGroup bgmGroup,
-            SoundLoaderFactory.Type loaderType = SoundLoaderFactory.Type.Addressables)
+            SoundLoaderFactory.Type loaderType = SoundLoaderFactory.Type.Addressables,
+            AudioSourcePoolFactory.Type poolType = AudioSourcePoolFactory.Type.FIFO)
         {
-            var ss = new SoundSystem(cache, pool, listener, mixer, bgmGroup, loaderType);
+            var ss = new SoundSystem(cache, pool, listener, mixer, bgmGroup, loaderType, poolType);
             ss.SetPresets(preset.bgmPresets, preset.sePresets);
             return ss;
         }

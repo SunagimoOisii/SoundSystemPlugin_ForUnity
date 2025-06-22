@@ -1,6 +1,5 @@
 namespace SoundSystem
 {
-
     /// <summary>
     /// ISoundCacheインスタンスを生成するファクトリークラス
     /// </summary>
