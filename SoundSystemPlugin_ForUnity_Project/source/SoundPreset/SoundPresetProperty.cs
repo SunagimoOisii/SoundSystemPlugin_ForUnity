@@ -3,7 +3,8 @@ namespace SoundSystem
     using UnityEngine;
     using UnityEngine.Audio;
 
-    public class SoundPresetProperty : MonoBehaviour
+    [CreateAssetMenu(fileName = "SoundPresetProperty", menuName = "SoundSystem/SoundPresetProperty", order = 0)]
+    public class SoundPresetProperty : ScriptableObject
     {
         [System.Serializable]
         public struct BGMPreset
@@ -30,7 +31,7 @@ namespace SoundSystem
         public SerializedBGMSettingDictionary bgmPresets = new();
 
         [Header("SE")]
-        public AudioMixerGroup seMixerG;
+        public AudioMixer seMixerG;
         public SerializedSESettingDictionary sePresets = new();
 
         [Header("SoundLoader設定")]
