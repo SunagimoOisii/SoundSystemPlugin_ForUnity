@@ -2,8 +2,7 @@ namespace SoundSystem
 {
     using UnityEngine;
     
-    [CreateAssetMenu(fileName = "SoundPresetProperty", menuName = "SoundSystem/SoundPresetProperty", order = 0)]
-    public class SoundPresetProperty : ScriptableObject
+    public class SoundPresetProperty : MonoBehaviour
     {
         [System.Serializable]
         public struct BGMPreset
@@ -33,6 +32,9 @@ namespace SoundSystem
     
         [Header("SoundCache設定")]
         public SoundCacheFactory.Type cacheType = SoundCacheFactory.Type.LRU;
-        public float param = 30f; //idleTimeThresholdやttlSecondsに使う
+
+        //CustomEditor により、選択キャッシュ方式に応じた変数名がインスペクターでは表示される
+        //例: idleTimeThreshold, ttlSeconds
+        public float param = 30f;
     }
 }
