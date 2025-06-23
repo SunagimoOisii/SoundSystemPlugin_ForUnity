@@ -7,44 +7,88 @@ namespace SoundSystem
     [CustomEditor(typeof(SoundPresetProperty))]
     internal sealed class SoundPresetPropertyEditor : Editor
     {
-        private SerializedProperty bgmPresetsProp;
-        private SerializedProperty sePresetsProp;
-        private SerializedProperty cacheTypeProp;
-        private SerializedProperty paramProp;
+        //BGM
+        private SerializedProperty bgmPresets;
+        private SerializedProperty bgmMixerG;
+
+        //SE
+        private SerializedProperty sePresets;
+        private SerializedProperty seMixerG;
+
+        //SoundLoader設定
+        private SerializedProperty loaderType;
+
+        //SoundCache設定
+        private SerializedProperty cacheType;
+        private SerializedProperty param;
+
+        //AudioSourcePool設定
+        private SerializedProperty poolType;
+        private SerializedProperty initSize;
+        private SerializedProperty maxSize;
 
         private void OnEnable()
         {
-            bgmPresetsProp = serializedObject.FindProperty("bgmPresets");
-            sePresetsProp  = serializedObject.FindProperty("sePresets");
-            cacheTypeProp  = serializedObject.FindProperty("cacheType");
-            paramProp      = serializedObject.FindProperty("param");
+            //BGM
+            bgmMixerG  = serializedObject.FindProperty("bgmMixerG");
+            bgmPresets = serializedObject.FindProperty("bgmPresets");
+
+            //SE
+            seMixerG  = serializedObject.FindProperty("seMixerG");
+            sePresets = serializedObject.FindProperty("sePresets");
+
+            //SoundLoader設定
+            loaderType = serializedObject.FindProperty("loaderType");
+
+            //SoundCache設定
+            cacheType = serializedObject.FindProperty("cacheType");
+            param     = serializedObject.FindProperty("param");
+
+            //AudioSourcePool設定
+            poolType = serializedObject.FindProperty("poolType");
+            initSize = serializedObject.FindProperty("initSize");
+            maxSize  = serializedObject.FindProperty("maxSize");
         }
 
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
 
-            EditorGUILayout.PropertyField(bgmPresetsProp, true);
-            EditorGUILayout.PropertyField(sePresetsProp, true);
-            EditorGUILayout.PropertyField(cacheTypeProp);
+            //BGM
+            EditorGUILayout.PropertyField(bgmMixerG, true);
+            EditorGUILayout.PropertyField(bgmPresets, true);
 
-            var type = (SoundCacheFactory.Type)cacheTypeProp.enumValueIndex;
+            //SE
+            EditorGUILayout.PropertyField(seMixerG, true);
+            EditorGUILayout.PropertyField(sePresets, true);
+
+            //SoundLoader設定
+            EditorGUILayout.PropertyField(loaderType, true);
+
+            //SoundCache設定
+            EditorGUILayout.PropertyField(cacheType);
+            var type = (SoundCacheFactory.Type)cacheType.enumValueIndex;
             switch (type)
             {
                 case SoundCacheFactory.Type.LRU:
-                    EditorGUILayout.PropertyField(paramProp, new GUIContent("idleTimeThreshold"));
+                    EditorGUILayout.PropertyField(param, new GUIContent("idleTimeThreshold"));
                     break;
 
                 case SoundCacheFactory.Type.TTL:
-                    EditorGUILayout.PropertyField(paramProp, new GUIContent("ttlSeconds"));
+                    EditorGUILayout.PropertyField(param, new GUIContent("ttlSeconds"));
                     break;
 
                 case SoundCacheFactory.Type.Random:
-                    int intVal = Mathf.RoundToInt(paramProp.floatValue);
+                    int intVal = Mathf.RoundToInt(param.floatValue);
                     intVal = EditorGUILayout.IntField("maxCacheCount", intVal);
-                    paramProp.floatValue = intVal;
+                    param.floatValue = intVal;
                     break;
             }
+
+            //AudioSourcePool設定
+            EditorGUILayout.PropertyField(poolType, true);
+            EditorGUILayout.PropertyField(initSize, true);
+            EditorGUILayout.PropertyField(maxSize, true);
 
             serializedObject.ApplyModifiedProperties();
         }

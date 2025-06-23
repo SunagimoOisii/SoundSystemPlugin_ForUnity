@@ -1,7 +1,8 @@
 namespace SoundSystem
 {
     using UnityEngine;
-    
+    using UnityEngine.Audio;
+
     public class SoundPresetProperty : MonoBehaviour
     {
         [System.Serializable]
@@ -23,18 +24,29 @@ namespace SoundSystem
             [Range(0f, 1f)] public float spatialBlend; //0 = 2D, 1 = 3D
             public Vector3 position;
         }
-    
-        [Header("BGM設定リスト")]
+
+        [Header("BGM")]
+        public AudioMixerGroup bgmMixerG;
         public SerializedBGMSettingDictionary bgmPresets = new();
-    
-        [Header("SE設定リスト")]
+
+        [Header("SE")]
+        public AudioMixerGroup seMixerG;
         public SerializedSESettingDictionary sePresets = new();
-    
+
+        [Header("SoundLoader設定")]
+        public SoundLoaderFactory.Type loaderType = SoundLoaderFactory.Type.Addressables;
+
         [Header("SoundCache設定")]
         public SoundCacheFactory.Type cacheType = SoundCacheFactory.Type.LRU;
 
         //CustomEditor により、選択キャッシュ方式に応じた変数名がインスペクターでは表示される
         //例: idleTimeThreshold, ttlSeconds
         public float param = 30f;
+
+        [Header("AudioSourcePool設定")]
+        public AudioSourcePoolFactory.Type poolType = AudioSourcePoolFactory.Type.FIFO;
+        public AudioMixerGroup seMixer;
+        public int initSize = 5;
+        public int maxSize  = 10;
     }
 }

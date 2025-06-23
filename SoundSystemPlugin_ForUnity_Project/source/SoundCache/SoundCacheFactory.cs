@@ -1,5 +1,7 @@
 namespace SoundSystem
 {
+    using System;
+
     /// <summary>
     /// ISoundCacheインスタンスを生成するファクトリークラス
     /// </summary>
@@ -12,6 +14,20 @@ namespace SoundSystem
             Random
         }
     
+        /// <summary>
+        /// キャッシュ方式とパラメータからISoundCacheを生成する
+        /// </summary>
+        public static ISoundCache Create(Type t, float param)
+        {
+            return t switch
+            {
+                Type.LRU    => CreateLRU(param),
+                Type.TTL    => CreateTTL(param),
+                Type.Random => CreateRandom((int)param),
+                _           => throw new ArgumentOutOfRangeException(nameof(t))
+            };
+        }
+
         /// <summary>
         /// LRU方式のキャッシュを生成する
         /// </summary>
