@@ -6,28 +6,29 @@ namespace SoundSystem
     using UnityEngine.Audio;
     using System.Threading;
 
+    public enum BGMState
+    {
+        Idle,
+        Play,
+        Pause,
+        FadeIn,
+        FadeOut,
+        CrossFade
+    }
+
     /// <summary>
     /// BGMの再生、停止、フェード機能を提供するクラス<para></para>
     /// </summary>
     internal sealed class BGMManager
     {
+        public BGMState State { get; private set; } = BGMState.Idle;
+
         private readonly ISoundLoader loader;
 
         private readonly GameObject sourceRoot = null;
         private (AudioSource active, AudioSource inactive) bgmSources;
 
         private CancellationTokenSource fadeCTS;
-
-        private enum BGMState
-        {
-            Idle,
-            Play,
-            Pause,
-            FadeIn,
-            FadeOut,
-            CrossFade
-        }
-        private BGMState State { get; set; } = BGMState.Idle;
 
         /// <param name="mixerGroup">BGM出力先のAudioMixerGroup</param>
         public BGMManager(AudioMixerGroup mixerGroup, ISoundLoader loader)

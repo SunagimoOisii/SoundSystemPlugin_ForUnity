@@ -102,6 +102,8 @@ namespace SoundSystem
         }
     
         #region BGM
+        public BGMState CurrentBGMState => bgm.State;
+
         public async UniTask PlayBGM(string resourceAddress, float volume = 0.5f)
         {
             await bgm.Play(resourceAddress, volume);
