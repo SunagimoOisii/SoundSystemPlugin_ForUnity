@@ -13,7 +13,7 @@ namespace SoundSystem
             Resources
         }
 
-        public static ISoundLoader Create(ISoundCache cache, Type type = Type.Addressables)
+        public static ISoundLoader Create(Type type, ISoundCache cache)
         {
             return type switch
             {

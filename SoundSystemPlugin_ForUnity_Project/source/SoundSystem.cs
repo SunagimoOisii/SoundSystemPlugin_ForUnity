@@ -49,7 +49,7 @@ namespace SoundSystem
             AudioListener listener, AudioMixer mixer, bool canLogging = true)
         {
             var cache  = SoundCacheFactory.Create(preset.cacheType, preset.param);
-            var loader = SoundLoaderFactory.Create(cache, preset.loaderType);
+            var loader = SoundLoaderFactory.Create(preset.loaderType, cache);
             var pool   = AudioSourcePoolFactory.Create(preset.poolType,
                             preset.seMixerG, preset.initSize, preset.maxSize);
             var ss     = new SoundSystem(loader, cache, pool, listener, mixer, preset.bgmMixerG, canLogging);
