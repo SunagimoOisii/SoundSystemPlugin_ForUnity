@@ -5,6 +5,7 @@ namespace SoundSystem
     using System.Threading;
     using UnityEngine;
     using UnityEngine.Audio;
+    using UnityEngine.SceneManagement;
     
     /// <summary>
     /// サウンド管理のエントリーポイントを提供するクラス<para></para>
@@ -26,6 +27,7 @@ namespace SoundSystem
 
         private readonly ISoundCache cache;
         private CancellationTokenSource autoEvictCTS;
+        private bool autoDisposeOnSceneChange;
 
         public SoundSystem(ISoundLoader loader, ISoundCache cache, IAudioSourcePool pool,
             AudioListener listener, AudioMixer mixer, AudioMixerGroup bgmGroup,
@@ -241,6 +243,31 @@ namespace SoundSystem
         }
         #endregion
 
+        #region AutoDispose
+
+        public void EnableAutoDisposeOnSceneChange()
+        {
+            if (autoDisposeOnSceneChange) return;
+
+            SceneManager.activeSceneChanged += OnActiveSceneChanged;
+            autoDisposeOnSceneChange = true;
+        }
+
+        public void DisableAutoDisposeOnSceneChange()
+        {
+            if (autoDisposeOnSceneChange == false) return;
+
+            SceneManager.activeSceneChanged -= OnActiveSceneChanged;
+            autoDisposeOnSceneChange = false;
+        }
+
+        private void OnActiveSceneChanged(Scene current, Scene next)
+        {
+            Dispose();
+        }
+
+        #endregion
+
         #region AutoEvict
 
         public void StartAutoEvict(float interval)
@@ -278,6 +305,7 @@ namespace SoundSystem
 
         public void Dispose()
         {
+            DisableAutoDisposeOnSceneChange();
             StopAutoEvict();
             bgm.Dispose();
             se.Dispose();
