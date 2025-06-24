@@ -11,20 +11,20 @@ namespace SoundSystem
     internal abstract class AudioSourcePool_Base : IAudioSourcePool
     {
         protected readonly GameObject sourceRoot;
-        protected readonly AudioMixerGroup mixerGroup;
+        protected readonly AudioMixerGroup seMixerG;
     
         protected Queue<AudioSource> pool;
         protected readonly int maxSize;
         protected readonly int initSize;
         public IEnumerable<AudioSource> GetAllResources() => pool;
 
-        public AudioSourcePool_Base(AudioMixerGroup mixerG, int initSize, int maxSize)
+        public AudioSourcePool_Base(AudioMixerGroup seMixerG, int initSize, int maxSize)
         {
-            pool         = new();
-            sourceRoot   = new("SE_AudioSources");
-            this.maxSize = maxSize;
+            pool          = new();
+            sourceRoot    = new("SE_AudioSources");
+            this.maxSize  = maxSize;
             this.initSize = initSize;
-            this.mixerGroup = mixerG;
+            this.seMixerG = seMixerG;
     
             //プール初期化
             for (int i = 0; i < initSize; i++)
@@ -76,7 +76,7 @@ namespace SoundSystem
     
             var source = obj.AddComponent<AudioSource>();
             source.playOnAwake = false;
-            source.outputAudioMixerGroup = mixerGroup;
+            source.outputAudioMixerGroup = seMixerG;
             return source;
         }
     }

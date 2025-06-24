@@ -48,7 +48,6 @@ namespace SoundSystem
 
         [Header("AudioSourcePool設定")]
         public AudioSourcePoolFactory.Type poolType = AudioSourcePoolFactory.Type.FIFO;
-        public AudioMixerGroup seMixer;
         public int initSize = 5;
         public int maxSize  = 10;
     }
