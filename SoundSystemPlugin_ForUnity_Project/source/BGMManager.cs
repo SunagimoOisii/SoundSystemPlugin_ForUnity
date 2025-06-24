@@ -135,9 +135,9 @@ namespace SoundSystem
         {
             Log.Safe($"FadeOut実行:dura = {duration}");
 
-            if (State != BGMState.Play)
+            if (State == BGMState.Pause)
             {
-                Log.Warn($"FadeOut中断:ステートの不一致,State = {State}");
+                Log.Warn($"FadeOut中断:Pause ステートでの実行");
                 return;
             }
             State = BGMState.FadeOut;
@@ -150,6 +150,7 @@ namespace SoundSystem
 
             bgmSources.active.Stop();
             bgmSources.active.clip = null;
+            State = BGMState.Idle;
             Log.Safe($"FadeOut終了:dura = {duration}");
         }
 
@@ -212,10 +213,6 @@ namespace SoundSystem
             catch (OperationCanceledException)
             {
                 Log.Safe("ExecuteVolumeTransition中断:OperationCanceledException");
-            }
-            finally
-            {
-                State = BGMState.Idle;
             }
         }
     }
