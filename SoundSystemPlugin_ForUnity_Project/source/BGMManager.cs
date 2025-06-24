@@ -215,6 +215,13 @@ namespace SoundSystem
             catch (OperationCanceledException)
             {
                 Log.Safe("ExecuteVolumeTransition中断:OperationCanceledException");
+
+                onComplete?.Invoke();
+                if (fadeCTS != null &&
+                    fadeCTS.Token == token)
+                {
+                    State = BGMState.Idle;
+                }
             }
         }
 
