@@ -13,12 +13,12 @@ namespace SoundSystem
             FIFO,
             Strict
         }
-    
+
         /// <summary>
         /// 指定プール管理方式に応じたIAudioSourcePoolインスタンスを生成
         /// </summary>
-        public static IAudioSourcePool Create(AudioMixerGroup seMixerG,
-            int initSize, int maxSize, Type type = Type.FIFO)
+        public static IAudioSourcePool Create(Type type,
+            AudioMixerGroup seMixerG, int initSize, int maxSize)
         {
             return type switch
             {

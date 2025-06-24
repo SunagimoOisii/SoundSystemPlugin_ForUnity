@@ -19,7 +19,7 @@ namespace SoundSystem
     
         public override AudioSource Retrieve()
         {
-            Log.Safe("Retrieves実行");
+            Log.Safe("Retrieve実行");
     
             //未使用のAudioSourceがあれば、それを返す
             for (int i = 0; i < pool.Count; i++)

@@ -31,7 +31,7 @@ namespace SoundSystem
         public SerializedBGMSettingDictionary bgmPresets = new();
 
         [Header("SE")]
-        public AudioMixer seMixerG;
+        public AudioMixerGroup seMixerG;
         public SerializedSESettingDictionary sePresets = new();
 
         [Header("SoundLoader設定")]

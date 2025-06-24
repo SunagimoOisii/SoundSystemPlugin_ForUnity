@@ -42,7 +42,8 @@ namespace SoundSystem
         {
             var cache  = SoundCacheFactory.Create(preset.cacheType, preset.param);
             var loader = SoundLoaderFactory.Create(cache, preset.loaderType);
-            var pool   = AudioSourcePoolFactory.Create(preset.seMixerG, preset.initSize, preset.maxSize);
+            var pool   = AudioSourcePoolFactory.Create(preset.poolType,
+                            preset.seMixerG, preset.initSize, preset.maxSize);
             var ss     = new SoundSystem(loader, pool, listener, mixer, preset.bgmMixerG, canLogging);
             ss.SetPresets(preset.bgmPresets, preset.sePresets);
             return ss;

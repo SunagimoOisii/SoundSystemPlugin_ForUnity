@@ -163,6 +163,7 @@ namespace SoundSystem
                 Log.Error($"CrossFade失敗:リソース読込に失敗,{resourceAddress}");
                 return;
             }
+            State = BGMState.CrossFade;
             bgmSources.inactive.clip = clip;
             bgmSources.inactive.volume = 0f;
             bgmSources.inactive.Play();
