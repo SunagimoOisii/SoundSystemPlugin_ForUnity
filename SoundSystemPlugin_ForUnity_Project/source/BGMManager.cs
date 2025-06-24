@@ -182,6 +182,7 @@ namespace SoundSystem
                     bgmSources.active.Stop();
                     bgmSources = (bgmSources.inactive, bgmSources.active);
                 });
+            State = BGMState.Play;
             Log.Safe($"CrossFade終了:{resourceAddress}");
         }
 
