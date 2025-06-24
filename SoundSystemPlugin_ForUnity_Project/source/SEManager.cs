@@ -24,7 +24,8 @@ namespace SoundSystem
         /// <param name="spatialBlend">サラウンド度(0〜1)</param>
         /// <param name="position">再生座標</param>
         public async UniTask Play(string resourceAddress,
-            float volume, float pitch, float spatialBlend, Vector3 position)
+            float volume, float pitch, float spatialBlend, Vector3 position,
+            Action onComplete = null)
         {
             //サウンドリソースのロード
             var (success, clip) = await loader.TryLoadClip(resourceAddress);
@@ -48,6 +49,9 @@ namespace SoundSystem
             source.spatialBlend       = spatialBlend;
             source.transform.position = position;
             source.PlayOneShot(clip);
+            await UniTask.WaitWhile(() => source.isPlaying);
+            onComplete?.Invoke();
+
             Log.Safe($"Play成功:{resourceAddress},vol = {volume},pitch = {pitch}," +
                 $"blend = {spatialBlend}");
         }
@@ -55,6 +59,7 @@ namespace SoundSystem
         public void StopAll()
         {
             Log.Safe("StopAll実行");
+
             var sources = sourcePool.GetAllResources();
             foreach (var source in sources)
             {
@@ -66,6 +71,7 @@ namespace SoundSystem
         public void ResumeAll()
         {
             Log.Safe("ResumeAll実行");
+
             var sources = sourcePool.GetAllResources();
             foreach (var source in sources)
             {
@@ -77,6 +83,7 @@ namespace SoundSystem
         public void PauseAll()
         {
             Log.Safe("PauseAll実行");
+
             var sources = sourcePool.GetAllResources();
             foreach (var source in sources)
             {

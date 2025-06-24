@@ -52,7 +52,8 @@ namespace SoundSystem
             var loader = SoundLoaderFactory.Create(preset.loaderType, cache);
             var pool   = AudioSourcePoolFactory.Create(preset.poolType,
                             preset.seMixerG, preset.initSize, preset.maxSize);
-            var ss     = new SoundSystem(loader, cache, pool, listener, mixer, preset.bgmMixerG, canLogging);
+            var ss     = new SoundSystem(loader, cache, pool, listener, mixer,
+                            preset.bgmMixerG, canLogging);
             ss.bgmPresets = preset.bgmPresets;
             ss.sePresets  = preset.sePresets;
             if (preset.enableAutoEvict) ss.StartAutoEvict(preset.autoEvictInterval);
@@ -80,12 +81,14 @@ namespace SoundSystem
             }
         }
     
-        private bool TryRetrieveBGMPreset(string presetName, out SoundPresetProperty.BGMPreset preset)
+        private bool TryRetrieveBGMPreset(string presetName,
+            out SoundPresetProperty.BGMPreset preset)
         {
             return bgmPresets.TryGetValue(presetName, out preset);
         }
     
-        private bool TryRetrieveSEPreset(string presetName, out SoundPresetProperty.SEPreset preset)
+        private bool TryRetrieveSEPreset(string presetName,
+            out SoundPresetProperty.SEPreset preset)
         {
             return sePresets.TryGetValue(presetName, out preset);
         }
@@ -104,16 +107,19 @@ namespace SoundSystem
         #region BGM
         public BGMState CurrentBGMState => bgm.State;
 
-        public async UniTask PlayBGM(string resourceAddress, float volume = 0.5f)
+        public async UniTask PlayBGM(string resourceAddress, float volume = 0.5f,
+            Action onComplete = null)
         {
-            await bgm.Play(resourceAddress, volume);
+            await bgm.Play(resourceAddress, volume, onComplete);
         }
     
-        public async UniTask PlayBGMWithPreset(string resourceAddress, string presetName)
+        public async UniTask PlayBGMWithPreset(string resourceAddress, string presetName,
+            Action onComplete = null)
         {
             if (TryRetrieveBGMPreset(presetName, out SoundPresetProperty.BGMPreset preset))
             {
-                await FadeInBGM(resourceAddress, preset.fadeInDuration, preset.volume);
+                await FadeInBGM(resourceAddress, preset.fadeInDuration, preset.volume,
+                    onComplete);
             }
         }
     
@@ -133,59 +139,67 @@ namespace SoundSystem
         }
     
         public async UniTask FadeInBGM(string resourceAddress, float duration,
-            float volume = 1.0f)
+            float volume = 1.0f, Action onComplete = null)
         {
-            await bgm.FadeIn(resourceAddress, duration, volume);
+            await bgm.FadeIn(resourceAddress, duration, volume, onComplete);
         }
     
-        public async UniTask FadeInBGMWithPreset(string resourceAddress, string presetName)
+        public async UniTask FadeInBGMWithPreset(string resourceAddress, string presetName,
+            Action onComplete = null)
         {
             if (TryRetrieveBGMPreset(presetName, out SoundPresetProperty.BGMPreset preset))
             {
-                await bgm.FadeIn(resourceAddress, preset.fadeInDuration, preset.volume);
+                await bgm.FadeIn(resourceAddress, preset.fadeInDuration, preset.volume,
+                    onComplete);
             }
         }
     
-        public async UniTask FadeOutBGM(float duration)
+        public async UniTask FadeOutBGM(float duration, Action onComplete = null)
         {
-            await bgm.FadeOut(duration);
+            await bgm.FadeOut(duration, onComplete);
         }
     
-        public async UniTask FadeOutBGMWithPreset(string presetName)
+        public async UniTask FadeOutBGMWithPreset(string presetName, Action onComplete = null)
         {
             if (TryRetrieveBGMPreset(presetName, out SoundPresetProperty.BGMPreset preset))
             {
-                await bgm.FadeOut(preset.fadeOutDuration);
+                await bgm.FadeOut(preset.fadeOutDuration, onComplete);
             }
         }
     
-        public async UniTask CrossFadeBGM(string resourceAddress, float duration)
+        public async UniTask CrossFadeBGM(string resourceAddress, float duration,
+            Action onComplete = null)
         {
-            await bgm.CrossFade(resourceAddress, duration);
+            await bgm.CrossFade(resourceAddress, duration, onComplete);
         }
     
-        public async UniTask CrossFadeBGMWithPreset(string resourceAddress, string presetName)
+        public async UniTask CrossFadeBGMWithPreset(string resourceAddress, string presetName,
+            Action onComplete = null)
         {
             if (TryRetrieveBGMPreset(presetName, out SoundPresetProperty.BGMPreset preset))
             {
-                await bgm.CrossFade(resourceAddress, preset.crossFadeDuration);
+                await bgm.CrossFade(resourceAddress, preset.crossFadeDuration, onComplete);
             }
         }
         #endregion
     
         #region SE
         public async UniTask PlaySE(string resourceAddress, Vector3 position = default,
-            float volume = 0.5f, float pitch = 1.0f, float spatialBlend = 1.0f)
+            float volume = 0.5f, float pitch = 1.0f, float spatialBlend = 1.0f,
+            Action onComplete = null)
         {
-            await se.Play(resourceAddress, volume, pitch, spatialBlend, position);
+            await se.Play(resourceAddress, volume, pitch, spatialBlend, position,
+                onComplete);
         }
     
-        public async UniTask PlaySEWithPreset(string resourceAddress, string presetName)
+        public async UniTask PlaySEWithPreset(string resourceAddress, string presetName,
+            Action onComplete = null)
         {
             if (TryRetrieveSEPreset(presetName, out SoundPresetProperty.SEPreset preset))
             {
                 await se.Play(resourceAddress,
-                    preset.volume, preset.pitch, preset.spatialBlend, preset.position);
+                    preset.volume, preset.pitch, preset.spatialBlend, preset.position,
+                    onComplete);
             }
         }
     

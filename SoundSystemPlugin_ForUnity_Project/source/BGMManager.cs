@@ -57,7 +57,8 @@ namespace SoundSystem
         }
 
         /// <param name="volume">音量(範囲: 0.0～1.0)</param>
-        public async UniTask Play(string resourceAddress, float volume)
+        public async UniTask Play(string resourceAddress, float volume, 
+            Action onComplete = null)
         {
             var (success, clip) = await loader.TryLoadClip(resourceAddress);
             if (success == false)
@@ -70,12 +71,15 @@ namespace SoundSystem
             bgmSources.active.clip = clip;
             bgmSources.active.volume = volume;
             bgmSources.active.Play();
+            onComplete?.Invoke();
+
             Log.Safe($"Play成功:{resourceAddress},vol = {volume}");
         }
 
         public void Stop()
         {
             Log.Safe("Stop実行");
+
             State = BGMState.Idle;
             bgmSources.active.Stop();
             bgmSources.active.clip = null;
@@ -98,12 +102,14 @@ namespace SoundSystem
         public void Pause()
         {
             Log.Safe($"Pause実行");
+
             State = BGMState.Pause;
             bgmSources.active.Pause();
         }
 
         /// <param name="volume">目標音量(範囲: 0.0～1.0)</param>
-        public async UniTask FadeIn(string resourceAddress, float duration, float volume)
+        public async UniTask FadeIn(string resourceAddress, float duration, float volume,
+            Action onComplete = null)
         {
             Log.Safe($"FadeIn実行:{resourceAddress},dura = {duration},vol = {volume}");
 
@@ -127,12 +133,15 @@ namespace SoundSystem
             State = BGMState.FadeIn;
             await ExecuteVolumeTransition(
                 duration,
-                progressRate => bgmSources.active.volume = Mathf.Lerp(0f, volume, progressRate)
+                progressRate => bgmSources.active.volume = Mathf.Lerp(0f, volume, progressRate),
+                onComplete
                 );
+            State = BGMState.Play;
+
             Log.Safe($"FadeIn終了:{resourceAddress},dura = {duration},vol = {volume}");
         }
 
-        public async UniTask FadeOut(float duration)
+        public async UniTask FadeOut(float duration, Action onComplete = null)
         {
             Log.Safe($"FadeOut実行:dura = {duration}");
 
@@ -146,16 +155,19 @@ namespace SoundSystem
             float startVol = bgmSources.active.volume;
             await ExecuteVolumeTransition(
                 duration,
-                progressRate => bgmSources.active.volume = Mathf.Lerp(startVol, 0.0f, progressRate)
+                progressRate => bgmSources.active.volume = Mathf.Lerp(startVol, 0.0f, progressRate),
+                onComplete
                 );
 
+            State = BGMState.Idle;
             bgmSources.active.Stop();
             bgmSources.active.clip = null;
-            State = BGMState.Idle;
+
             Log.Safe($"FadeOut終了:dura = {duration}");
         }
 
-        public async UniTask CrossFade(string resourceAddress, float duration)
+        public async UniTask CrossFade(string resourceAddress, float duration,
+            Action onComplete = null)
         {
             Log.Safe($"CrossFade実行:{resourceAddress}");
 
@@ -177,12 +189,14 @@ namespace SoundSystem
                     bgmSources.active.volume = Mathf.Lerp(1f, 0f, progressRate);
                     bgmSources.inactive.volume = Mathf.Lerp(0f, 1f, progressRate);
                 },
-                () => //onComplete
+                () => //クロスフェード完遂時の処理
                 {
                     bgmSources.active.Stop();
                     bgmSources = (bgmSources.inactive, bgmSources.active);
+                    onComplete?.Invoke();
                 });
             State = BGMState.Play;
+
             Log.Safe($"CrossFade終了:{resourceAddress}");
         }
 
