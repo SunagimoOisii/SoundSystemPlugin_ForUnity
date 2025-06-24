@@ -20,15 +20,21 @@ namespace SoundSystem
             }
         }
 
-        public async UniTask<(bool success, AudioClip clip)> TryLoadClip(string resourceAddress)
+        public UniTask<(bool success, AudioClip clip)> PreloadClip(string resourceAddress)
+            => LoadClip(resourceAddress);
+
+        public UniTask<(bool success, AudioClip clip)> TryLoadClip(string resourceAddress)
+            => LoadClip(resourceAddress);
+
+        private async UniTask<(bool success, AudioClip clip)> LoadClip(string resourceAddress)
         {
-            Log.Safe($"TryLoadClip実行:{resourceAddress}");
+            Log.Safe($"LoadClip実行:{resourceAddress}");
 
             //キャッシュを参照し、既に存在する場合はそれを返す
             var cached = cache.Retrieve(resourceAddress);
             if (cached != null)
             {
-                Log.Safe($"TryLoadClip成功:CacheHit,{resourceAddress}");
+                Log.Safe($"LoadClip成功:CacheHit,{resourceAddress}");
                 return (true, cached);
             }
 
@@ -38,12 +44,12 @@ namespace SoundSystem
             if (clip != null)
             {
                 cache.Add(resourceAddress, clip);
-                Log.Safe($"TryLoadClip成功:{resourceAddress}");
+                Log.Safe($"LoadClip成功:{resourceAddress}");
                 return (true, clip);
             }
             else
             {
-                Log.Error($"TryLoadClip失敗:{resourceAddress}");
+                Log.Error($"LoadClip失敗:{resourceAddress}");
                 cache.Remove(resourceAddress);
                 return (false, null);
             }

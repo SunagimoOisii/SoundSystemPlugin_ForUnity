@@ -12,14 +12,16 @@ namespace SoundSystem
     /// </summary>
     public sealed class SoundSystem
     {
+        private SerializedBGMSettingDictionary bgmPresets;
+        private SerializedSESettingDictionary  sePresets;
+
         private readonly BGMManager bgm;
         private readonly SEManager  se;
         private readonly ListenerEffector effector;
-    
-        private readonly AudioMixer mixer;
-    
-        private SerializedBGMSettingDictionary bgmPresets;
-        private SerializedSESettingDictionary  sePresets;
+
+        private AudioMixer mixer;
+
+        private ISoundLoader loader;
 
         public SoundSystem(ISoundLoader loader, IAudioSourcePool pool,
             AudioListener listener, AudioMixer mixer, AudioMixerGroup bgmGroup,
@@ -30,11 +32,12 @@ namespace SoundSystem
                 Log.Initialize();
                 Application.quitting += () => Log.Close();
             }
-    
-            bgm        = new(bgmGroup, loader);
-            se         = new(pool, loader);
-            effector   = new(listener);
-            this.mixer = mixer;
+            
+            this.mixer  = mixer;
+            this.loader = loader;
+            bgm         = new(bgmGroup, loader);
+            se          = new(pool, loader);
+            effector    = new(listener);
         }
 
         public static SoundSystem CreateFromPreset(SoundPresetProperty preset, 
@@ -45,6 +48,8 @@ namespace SoundSystem
             var pool   = AudioSourcePoolFactory.Create(preset.poolType,
                             preset.seMixerG, preset.initSize, preset.maxSize);
             var ss     = new SoundSystem(loader, pool, listener, mixer, preset.bgmMixerG, canLogging);
+            ss.mixer   = mixer;
+            ss.loader  = loader;
             ss.SetPresets(preset.bgmPresets, preset.sePresets);
             return ss;
         }
@@ -92,6 +97,11 @@ namespace SoundSystem
         {
             bgm.Stop();
             se.StopAll();
+        }
+
+        public UniTask<(bool success, AudioClip clip)> PreloadClip(string resourceAddress)
+        {
+            return loader.PreloadClip(resourceAddress);
         }
     
         #region BGM
