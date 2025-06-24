@@ -39,6 +39,8 @@ namespace SoundSystem
 
         [Header("SoundCache設定")]
         public SoundCacheFactory.Type cacheType = SoundCacheFactory.Type.LRU;
+        public bool enableAutoEvict    = false;
+        public float autoEvictInterval = 60f;
 
         //CustomEditor により、選択キャッシュ方式に応じた変数名がインスペクターでは表示される
         //例: idleTimeThreshold, ttlSeconds

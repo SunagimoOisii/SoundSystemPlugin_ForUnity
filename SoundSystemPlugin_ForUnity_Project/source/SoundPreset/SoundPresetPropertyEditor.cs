@@ -21,6 +21,8 @@ namespace SoundSystem
         //SoundCache設定
         private SerializedProperty cacheType;
         private SerializedProperty param;
+        private SerializedProperty enableAutoEvict;
+        private SerializedProperty autoEvictInterval;
 
         //AudioSourcePool設定
         private SerializedProperty poolType;
@@ -41,8 +43,10 @@ namespace SoundSystem
             loaderType = serializedObject.FindProperty("loaderType");
 
             //SoundCache設定
-            cacheType = serializedObject.FindProperty("cacheType");
-            param     = serializedObject.FindProperty("param");
+            cacheType          = serializedObject.FindProperty("cacheType");
+            param              = serializedObject.FindProperty("param");
+            enableAutoEvict    = serializedObject.FindProperty("enableAutoEvict");
+            autoEvictInterval  = serializedObject.FindProperty("autoEvictInterval");
 
             //AudioSourcePool設定
             poolType = serializedObject.FindProperty("poolType");
@@ -84,6 +88,11 @@ namespace SoundSystem
                     param.floatValue = intVal;
                     break;
             }
+
+            EditorGUILayout.PropertyField(enableAutoEvict);
+            EditorGUI.BeginDisabledGroup(enableAutoEvict.boolValue == false);
+            EditorGUILayout.PropertyField(autoEvictInterval);
+            EditorGUI.EndDisabledGroup();
 
             //AudioSourcePool設定
             EditorGUILayout.PropertyField(poolType, true);

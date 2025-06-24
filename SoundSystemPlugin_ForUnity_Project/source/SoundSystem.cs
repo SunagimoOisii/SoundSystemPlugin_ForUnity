@@ -54,6 +54,7 @@ namespace SoundSystem
                             preset.seMixerG, preset.initSize, preset.maxSize);
             var ss     = new SoundSystem(loader, cache, pool, listener, mixer, preset.bgmMixerG, canLogging);
             ss.SetPresets(preset.bgmPresets, preset.sePresets);
+            if (preset.enableAutoEvict) ss.StartAutoEvict(preset.autoEvictInterval);
             return ss;
         }
     
@@ -105,37 +106,6 @@ namespace SoundSystem
         public UniTask<(bool success, AudioClip clip)> PreloadClip(string resourceAddress)
         {
             return loader.PreloadClip(resourceAddress);
-        }
-
-        public void StartAutoEvict(float interval)
-        {
-            StopAutoEvict();
-
-            autoEvictCTS = new();
-            AutoEvictLoop(interval, autoEvictCTS.Token).Forget();
-        }
-
-        public void StopAutoEvict()
-        {
-            autoEvictCTS?.Cancel();
-            autoEvictCTS?.Dispose();
-            autoEvictCTS = null;
-        }
-
-        private async UniTask AutoEvictLoop(float interval, CancellationToken token)
-        {
-            try
-            {
-                while (token.IsCancellationRequested == false)
-                {
-                    await UniTask.Delay(TimeSpan.FromSeconds(interval), cancellationToken: token);
-                    cache.Evict();
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                Log.Safe("AutoEvictLoop中断:OperationCanceledException");
-            }
         }
     
         #region BGM
@@ -260,6 +230,41 @@ namespace SoundSystem
         {
             effector.DisableAllFilters();
         }
+        #endregion
+
+        #region AutoEvict
+
+        public void StartAutoEvict(float interval)
+        {
+            StopAutoEvict();
+
+            autoEvictCTS = new();
+            AutoEvictLoop(interval, autoEvictCTS.Token).Forget();
+        }
+
+        public void StopAutoEvict()
+        {
+            autoEvictCTS?.Cancel();
+            autoEvictCTS?.Dispose();
+            autoEvictCTS = null;
+        }
+
+        private async UniTask AutoEvictLoop(float interval, CancellationToken token)
+        {
+            try
+            {
+                while (token.IsCancellationRequested == false)
+                {
+                    await UniTask.Delay(TimeSpan.FromSeconds(interval), cancellationToken: token);
+                    cache.Evict();
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                Log.Safe("AutoEvictLoop中断:OperationCanceledException");
+            }
+        }
+
         #endregion
 
         public void Dispose()
