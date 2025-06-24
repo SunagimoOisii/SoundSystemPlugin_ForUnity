@@ -1,6 +1,6 @@
 namespace SoundSystem
 {
-    ﻿using UnityEngine;
+    using UnityEngine;
     using Cysharp.Threading.Tasks;
     
     /// <summary>
