@@ -39,7 +39,7 @@ namespace SoundSystem
             sourceRoot = new("BGM_AudioSources");
             if (persistent)
             {
-                Object.DontDestroyOnLoad(sourceRoot);
+                UnityEngine.Object.DontDestroyOnLoad(sourceRoot);
             }
             bgmSources =
             (
