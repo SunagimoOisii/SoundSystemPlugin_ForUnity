@@ -9,7 +9,9 @@ namespace SoundSystem
     {
         public enum Type
         {
+#if USE_ADDRESSABLES
             Addressables,
+#endif
             Resources
         }
 
