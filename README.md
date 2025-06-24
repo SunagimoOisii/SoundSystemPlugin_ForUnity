@@ -3,6 +3,7 @@
 ## 目次
 - [概要](#概要)
 - [使用技術](#使用技術)
+- [ディレクトリ構成](#ディレクトリ構成)
 - [システム構成](#システム構成)
 - [機能のピックアップ](#機能のピックアップ)
 - [セットアップ](#セットアップ)
@@ -17,6 +18,21 @@ Unity向けの柔軟で拡張可能なサウンド管理システムです。
 - Addressables
 - UniTask
 - Unity AudioMixer
+
+## ディレクトリ構成
+```text
+source/
+├── Core/
+│   ├── AudioSourcePool/
+│   ├── SoundCache/
+│   ├── SoundLoader/
+│   └── SoundPreset/
+├── BGMManager.cs
+├── ListenerEffector.cs
+├── Log.cs
+├── SEManager.cs
+└── SoundSystem.cs
+```
 
 ## システム構成
 ```mermaid
