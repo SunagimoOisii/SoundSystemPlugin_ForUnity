@@ -20,12 +20,12 @@ namespace SoundSystem
         private readonly SEManager  se;
         private readonly ListenerEffector effector;
 
+        private readonly AudioMixer mixer;
+
+        private readonly ISoundLoader loader;
+
         private readonly ISoundCache cache;
         private CancellationTokenSource autoEvictCTS;
-
-        private AudioMixer mixer;
-
-        private ISoundLoader loader;
 
         public SoundSystem(ISoundLoader loader, ISoundCache cache, IAudioSourcePool pool,
             AudioListener listener, AudioMixer mixer, AudioMixerGroup bgmGroup,
@@ -53,8 +53,6 @@ namespace SoundSystem
             var pool   = AudioSourcePoolFactory.Create(preset.poolType,
                             preset.seMixerG, preset.initSize, preset.maxSize);
             var ss     = new SoundSystem(loader, cache, pool, listener, mixer, preset.bgmMixerG, canLogging);
-            ss.mixer   = mixer;
-            ss.loader  = loader;
             ss.SetPresets(preset.bgmPresets, preset.sePresets);
             return ss;
         }
