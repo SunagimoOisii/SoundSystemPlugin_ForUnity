@@ -53,17 +53,10 @@ namespace SoundSystem
             var pool   = AudioSourcePoolFactory.Create(preset.poolType,
                             preset.seMixerG, preset.initSize, preset.maxSize);
             var ss     = new SoundSystem(loader, cache, pool, listener, mixer, preset.bgmMixerG, canLogging);
-            ss.SetPresets(preset.bgmPresets, preset.sePresets);
+            ss.bgmPresets = preset.bgmPresets;
+            ss.sePresets  = preset.sePresets;
             if (preset.enableAutoEvict) ss.StartAutoEvict(preset.autoEvictInterval);
             return ss;
-        }
-    
-        //CreateFromPreset関数のために実装
-        private void SetPresets(SerializedBGMSettingDictionary bgmList,
-            SerializedSESettingDictionary seList)
-        {
-            bgmPresets = bgmList;
-            sePresets  = seList;
         }
     
         public float? RetrieveMixerParameter(string exposedParamName)
