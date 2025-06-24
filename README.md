@@ -1,40 +1,99 @@
-# SoundSystem for Unity 🎧
-
-## 目次
-- [概要](#概要)
-- [使用技術](#使用技術)
-- [システム構成](#システム構成)
-- [機能のピックアップ](#機能のピックアップ)
-- [セットアップ](#セットアップ)
-- [基本的な使い方](#基本的な使い方)
+# SoundSystem for Unity
 
 ## 概要
-Unity向けの柔軟で拡張可能なサウンド管理システムです。  
-**BGM, SE, AudioMixerの統合制御、プリセットによる一括設定、AudioSourceプール、キャッシュ方式の選択、ログ出力機構**などを備えています。
+Unity 上での BGM・SE 管理を一本化するためのライブラリです。プリセットによる設定管理、AudioSource プール、複数方式のキャッシュ、ログ出力などを備え、ゲーム内のサウンド制御をシンプルにします。
 
-## 使用技術
-- C#
-- Addressables
+## 主な機能
+- BGM 再生：FadeIn / FadeOut / CrossFade に対応
+- SE 再生：AudioSource プールで効率的に管理（FIFO または Strict）
+- SoundLoader：Addressables 版と Resources 版を選択可能
+- SoundCache：LRU / TTL / Random の削除方式を提供
+- SoundPresetProperty：BGM・SE のプリセット設定を ScriptableObject として管理
+- ListenerEffector：AudioListener へのフィルター適用・無効化
+- オートエビクト：一定間隔でキャッシュを自動削除
+- オートディスポーズ：シーン変更時の自動解放を選択可能
+- ロギング：Safe / Warn / Error の 3 段階でログファイルを出力
+
+## 必要環境
+- Unity 2023 以降
 - UniTask
-- Unity AudioMixer
+- Addressables（`USE_ADDRESSABLES` 定義時）
+
+## 導入方法
+1. UniTask と（必要に応じて）Addressables をプロジェクトに導入します。
+2. 本リポジトリをビルドして生成される `SoundSystem.dll` を `Assets/Plugins` に配置します。
+3. Addressables を利用する場合は Player Settings の `Scripting Define Symbols` に `USE_ADDRESSABLES` を追加します。
+
+## 初期化例
+### 手動構成
+```csharp
+var cache  = SoundCacheFactory.CreateLRU(30f);
+var loader = SoundLoaderFactory.Create(SoundLoaderFactory.Type.Resources, cache);
+var pool   = AudioSourcePoolFactory.Create(
+    AudioSourcePoolFactory.Type.FIFO,
+    mixerGroup,
+    initSize: 8,
+    maxSize: 32);
+var soundSystem = new SoundSystem(
+    loader,
+    cache,
+    pool,
+    listener,
+    mixer,
+    mixerGroup,
+    persistent: true);
+soundSystem.StartAutoEvict(60f);
+```
+### プリセット利用
+```csharp
+var soundSystem = SoundSystem.CreateFromPreset(
+    preset,
+    listener,
+    mixer,
+    persistent: true);
+```
+
+## 使い方
+### BGM
+```csharp
+await soundSystem.PlayBGM("bgm_title", 1.0f);
+await soundSystem.FadeInBGM("bgm_intro", 2.0f, 1.0f);
+await soundSystem.CrossFadeBGM("bgm_battle", 2.0f);
+await soundSystem.PlayBGMWithPreset("bgm_battle", "BattlePreset");
+```
+### SE
+```csharp
+await soundSystem.PlaySE("se_click", Vector3.zero, 1.0f, 1.0f, 1.0f);
+await soundSystem.PlaySEWithPreset("se_explosion", "ExplosionPreset");
+```
+### Mixer パラメータ
+```csharp
+float? volume = soundSystem.RetrieveMixerParameter("MasterVolume");
+soundSystem.SetMixerParameter("MasterVolume", -10.0f);
+```
+### エフェクト操作
+```csharp
+soundSystem.ApplyEffectFilter<AudioReverbFilter>(f => f.reverbLevel = 1000f);
+soundSystem.DisableAllEffectFilter();
+```
 
 ## システム構成
 ```mermaid
 graph
 
-%% 外部公開API
+%% API
 classDef highlight stroke-width:8px
 SoundSystem:::highlight
-SoundSystemPreset
+SoundPresetProperty
 SerializedBGMSettingDictionary
 SerializedSESettingDictionary
 
-%% プレイヤー管理
+%% Player
 BGMManager
 SEManager
 ListenerEffector
 
-%% ローダ・キャッシュ
+%% Loader & Cache
 ISoundLoader
 SoundLoader_Addressables
 SoundLoader_Resources
@@ -46,17 +105,18 @@ SoundCache_TTL
 SoundCache_Random
 SoundCacheFactory
 
-%% AudioSourcePool関連
+%% Pool
 IAudioSourcePool
 AudioSourcePool_Base
-AudioSourcePool_OldestReuse
+AudioSourcePool_FIFO
+AudioSourcePool_Strict
 AudioSourcePoolFactory
 
-%% 関係定義
+%% Relations
 SoundSystem -->|利用| BGMManager
 SoundSystem -->|利用| SEManager
 SoundSystem -->|利用| ListenerEffector
-SoundSystem -->|プリセット読込| SoundSystemPreset
+SoundSystem -->|プリセット読込| SoundPresetProperty
 SoundSystem -->|生成| SoundLoaderFactory
 SoundLoaderFactory -->|生成| SoundLoader_Addressables
 SoundLoaderFactory -->|生成| SoundLoader_Resources
@@ -74,115 +134,12 @@ SoundCache_LRU -->|継承| SoundCache_Base
 SoundCache_TTL -->|継承| SoundCache_Base
 SoundCache_Random -->|継承| SoundCache_Base
 
-AudioSourcePoolFactory -->|生成| AudioSourcePool_OldestReuse
-AudioSourcePool_OldestReuse -->|継承| AudioSourcePool_Base
+AudioSourcePoolFactory -->|生成| AudioSourcePool_FIFO
+AudioSourcePoolFactory -->|生成| AudioSourcePool_Strict
+AudioSourcePool_FIFO -->|継承| AudioSourcePool_Base
+AudioSourcePool_Strict -->|継承| AudioSourcePool_Base
 
-SoundSystemPreset -->|BGMプリセット保持| SerializedBGMSettingDictionary
-SoundSystemPreset -->|SEプリセット保持| SerializedSESettingDictionary
+SoundPresetProperty -->|BGMプリセット| SerializedBGMSettingDictionary
+SoundPresetProperty -->|SEプリセット| SerializedSESettingDictionary
 ```
 
-
-## 機能のピックアップ
-### SoundSystem.cs
-- 外部APIを集約するファサードクラス
-- `CreateFromPreset` によりプリセットベースの初期化が可能
-- AudioSource用GameObjectをシーン跨ぎで保持する設定に対応
-
-### BGMManager.cs, SEManager.cs  
-- BGMは `FadeIn`, `FadeOut`, `CrossFade` に対応  
-- SEは `AudioSourcePool` による再利用・一時停止・一括停止に対応
-
-### SoundLoaderFactory とローダ実装
-- Addressables版・Resources版のローダを切り替え可能
-- `TryLoadClip` により失敗時も例外を抑制しログ出力
-
-### SoundCacheFactory.cs + 派生クラス群  
-- LRU, TTL, Random の3種から削除方式を選択可能  
-- `ISoundCache` インターフェースを通して抽象化
-
-### ListenerEffector.cs  
-- `AudioReverbFilter` などのAudioFilterを動的に適用・無効化
-
-### Log.cs  
-- クラス名を自動カテゴリ化しログ出力(Safe, Warn, Error)を一元管理  
-- 実行ログ、警告ログ、エラーログの分類に対応
-
-
-## セットアップ
-### 1. UniTask,Addressablesの導入
-本プロジェクトは `UniTask`, `Addressables` を前提としています
-
-### 2. DLLの導入
-`SoundSystem.dll` をUnityプロジェクトのAssets/Pluginsフォルダ直下に入れます
-
-### 3. SoundSystemインスタンス生成
-手動構成 or プリセットベースで生成できます
-
-```csharp
-//手動構成の例
-var cache = SoundCacheFactory.CreateLRU(30f);
-var loader = SoundLoaderFactory.Create(cache, SoundLoaderFactory.Type.Addressables);
-var pool   = AudioSourcePoolFactory.CreateOldestReuse(mixerGroup, 8, 32);
-var soundSystem = new SoundSystem(
-    loader,
-    cache,
-    pool,
-    listener,
-    mixer,
-    mixerGroup,
-    true);
-soundSystem.StartAutoEvict(60f);
-//利用終了時
-soundSystem.Dispose();
-
-//プリセットから生成
-var soundSystem = SoundSystem.CreateFromPreset(
-    preset,
-    listener,
-    mixer,
-    true);
-soundSystem.StartAutoEvict(60f);
-soundSystem.Dispose();
-```
-
-## 基本的な使い方
-### BGM再生
-```csharp
-//通常再生
-await soundSystem.PlayBGM("bgm_title", 1.0f);
-
-//フェード再生
-await soundSystem.FadeInBGM("bgm_intro", 2.0f, 1.0f);
-
-//クロスフェード
-await soundSystem.CrossFadeBGM("bgm_battle", 2.0f);
-
-//プリセット再生
-await soundSystem.PlayBGMWithPreset("bgm_battle", "BattlePreset");
-```
-
-### SE再生
-```csharp
-//通常再生
-await soundSystem.PlaySE("se_click", Vector3.zero, 1.0f, 1.0f, 1.0f);
-
-//プリセット再生
-await soundSystem.PlaySEWithPreset("se_explosion", "ExplosionPreset");
-```
-
-### Mixer操作
-```csharp
-//音量パラメータの取得・設定
-float? volume = soundSystem.RetrieveMixerParameter("MasterVolume");
-soundSystem.RetrieveMixerParameter("MasterVolume", -10.0f);
-```
-
-### エフェクト適用
-```csharp
-//リバーブフィルター適用
-soundSystem.ApplyEffectFilter<AudioReverbFilter>(
-    filter => filter.reverbLevel = 1000f);
-
-//全フィルター無効化
-soundSystem.DisableAllEffectFilter();
-```
