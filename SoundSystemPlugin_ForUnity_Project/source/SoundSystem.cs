@@ -2,6 +2,7 @@ namespace SoundSystem
 {
     using Cysharp.Threading.Tasks;
     using System;
+    using System.Threading;
     using UnityEngine;
     using UnityEngine.Audio;
     
@@ -10,7 +11,7 @@ namespace SoundSystem
     /// - 各マネージャと機能インターフェースを外部から受け取り統一的に管理<para></para>
     /// - 本モジュールに同梱のAudioMixerオブジェクトの使用を前提としている
     /// </summary>
-    public sealed class SoundSystem
+    public sealed class SoundSystem : IDisposable
     {
         private SerializedBGMSettingDictionary bgmPresets;
         private SerializedSESettingDictionary  sePresets;
@@ -19,11 +20,14 @@ namespace SoundSystem
         private readonly SEManager  se;
         private readonly ListenerEffector effector;
 
+        private readonly ISoundCache cache;
+        private CancellationTokenSource autoEvictCTS;
+
         private AudioMixer mixer;
 
         private ISoundLoader loader;
 
-        public SoundSystem(ISoundLoader loader, IAudioSourcePool pool,
+        public SoundSystem(ISoundLoader loader, ISoundCache cache, IAudioSourcePool pool,
             AudioListener listener, AudioMixer mixer, AudioMixerGroup bgmGroup,
             bool canLogging = true)
         {
@@ -35,6 +39,7 @@ namespace SoundSystem
             
             this.mixer  = mixer;
             this.loader = loader;
+            this.cache  = cache;
             bgm         = new(bgmGroup, loader);
             se          = new(pool, loader);
             effector    = new(listener);
@@ -47,7 +52,7 @@ namespace SoundSystem
             var loader = SoundLoaderFactory.Create(cache, preset.loaderType);
             var pool   = AudioSourcePoolFactory.Create(preset.poolType,
                             preset.seMixerG, preset.initSize, preset.maxSize);
-            var ss     = new SoundSystem(loader, pool, listener, mixer, preset.bgmMixerG, canLogging);
+            var ss     = new SoundSystem(loader, cache, pool, listener, mixer, preset.bgmMixerG, canLogging);
             ss.mixer   = mixer;
             ss.loader  = loader;
             ss.SetPresets(preset.bgmPresets, preset.sePresets);
@@ -102,6 +107,37 @@ namespace SoundSystem
         public UniTask<(bool success, AudioClip clip)> PreloadClip(string resourceAddress)
         {
             return loader.PreloadClip(resourceAddress);
+        }
+
+        public void StartAutoEvict(float interval)
+        {
+            StopAutoEvict();
+            autoEvictCTS = new();
+            var token = autoEvictCTS.Token;
+            AutoEvictLoop(interval, token).Forget();
+        }
+
+        public void StopAutoEvict()
+        {
+            autoEvictCTS?.Cancel();
+            autoEvictCTS?.Dispose();
+            autoEvictCTS = null;
+        }
+
+        private async UniTask AutoEvictLoop(float interval, CancellationToken token)
+        {
+            try
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    await UniTask.Delay(TimeSpan.FromSeconds(interval), cancellationToken: token);
+                    cache.Evict();
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                Log.Safe("AutoEvictLoop中断:OperationCanceledException");
+            }
         }
     
         #region BGM
@@ -227,5 +263,11 @@ namespace SoundSystem
             effector.DisableAllFilters();
         }
         #endregion
+
+        public void Dispose()
+        {
+            StopAutoEvict();
+            Log.Close();
+        }
     }
 }
