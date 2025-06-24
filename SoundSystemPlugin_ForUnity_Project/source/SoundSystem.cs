@@ -32,7 +32,7 @@ namespace SoundSystem
 
         public SoundSystem(ISoundLoader loader, ISoundCache cache, IAudioSourcePool pool,
             AudioListener listener, AudioMixer mixer, AudioMixerGroup bgmGroup,
-            bool canLogging = true)
+            bool persistent = false, bool canLogging = true)
         {
             if (canLogging)
             {
@@ -43,24 +43,32 @@ namespace SoundSystem
             this.mixer  = mixer;
             this.loader = loader;
             this.cache  = cache;
-            bgm         = new(bgmGroup, loader);
+            bgm         = new(bgmGroup, loader, persistent);
             se          = new(pool, loader);
             effector    = new(listener);
         }
 
-        public static SoundSystem CreateFromPreset(SoundPresetProperty preset, 
-            AudioListener listener, AudioMixer mixer, bool canLogging = true)
+        public static SoundSystem CreateFromPreset(SoundPresetProperty preset,
+            AudioListener listener, AudioMixer mixer, bool persistent,
+            bool canLogging = true)
         {
             var cache  = SoundCacheFactory.Create(preset.cacheType, preset.param);
             var loader = SoundLoaderFactory.Create(preset.loaderType, cache);
             var pool   = AudioSourcePoolFactory.Create(preset.poolType,
-                            preset.seMixerG, preset.initSize, preset.maxSize);
+                            preset.seMixerG, preset.initSize, preset.maxSize, persistent);
             var ss     = new SoundSystem(loader, cache, pool, listener, mixer,
-                            preset.bgmMixerG, canLogging);
+                            preset.bgmMixerG, persistent, canLogging);
             ss.bgmPresets = preset.bgmPresets;
             ss.sePresets  = preset.sePresets;
             if (preset.enableAutoEvict) ss.StartAutoEvict(preset.autoEvictInterval);
             return ss;
+        }
+
+        public static SoundSystem CreateFromPreset(SoundPresetProperty preset,
+            AudioListener listener, AudioMixer mixer, bool canLogging = true)
+        {
+            return CreateFromPreset(preset, listener, mixer,
+                preset.persistentGameObjects, canLogging);
         }
     
         public float? RetrieveMixerParameter(string exposedParamName)

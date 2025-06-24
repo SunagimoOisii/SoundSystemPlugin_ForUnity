@@ -31,12 +31,16 @@ namespace SoundSystem
         private CancellationTokenSource fadeCTS;
 
         /// <param name="mixerGroup">BGM出力先のAudioMixerGroup</param>
-        public BGMManager(AudioMixerGroup mixerGroup, ISoundLoader loader)
+        public BGMManager(AudioMixerGroup mixerGroup, ISoundLoader loader, bool persistent = false)
         {
             this.loader = loader;
 
             //BGM専用AudioSourceとそれがアタッチされたGameObjectを作成
             sourceRoot = new("BGM_AudioSources");
+            if (persistent)
+            {
+                Object.DontDestroyOnLoad(sourceRoot);
+            }
             bgmSources =
             (
                 CreateSourceObj("BGMSource_0"),

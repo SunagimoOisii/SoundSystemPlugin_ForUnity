@@ -18,10 +18,14 @@ namespace SoundSystem
         protected readonly int initSize;
         public IEnumerable<AudioSource> GetAllResources() => pool;
 
-        public AudioSourcePool_Base(AudioMixerGroup seMixerG, int initSize, int maxSize)
+        public AudioSourcePool_Base(AudioMixerGroup seMixerG, int initSize, int maxSize, bool persistent = false)
         {
             pool          = new();
             sourceRoot    = new("SE_AudioSources");
+            if (persistent)
+            {
+                Object.DontDestroyOnLoad(sourceRoot);
+            }
             this.maxSize  = maxSize;
             this.initSize = initSize;
             this.seMixerG = seMixerG;
