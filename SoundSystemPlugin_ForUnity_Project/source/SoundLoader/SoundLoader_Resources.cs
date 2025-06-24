@@ -21,12 +21,12 @@ namespace SoundSystem
         }
 
         public UniTask<(bool success, AudioClip clip)> PreloadClip(string resourceAddress)
-            => LoadClip(resourceAddress);
+            => LoadClipInternal(resourceAddress);
 
         public UniTask<(bool success, AudioClip clip)> TryLoadClip(string resourceAddress)
-            => LoadClip(resourceAddress);
+            => LoadClipInternal(resourceAddress);
 
-        private async UniTask<(bool success, AudioClip clip)> LoadClip(string resourceAddress)
+        public async UniTask<(bool success, AudioClip clip)> LoadClipInternal(string resourceAddress)
         {
             Log.Safe($"LoadClip実行:{resourceAddress}");
 

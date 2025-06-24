@@ -9,7 +9,7 @@ namespace SoundSystem
 
         UniTask<(bool success, AudioClip clip)> TryLoadClip(string resourceAddress);
 
-        UniTask<(bool success, AudioClip clip)> LoadClip(string resourceAddress);
+        UniTask<(bool success, AudioClip clip)> LoadClipInternal(string resourceAddress);
 
         void ReleaseClip(AudioClip clip);
     }
