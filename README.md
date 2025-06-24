@@ -83,9 +83,10 @@ SoundSystemPreset -->|SEプリセット保持| SerializedSESettingDictionary
 
 
 ## 機能のピックアップ
-### SoundSystem.cs  
-- 外部APIを集約するファサードクラス  
+### SoundSystem.cs
+- 外部APIを集約するファサードクラス
 - `CreateFromPreset` によりプリセットベースの初期化が可能
+- AudioSource用GameObjectをシーン跨ぎで保持する設定に対応
 
 ### BGMManager.cs, SEManager.cs  
 - BGMは `FadeIn`, `FadeOut`, `CrossFade` に対応  
@@ -128,7 +129,8 @@ var soundSystem = new SoundSystem(
     pool,
     listener,
     mixer,
-    mixerGroup);
+    mixerGroup,
+    true);
 soundSystem.StartAutoEvict(60f);
 //利用終了時
 soundSystem.Dispose();
@@ -137,7 +139,8 @@ soundSystem.Dispose();
 var soundSystem = SoundSystem.CreateFromPreset(
     preset,
     listener,
-    mixer);
+    mixer,
+    true);
 soundSystem.StartAutoEvict(60f);
 soundSystem.Dispose();
 ```

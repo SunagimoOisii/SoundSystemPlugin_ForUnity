@@ -12,8 +12,8 @@ namespace SoundSystem
     internal sealed class AudioSourcePool_Strict : AudioSourcePool_Base
     {
         public AudioSourcePool_Strict(AudioMixerGroup mixerG, int initSize,
-            int maxSize)
-            : base(mixerG, initSize, maxSize)
+            int maxSize, bool persistent = false)
+            : base(mixerG, initSize, maxSize, persistent)
         {
         }
     

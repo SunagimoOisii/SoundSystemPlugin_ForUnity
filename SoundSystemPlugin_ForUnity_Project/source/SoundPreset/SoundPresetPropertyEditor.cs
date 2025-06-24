@@ -28,6 +28,7 @@ namespace SoundSystem
         private SerializedProperty poolType;
         private SerializedProperty initSize;
         private SerializedProperty maxSize;
+        private SerializedProperty persistentGameObjects;
 
         private void OnEnable()
         {
@@ -52,6 +53,7 @@ namespace SoundSystem
             poolType = serializedObject.FindProperty("poolType");
             initSize = serializedObject.FindProperty("initSize");
             maxSize  = serializedObject.FindProperty("maxSize");
+            persistentGameObjects = serializedObject.FindProperty("persistentGameObjects");
         }
 
         public override void OnInspectorGUI()
@@ -98,6 +100,7 @@ namespace SoundSystem
             EditorGUILayout.PropertyField(poolType, true);
             EditorGUILayout.PropertyField(initSize, true);
             EditorGUILayout.PropertyField(maxSize, true);
+            EditorGUILayout.PropertyField(persistentGameObjects);
 
             serializedObject.ApplyModifiedProperties();
         }
