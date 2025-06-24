@@ -265,6 +265,9 @@ namespace SoundSystem
         public void Dispose()
         {
             StopAutoEvict();
+            bgm.Dispose();
+            se.Dispose();
+            cache.ClearAll();
             Log.Close();
         }
     }

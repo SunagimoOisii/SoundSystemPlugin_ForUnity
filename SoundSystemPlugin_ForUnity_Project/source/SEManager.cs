@@ -2,12 +2,13 @@ namespace SoundSystem
 {
     using UnityEngine;
     using Cysharp.Threading.Tasks;
-    
+    using System;
+
     /// <summary>
     /// SoundSystemが操作するクラスの1つ<para></para>
     /// - AudioSourcePoolを用いたSE再生<para></para>
     /// </summary>
-    internal sealed class SEManager
+    internal sealed class SEManager : IDisposable
     {
         private readonly IAudioSourcePool sourcePool;
         private readonly ISoundLoader loader;
@@ -82,6 +83,11 @@ namespace SoundSystem
                 if (source == null) continue;
                 source.Pause();
             }
+        }
+
+        public void Dispose()
+        {
+            sourcePool.Destroy();
         }
     }
 }

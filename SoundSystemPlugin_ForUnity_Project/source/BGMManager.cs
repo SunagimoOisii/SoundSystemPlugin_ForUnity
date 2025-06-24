@@ -19,7 +19,7 @@ namespace SoundSystem
     /// <summary>
     /// BGMの再生、停止、フェード機能を提供するクラス<para></para>
     /// </summary>
-    internal sealed class BGMManager
+    internal sealed class BGMManager : IDisposable
     {
         public BGMState State { get; private set; } = BGMState.Idle;
 
@@ -215,6 +215,20 @@ namespace SoundSystem
             {
                 Log.Safe("ExecuteVolumeTransition中断:OperationCanceledException");
             }
+        }
+
+        public void Dispose()
+        {
+            fadeCTS?.Cancel();
+            fadeCTS?.Dispose();
+            fadeCTS = null;
+
+            if (sourceRoot != null)
+            {
+                UnityEngine.Object.Destroy(sourceRoot);
+            }
+
+            bgmSources = (null, null);
         }
     }
 }
