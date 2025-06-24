@@ -35,7 +35,11 @@ namespace SoundSystem
         public SerializedSESettingDictionary sePresets = new();
 
         [Header("SoundLoader設定")]
+#if USE_ADDRESSABLES
         public SoundLoaderFactory.Type loaderType = SoundLoaderFactory.Type.Addressables;
+#else
+        public SoundLoaderFactory.Type loaderType = SoundLoaderFactory.Type.Resources;
+#endif
 
         [Header("SoundCache設定")]
         public SoundCacheFactory.Type cacheType = SoundCacheFactory.Type.LRU;
