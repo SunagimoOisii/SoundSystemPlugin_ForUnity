@@ -6,6 +6,9 @@ bin/
 obj/
 ref/
 
+# サブプロジェクトのビルド成果物
+SoundSystemPlugin_ForUnity_Project/obj/
+
 # その他の一般的なキャッシュや生成ファイル
 *.suo
 *.user
@@ -13,5 +16,3 @@ ref/
 *.log
 *.tmp
 *.userprefs
-SoundSystemPlugin_ForUnity_Project/obj/Debug/netstandard2.1/SoundSystemPlugin_ForUnity_Project.AssemblyInfo.cs
-SoundSystemPlugin_ForUnity_Project/obj/Debug/netstandard2.1/SoundSystemPlugin_ForUnity_Project.AssemblyInfoInputs.cache
