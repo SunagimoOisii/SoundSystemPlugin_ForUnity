@@ -110,9 +110,9 @@ namespace SoundSystem
         public void StartAutoEvict(float interval)
         {
             StopAutoEvict();
+
             autoEvictCTS = new();
-            var token = autoEvictCTS.Token;
-            AutoEvictLoop(interval, token).Forget();
+            AutoEvictLoop(interval, autoEvictCTS.Token).Forget();
         }
 
         public void StopAutoEvict()
@@ -126,7 +126,7 @@ namespace SoundSystem
         {
             try
             {
-                while (!token.IsCancellationRequested)
+                while (token.IsCancellationRequested == false)
                 {
                     await UniTask.Delay(TimeSpan.FromSeconds(interval), cancellationToken: token);
                     cache.Evict();
