@@ -14,7 +14,7 @@ namespace SoundSystem
     public abstract class SerializedPresetDictionary<TPreset> : ISerializationCallbackReceiver
     {
         [SerializeField] private List<TPreset>  presetList = new();
-        private Dictionary<string, TPreset>     presetDict = new();
+        private readonly Dictionary<string, TPreset> presetDict = new();
 
         /// <summary>
         /// キーを指定してプリセットを取得する
