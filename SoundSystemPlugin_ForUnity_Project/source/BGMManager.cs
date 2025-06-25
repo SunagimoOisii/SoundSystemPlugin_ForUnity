@@ -24,6 +24,9 @@ namespace SoundSystem
         public BGMState State { get; private set; } = BGMState.Idle;
 
         private readonly ISoundLoader loader;
+        private readonly ISoundCache cache;
+
+        private string currentKey;
 
         private readonly GameObject sourceRoot = null;
         private (AudioSource active, AudioSource inactive) bgmSources;
@@ -31,9 +34,10 @@ namespace SoundSystem
         private CancellationTokenSource fadeCTS;
 
         /// <param name="mixerGroup">BGM出力先のAudioMixerGroup</param>
-        public BGMManager(AudioMixerGroup mixerGroup, ISoundLoader loader, bool persistent = false)
+        public BGMManager(AudioMixerGroup mixerGroup, ISoundLoader loader, ISoundCache cache, bool persistent = false)
         {
             this.loader = loader;
+            this.cache  = cache;
 
             //BGM専用AudioSourceとそれがアタッチされたGameObjectを作成
             sourceRoot = new("BGM_AudioSources");
@@ -61,7 +65,7 @@ namespace SoundSystem
         }
 
         /// <param name="volume">音量(範囲: 0.0～1.0)</param>
-        public async UniTask Play(string resourceAddress, float volume, 
+        public async UniTask Play(string resourceAddress, float volume,
             Action onComplete = null)
         {
             var (success, clip) = await loader.TryLoadClip(resourceAddress);
@@ -70,6 +74,9 @@ namespace SoundSystem
                 Log.Error($"Play失敗:リソース読込に失敗,{resourceAddress}");
                 return;
             }
+
+            cache.BeginUse(resourceAddress);
+            currentKey = resourceAddress;
 
             State = BGMState.Play;
             bgmSources.active.clip = clip;
@@ -87,6 +94,12 @@ namespace SoundSystem
             State = BGMState.Idle;
             bgmSources.active.Stop();
             bgmSources.active.clip = null;
+
+            if (currentKey != null)
+            {
+                cache.EndUse(currentKey);
+                currentKey = null;
+            }
         }
 
         public void Resume()
@@ -130,6 +143,8 @@ namespace SoundSystem
                 Log.Error($"FadeIn失敗:リソース読込に失敗,{resourceAddress}");
                 return;
             }
+            cache.BeginUse(resourceAddress);
+            currentKey = resourceAddress;
             bgmSources.active.clip = clip;
             bgmSources.active.volume = 0;
             bgmSources.active.Play();
@@ -167,6 +182,12 @@ namespace SoundSystem
             bgmSources.active.Stop();
             bgmSources.active.clip = null;
 
+            if (currentKey != null)
+            {
+                cache.EndUse(currentKey);
+                currentKey = null;
+            }
+
             Log.Safe($"FadeOut終了:dura = {duration}");
         }
 
@@ -181,6 +202,7 @@ namespace SoundSystem
                 Log.Error($"CrossFade失敗:リソース読込に失敗,{resourceAddress}");
                 return;
             }
+            cache.BeginUse(resourceAddress);
             State = BGMState.CrossFade;
             bgmSources.inactive.clip = clip;
             bgmSources.inactive.volume = 0f;
@@ -196,7 +218,12 @@ namespace SoundSystem
                 () => //クロスフェード完遂時の処理
                 {
                     bgmSources.active.Stop();
+                    if (currentKey != null)
+                    {
+                        cache.EndUse(currentKey);
+                    }
                     bgmSources = (bgmSources.inactive, bgmSources.active);
+                    currentKey = resourceAddress;
                     onComplete?.Invoke();
                 });
             State = BGMState.Play;
@@ -248,6 +275,12 @@ namespace SoundSystem
             fadeCTS?.Cancel();
             fadeCTS?.Dispose();
             fadeCTS = null;
+
+            if (currentKey != null)
+            {
+                cache.EndUse(currentKey);
+                currentKey = null;
+            }
 
             if (sourceRoot != null)
             {

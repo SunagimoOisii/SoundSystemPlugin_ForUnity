@@ -12,11 +12,13 @@ namespace SoundSystem
     {
         private readonly IAudioSourcePool sourcePool;
         private readonly ISoundLoader loader;
+        private readonly ISoundCache cache;
     
-        public SEManager(IAudioSourcePool sourcePool, ISoundLoader loader)
+        public SEManager(IAudioSourcePool sourcePool, ISoundLoader loader, ISoundCache cache)
         {
             this.sourcePool = sourcePool;
             this.loader     = loader;
+            this.cache      = cache;
         }
     
         /// <param name="volume">音量(0〜1)</param>
@@ -34,7 +36,8 @@ namespace SoundSystem
                 Log.Error($"Play失敗:リソース読込に失敗,{resourceAddress}");
                 return;
             }
-    
+            cache.BeginUse(resourceAddress);
+
             //AudioSourcePoolを取得
             var source = sourcePool.Retrieve();
             if (source == null)
@@ -50,6 +53,7 @@ namespace SoundSystem
             source.transform.position = position;
             source.PlayOneShot(clip);
             await UniTask.WaitWhile(() => source.isPlaying);
+            cache.EndUse(resourceAddress);
             onComplete?.Invoke();
 
             Log.Safe($"Play成功:{resourceAddress},vol = {volume},pitch = {pitch}," +

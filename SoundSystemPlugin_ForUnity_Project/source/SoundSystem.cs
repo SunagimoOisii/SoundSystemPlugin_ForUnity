@@ -43,8 +43,8 @@ namespace SoundSystem
             this.mixer  = mixer;
             this.loader = loader;
             this.cache  = cache;
-            bgm         = new(bgmGroup, loader, persistent);
-            se          = new(pool, loader);
+            bgm         = new(bgmGroup, loader, cache, persistent);
+            se          = new(pool, loader, cache);
             effector    = new(listener);
         }
 

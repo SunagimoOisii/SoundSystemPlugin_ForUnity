@@ -25,7 +25,16 @@ namespace SoundSystem
             }
     
             int excessCount = cache.Count - maxCacheCount;
-            var keys        = new List<string>(cache.Keys);
+            var keys = new List<string>();
+            foreach (var k in cache.Keys)
+            {
+                if (usageCount.TryGetValue(k, out var c) == false || c <= 0)
+                {
+                    keys.Add(k);
+                }
+            }
+
+            excessCount = Math.Min(excessCount, keys.Count);
     
             Log.Safe($"Evict実行:{excessCount}件削除, max = {maxCacheCount}");
             for (int i = 0; i < excessCount; i++)
