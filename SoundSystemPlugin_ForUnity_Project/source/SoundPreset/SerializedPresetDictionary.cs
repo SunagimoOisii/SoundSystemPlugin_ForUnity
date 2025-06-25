@@ -13,7 +13,7 @@ namespace SoundSystem
     [System.Serializable]
     public abstract class SerializedPresetDictionary<TPreset> : ISerializationCallbackReceiver
     {
-        [SerializeField]　private List<TPreset> presetList = new();
+        [SerializeField] private List<TPreset> presetList = new();
         private Dictionary<string, TPreset>     presetDict = new();
 
         /// <summary>
