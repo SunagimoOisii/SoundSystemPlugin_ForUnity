@@ -68,7 +68,7 @@ namespace SoundSystem
             AudioListener listener, AudioMixer mixer, bool canLogging = true)
         {
             return CreateFromPreset(preset, listener, mixer,
-                preset.persistentGameObjects, canLogging);
+                preset.isPersistentGameObjects, canLogging);
         }
     
         public float? RetrieveMixerParameter(string exposedParamName)

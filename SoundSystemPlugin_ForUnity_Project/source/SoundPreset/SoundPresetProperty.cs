@@ -56,6 +56,6 @@ namespace SoundSystem
         public int maxSize  = 10;
 
         [Header("永続化設定")]
-        public bool persistentGameObjects = false;
+        public bool isPersistentGameObjects = false;
     }
 }
