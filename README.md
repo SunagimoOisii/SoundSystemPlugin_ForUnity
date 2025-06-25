@@ -146,3 +146,6 @@ SoundPresetProperty -->|BGMプリセット| SerializedBGMSettingDictionary
 SoundPresetProperty -->|SEプリセット| SerializedSESettingDictionary
 ```
 
+## ライセンス
+本リポジトリは MIT ライセンスで公開されています。詳細は [LICENSE](LICENSE) を参照してください。
+また、依存ライブラリの UniTask も MIT ライセンスで提供されています。第三者ライセンスの一覧は [THIRD-PARTY-LICENSE](THIRD-PARTY-LICENSE) を参照してください。
