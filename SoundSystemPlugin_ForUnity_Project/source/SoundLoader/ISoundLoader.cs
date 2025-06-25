@@ -11,6 +11,6 @@ namespace SoundSystem
 
         UniTask<(bool success, AudioClip clip)> LoadClipInternal(string resourceAddress);
 
-        void ReleaseClip(AudioClip clip);
+        void UnloadClip(AudioClip clip);
     }
 }

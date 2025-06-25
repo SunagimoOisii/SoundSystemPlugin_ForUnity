@@ -43,7 +43,7 @@ namespace SoundSystem
             if (cache.TryGetValue(resourceAddress, out var clip))
             {
                 Log.Safe($"Remove実行:{resourceAddress}");
-                loader?.ReleaseClip(clip);
+                loader?.UnloadClip(clip);
                 cache.Remove(resourceAddress);
             }
         }
@@ -56,7 +56,7 @@ namespace SoundSystem
             Log.Safe("ClearAll実行");
             foreach (var clip in cache.Values)
             {
-                loader?.ReleaseClip(clip);
+                loader?.UnloadClip(clip);
             }
             cache.Clear();
         }
