@@ -6,7 +6,7 @@ Unity 上での BGM・SE 管理を一本化するためのライブラリです�
 ## 主な機能
 - BGM 再生：FadeIn / FadeOut / CrossFade に対応
 - SE 再生：AudioSource プールで効率的に管理（FIFO または Strict）
-- SoundLoader：Addressables 版と Resources 版を選択可能
+- SoundLoader：Addressables / Resources / Streaming から選択可能
 - SoundCache：LRU / TTL / Random の削除方式を提供
 - SoundPresetProperty：BGM・SE のプリセット設定を ScriptableObject として管理
 - ListenerEffector：AudioListener へのフィルター適用・無効化
@@ -28,7 +28,7 @@ Unity 上での BGM・SE 管理を一本化するためのライブラリです�
 ### 手動構成
 ```csharp
 var cache  = SoundCacheFactory.CreateLRU(30f);
-var loader = SoundLoaderFactory.Create(SoundLoaderFactory.Type.Resources, cache);
+var loader = SoundLoaderFactory.Create(SoundLoaderFactory.Type.Streaming, cache);
 var pool   = AudioSourcePoolFactory.Create(
     AudioSourcePoolFactory.Type.FIFO,
     mixerGroup,
@@ -97,6 +97,7 @@ ListenerEffector
 ISoundLoader
 SoundLoader_Addressables
 SoundLoader_Resources
+SoundLoader_Streaming
 SoundLoaderFactory
 ISoundCache
 SoundCache_Base
@@ -120,8 +121,10 @@ SoundSystem -->|プリセット読込| SoundPresetProperty
 SoundSystem -->|生成| SoundLoaderFactory
 SoundLoaderFactory -->|生成| SoundLoader_Addressables
 SoundLoaderFactory -->|生成| SoundLoader_Resources
+SoundLoaderFactory -->|生成| SoundLoader_Streaming
 SoundLoader_Addressables -->|依存| ISoundCache
 SoundLoader_Resources -->|依存| ISoundCache
+SoundLoader_Streaming -->|依存| ISoundCache
 SoundLoader_Addressables -->|間接依存| SoundCacheFactory
 BGMManager -->|利用| ISoundLoader
 SEManager -->|利用| ISoundLoader

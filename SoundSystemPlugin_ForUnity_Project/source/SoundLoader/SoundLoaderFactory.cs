@@ -12,7 +12,8 @@ namespace SoundSystem
 #if USE_ADDRESSABLES
             Addressables,
 #endif
-            Resources
+            Resources,
+            Streaming
         }
 
         public static ISoundLoader Create(Type type, ISoundCache cache)
@@ -23,6 +24,7 @@ namespace SoundSystem
                 Type.Addressables => new SoundLoader_Addressables(cache),
 #endif
                 Type.Resources    => new SoundLoader_Resources(cache),
+                Type.Streaming    => new SoundLoader_Streaming(cache),
                 _ => throw new ArgumentOutOfRangeException(nameof(type))
             };
         }
