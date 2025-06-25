@@ -42,7 +42,8 @@ namespace SoundSystem
     
             foreach (var entry in registerTime)
             {
-                if (currentTime - entry.Value > ttlSeconds)
+                if (currentTime - entry.Value > ttlSeconds &&
+                    (usageCount.TryGetValue(entry.Key, out var count) == false || count <= 0))
                 {
                     toRemove.Add(entry.Key);
                 }

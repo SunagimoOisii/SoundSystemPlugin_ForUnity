@@ -11,6 +11,7 @@ Unity 上での BGM・SE 管理を一本化するためのライブラリです�
 - SoundPresetProperty：BGM・SE のプリセット設定を ScriptableObject として管理
 - ListenerEffector：AudioListener へのフィルター適用・無効化
 - オートエビクト：一定間隔でキャッシュを自動削除
+- 使用中のサウンドはキャッシュから削除しない参照カウント機能
 - オートディスポーズ：シーン変更時の自動解放を選択可能
 - ロギング：Safe / Warn / Error の 3 段階でログファイルを出力
 
@@ -145,6 +146,10 @@ AudioSourcePool_Strict -->|継承| AudioSourcePool_Base
 SoundPresetProperty -->|BGMプリセット| SerializedBGMSettingDictionary
 SoundPresetProperty -->|SEプリセット| SerializedSESettingDictionary
 ```
+
+## 既存コードへの影響
+`ISoundCache` に参照カウント用の `BeginUse` / `EndUse` が追加されました。
+既存の実装クラスを利用している場合は、これらのメソッドを適宜呼び出す必要があります。
 
 ## ライセンス
 本リポジトリは MIT ライセンスで公開されています。詳細は [LICENSE](LICENSE) を参照してください。

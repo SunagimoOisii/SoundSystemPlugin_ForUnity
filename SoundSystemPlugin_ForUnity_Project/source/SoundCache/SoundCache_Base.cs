@@ -10,6 +10,7 @@ namespace SoundSystem
     internal abstract class SoundCache_Base : ISoundCache
     {
         protected readonly Dictionary<string, AudioClip> cache = new();
+        protected readonly Dictionary<string, int> usageCount = new();
         private ISoundLoader loader;
 
         internal void SetLoader(ISoundLoader l)
@@ -36,6 +37,10 @@ namespace SoundSystem
         public virtual void Add(string resourceAddress, AudioClip clip)
         {
             cache[resourceAddress] = clip;
+            if (usageCount.ContainsKey(resourceAddress) == false)
+            {
+                usageCount[resourceAddress] = 0;
+            }
         }
     
         public virtual void Remove(string resourceAddress)
@@ -45,6 +50,7 @@ namespace SoundSystem
                 Log.Safe($"Remove実行:{resourceAddress}");
                 loader?.UnloadClip(clip);
                 cache.Remove(resourceAddress);
+                usageCount.Remove(resourceAddress);
             }
         }
     
@@ -59,8 +65,30 @@ namespace SoundSystem
                 loader?.UnloadClip(clip);
             }
             cache.Clear();
+            usageCount.Clear();
         }
-    
+
         public abstract void Evict();
+
+        public void BeginUse(string resourceAddress)
+        {
+            if (usageCount.ContainsKey(resourceAddress))
+            {
+                usageCount[resourceAddress]++;
+            }
+            else
+            {
+                usageCount[resourceAddress] = 1;
+            }
+        }
+
+        public void EndUse(string resourceAddress)
+        {
+            if (usageCount.TryGetValue(resourceAddress, out var count))
+            {
+                count--;
+                usageCount[resourceAddress] = count;
+            }
+        }
     }
 }

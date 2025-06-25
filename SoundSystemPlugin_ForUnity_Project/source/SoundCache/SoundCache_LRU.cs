@@ -49,10 +49,11 @@ namespace SoundSystem
         {
             var currentTime = Time.time;
             var toRemove = new List<string>();
-    
+
             foreach (var entry in lastAccessTime)
             {
-                if (currentTime - entry.Value > idleTimeThreshold)
+                if (currentTime - entry.Value > idleTimeThreshold &&
+                    (usageCount.TryGetValue(entry.Key, out var count) == false || count <= 0))
                 {
                     toRemove.Add(entry.Key);
                 }
