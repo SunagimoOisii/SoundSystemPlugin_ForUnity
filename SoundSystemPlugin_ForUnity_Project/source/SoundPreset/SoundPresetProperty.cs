@@ -28,11 +28,11 @@ namespace SoundSystem
 
         [Header("BGM")]
         public AudioMixerGroup bgmMixerG;
-        public SerializedBGMSettingDictionary bgmPresets = new();
+        public SerializedBGMPresetDictionary bgmPresets = new();
 
         [Header("SE")]
         public AudioMixerGroup seMixerG;
-        public SerializedSESettingDictionary sePresets = new();
+        public SerializedSEPresetDictionary sePresets = new();
 
         [Header("SoundLoader設定")]
 #if USE_ADDRESSABLES

@@ -14,8 +14,8 @@ namespace SoundSystem
     /// </summary>
     public sealed class SoundSystem : IDisposable
     {
-        private SerializedBGMSettingDictionary bgmPresets;
-        private SerializedSESettingDictionary  sePresets;
+        private SerializedBGMPresetDictionary bgmPresets;
+        private SerializedSEPresetDictionary  sePresets;
 
         private readonly BGMManager bgm;
         private readonly SEManager  se;
