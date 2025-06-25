@@ -26,6 +26,9 @@
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>ref\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestAudioModule">
+      <HintPath>ref\UnityEngine.UnityWebRequestAudioModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.UnityWebRequestModule">
       <HintPath>ref\UnityEngine.UnityWebRequestModule.dll</HintPath>
     </Reference>

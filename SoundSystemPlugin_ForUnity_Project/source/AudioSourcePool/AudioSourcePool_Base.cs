@@ -29,7 +29,9 @@ namespace SoundSystem
             this.maxSize  = maxSize;
             this.initSize = initSize;
             this.seMixerG = seMixerG;
-    
+            
+            if(this.initSize > maxSize) this.initSize = maxSize;
+
             //プール初期化
             for (int i = 0; i < initSize; i++)
             {
