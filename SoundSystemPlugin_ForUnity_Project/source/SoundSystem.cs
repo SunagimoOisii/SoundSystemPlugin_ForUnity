@@ -49,7 +49,7 @@ namespace SoundSystem
         }
 
         public static SoundSystem CreateFromPreset(SoundPresetProperty preset,
-            AudioListener listener, AudioMixer mixer, bool persistent,
+            AudioListener listener, AudioMixer mixer, bool persistent = false,
             bool canLogging = true)
         {
             var cache  = SoundCacheFactory.Create(preset.cacheType, preset.param);
