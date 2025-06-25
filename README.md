@@ -23,6 +23,7 @@ Unity 上での BGM・SE 管理を一本化するためのライブラリです�
 1. UniTask と（必要に応じて）Addressables をプロジェクトに導入します。
 2. 本リポジトリをビルドして生成される `SoundSystem.dll` を `Assets/Plugins` に配置します。
 3. Addressables を利用する場合は Player Settings の `Scripting Define Symbols` に `USE_ADDRESSABLES` を追加します。
+4. 本ライブラリおよび依存ライブラリの UniTask は MIT ライセンスで公開されています。詳細は `LICENSE` と `THIRD-PARTY-LICENSE` を参照してください。
 
 ## 初期化例
 ### 手動構成
@@ -145,4 +146,8 @@ AudioSourcePool_Strict -->|継承| AudioSourcePool_Base
 SoundPresetProperty -->|BGMプリセット| SerializedBGMSettingDictionary
 SoundPresetProperty -->|SEプリセット| SerializedSESettingDictionary
 ```
+
+## ライセンス
+本リポジトリは MIT ライセンスで公開されています。詳細は [LICENSE](LICENSE) を参照してください。
+また、依存ライブラリの UniTask も MIT ライセンスで提供されています。第三者ライセンスの一覧は [THIRD-PARTY-LICENSE](THIRD-PARTY-LICENSE) を参照してください。
 
