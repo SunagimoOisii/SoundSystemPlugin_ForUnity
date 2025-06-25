@@ -5,7 +5,8 @@ namespace SoundSystem
     using UnityEngine.Networking;
 
     /// <summary>
-    /// URL から AudioClip を読み込むローダー
+    /// サウンドリソースのロードを担うクラス<para></para>
+    ///  - HTTP ストリーミングで指定 URL から AudioClip を読込
     /// </summary>
     public class SoundLoader_Streaming : ISoundLoader
     {
@@ -41,11 +42,7 @@ namespace SoundSystem
             var operation = request.SendWebRequest();
             await operation;
 
-#if UNITY_2020_2_OR_NEWER
             bool hasError = request.result != UnityWebRequest.Result.Success;
-#else
-            bool hasError = request.isNetworkError || request.isHttpError;
-#endif
             if (hasError)
             {
                 Log.Error($"LoadClip失敗:{resourceAddress},Error = {request.error}");
