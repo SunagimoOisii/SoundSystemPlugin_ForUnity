@@ -5,6 +5,7 @@ namespace SoundSystem
     using System;
     using System.Linq;
     using System.Collections.Generic;
+    using System.Threading;
 
     /// <summary>
     /// SoundSystemが操作するクラスの1つ<para></para>
