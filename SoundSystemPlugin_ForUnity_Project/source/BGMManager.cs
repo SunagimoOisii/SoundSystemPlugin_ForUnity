@@ -246,7 +246,8 @@ namespace SoundSystem
                         State = BGMState.Idle;
                     }
                 },
-                created => fadeCTS = created);
+                created => fadeCTS = created;
+                });
         }
 
         public void Dispose()
