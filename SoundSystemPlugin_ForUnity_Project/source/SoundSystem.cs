@@ -202,7 +202,15 @@ namespace SoundSystem
             await se.Play(resourceAddress, volume, pitch, spatialBlend, position,
                 onComplete);
         }
-    
+
+        public async UniTask FadeInSE(string resourceAddress, float duration,
+            Vector3 position = default, float volume = 0.5f, float pitch = 1.0f,
+            float spatialBlend = 1.0f, Action onComplete = null)
+        {
+            await se.FadeIn(resourceAddress, duration, volume, pitch, spatialBlend,
+                position, onComplete);
+        }
+
         public async UniTask PlaySEWithPreset(string resourceAddress, string presetName,
             Action onComplete = null)
         {
@@ -213,7 +221,17 @@ namespace SoundSystem
                     onComplete);
             }
         }
-    
+
+        public async UniTask FadeInSEWithPreset(string resourceAddress, string presetName,
+            float duration, Action onComplete = null)
+        {
+            if (TryRetrieveSEPreset(presetName, out SoundPresetProperty.SEPreset preset))
+            {
+                await se.FadeIn(resourceAddress, duration, preset.volume, preset.pitch,
+                    preset.spatialBlend, preset.position, onComplete);
+            }
+        }
+
         public void StopAllSE()
         {
             se.StopAll();
@@ -227,6 +245,20 @@ namespace SoundSystem
         public void PauseAllSE()
         {
             se.PauseAll();
+        }
+
+        public async UniTask FadeOutAllSE(float duration, Action onComplete = null)
+        {
+            await se.FadeOutAll(duration, onComplete);
+        }
+
+        public async UniTask FadeOutAllSEWithPreset(string presetName, float duration,
+            Action onComplete = null)
+        {
+            if (TryRetrieveSEPreset(presetName, out _))
+            {
+                await se.FadeOutAll(duration, onComplete);
+            }
         }
         #endregion
     

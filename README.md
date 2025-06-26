@@ -65,6 +65,8 @@ await soundSystem.PlayBGMWithPreset("bgm_battle", "BattlePreset");
 ```csharp
 await soundSystem.PlaySE("se_click", Vector3.zero, 1.0f, 1.0f, 1.0f);
 await soundSystem.PlaySEWithPreset("se_explosion", "ExplosionPreset");
+await soundSystem.FadeInSE("se_beam", 0.5f);
+await soundSystem.FadeOutAllSE(1.0f);
 ```
 ### Mixer パラメータ
 ```csharp

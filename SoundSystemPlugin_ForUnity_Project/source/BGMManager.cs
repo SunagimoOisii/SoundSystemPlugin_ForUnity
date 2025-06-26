@@ -4,7 +4,6 @@ namespace SoundSystem
     using UnityEngine;
     using Cysharp.Threading.Tasks;
     using UnityEngine.Audio;
-    using System.Threading;
 
     public enum BGMState
     {
@@ -27,8 +26,7 @@ namespace SoundSystem
 
         private readonly GameObject sourceRoot = null;
         private (AudioSource active, AudioSource inactive) bgmSources;
-
-        private CancellationTokenSource fadeCTS;
+        private (AudioSourceFader active, AudioSourceFader inactive) faders;
 
         /// <param name="mixerGroup">BGM出力先のAudioMixerGroup</param>
         public BGMManager(AudioMixerGroup mixerGroup, ISoundLoader loader, bool persistent = false)
@@ -46,6 +44,8 @@ namespace SoundSystem
                 CreateSourceObj("BGMSource_0"),
                 CreateSourceObj("BGMSource_1")
             );
+            faders = (new AudioSourceFader(bgmSources.active),
+                      new AudioSourceFader(bgmSources.inactive));
 
             AudioSource CreateSourceObj(string name)
             {
@@ -135,12 +135,9 @@ namespace SoundSystem
             bgmSources.active.Play();
 
             State = BGMState.FadeIn;
-            await ExecuteVolumeTransition(
-                duration,
-                progressRate => bgmSources.active.volume = Mathf.Lerp(0f, volume, progressRate),
-                onComplete
-                );
+            await faders.active.Fade(0f, volume, duration);
             State = BGMState.Play;
+            onComplete?.Invoke();
 
             Log.Safe($"FadeIn終了:{resourceAddress},dura = {duration},vol = {volume}");
         }
@@ -157,15 +154,12 @@ namespace SoundSystem
             State = BGMState.FadeOut;
 
             float startVol = bgmSources.active.volume;
-            await ExecuteVolumeTransition(
-                duration,
-                progressRate => bgmSources.active.volume = Mathf.Lerp(startVol, 0.0f, progressRate),
-                onComplete
-                );
+            await faders.active.Fade(startVol, 0.0f, duration);
 
             State = BGMState.Idle;
             bgmSources.active.Stop();
             bgmSources.active.clip = null;
+            onComplete?.Invoke();
 
             Log.Safe($"FadeOut終了:dura = {duration}");
         }
@@ -186,68 +180,23 @@ namespace SoundSystem
             bgmSources.inactive.volume = 0f;
             bgmSources.inactive.Play();
 
-            await ExecuteVolumeTransition(
-                duration,
-                progressRate =>
-                {
-                    bgmSources.active.volume = Mathf.Lerp(1f, 0f, progressRate);
-                    bgmSources.inactive.volume = Mathf.Lerp(0f, 1f, progressRate);
-                },
-                () => //クロスフェード完遂時の処理
-                {
-                    bgmSources.active.Stop();
-                    bgmSources = (bgmSources.inactive, bgmSources.active);
-                    onComplete?.Invoke();
-                });
+            await UniTask.WhenAll(
+                faders.active.Fade(1f, 0f, duration),
+                faders.inactive.Fade(0f, 1f, duration)
+            );
+            bgmSources.active.Stop();
+            bgmSources = (bgmSources.inactive, bgmSources.active);
+            faders = (faders.inactive, faders.active);
+            onComplete?.Invoke();
             State = BGMState.Play;
 
             Log.Safe($"CrossFade終了:{resourceAddress}");
         }
 
-        private async UniTask ExecuteVolumeTransition(float duration, Action<float> onProgress,
-            Action onComplete = null)
-        {
-            //既にフェード処理が行われていた場合は上書き
-            fadeCTS?.Cancel();
-            fadeCTS?.Dispose();
-            fadeCTS = new();
-            var token = fadeCTS.Token;
-
-            try //フェード実行
-            {
-                float elapsed = 0f;
-                while (elapsed < duration)
-                {
-                    if (token.IsCancellationRequested) return;
-
-                    float t = elapsed / duration;
-                    onProgress(t);
-
-                    elapsed += Time.deltaTime;
-                    await UniTask.Yield();
-                }
-
-                onProgress(1.0f);
-                onComplete?.Invoke();
-            }
-            catch (OperationCanceledException)
-            {
-                Log.Safe("ExecuteVolumeTransition中断:OperationCanceledException");
-
-                onComplete?.Invoke();
-                if (fadeCTS != null &&
-                    fadeCTS.Token == token)
-                {
-                    State = BGMState.Idle;
-                }
-            }
-        }
-
         public void Dispose()
         {
-            fadeCTS?.Cancel();
-            fadeCTS?.Dispose();
-            fadeCTS = null;
+            faders.active.Dispose();
+            faders.inactive.Dispose();
 
             if (sourceRoot != null)
             {
