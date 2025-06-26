@@ -41,7 +41,7 @@ namespace SoundSystem
                 var created = CreateSourceWithOwnerGameObject();
                 pool.Enqueue(created);
                 return created;
-            }            
+            }
             return null;
         }
     }

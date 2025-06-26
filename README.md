@@ -5,7 +5,7 @@ Unity 上での BGM・SE 管理を一本化するためのライブラリです�
 
 ## 主な機能
 - BGM 再生：FadeIn / FadeOut / CrossFade に対応
-- SE 再生：AudioSource プールで効率的に管理（FIFO または Strict）
+- SE 再生：AudioSource プールで効率的に管理（FIFO または Strict）、FadeIn / 全体フェードアウト対応
 - SoundLoader：Addressables / Resources / Streaming から選択可能
 - SoundCache：LRU / TTL / Random の削除方式を提供
 - SoundPresetProperty：BGM・SE のプリセット設定を ScriptableObject として管理
@@ -66,6 +66,9 @@ await soundSystem.PlayBGMWithPreset("bgm_battle", "BattlePreset");
 ```csharp
 await soundSystem.PlaySE("se_click", Vector3.zero, 1.0f, 1.0f, 1.0f);
 await soundSystem.PlaySEWithPreset("se_explosion", "ExplosionPreset");
+await soundSystem.FadeInSE("se_wind", 1.5f);
+await soundSystem.FadeOutAllSE(1.0f);
+await soundSystem.FadeInSEWithPreset("se_magic", "MagicPreset");
 ```
 ### Mixer パラメータ
 ```csharp

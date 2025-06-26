@@ -24,6 +24,8 @@ namespace SoundSystem
             [Range(0f, 1f)] public float pitch;
             [Range(0f, 1f)] public float spatialBlend; //0 = 2D, 1 = 3D
             public Vector3 position;
+            [Range(0f, 1f)] public float fadeInDuration;
+            [Range(0f, 1f)] public float fadeOutDuration;
         }
 
         [Header("BGM")]
