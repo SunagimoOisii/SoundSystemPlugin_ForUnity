@@ -234,40 +234,19 @@ namespace SoundSystem
         private async UniTask ExecuteVolumeTransition(float duration, Action<float> onProgress,
             Action onComplete = null)
         {
-            //既にフェード処理が行われていた場合は上書き
-            fadeCTS?.Cancel();
-            fadeCTS?.Dispose();
-            fadeCTS = new();
-            var token = fadeCTS.Token;
-
-            try //フェード実行
-            {
-                float elapsed = 0f;
-                while (elapsed < duration)
+            await FadeUtility.ExecuteVolumeTransition(
+                fadeCTS,
+                duration,
+                onProgress,
+                onComplete,
+                token =>
                 {
-                    if (token.IsCancellationRequested) return;
-
-                    float t = elapsed / duration;
-                    onProgress(t);
-
-                    elapsed += Time.deltaTime;
-                    await UniTask.Yield();
-                }
-
-                onProgress(1.0f);
-                onComplete?.Invoke();
-            }
-            catch (OperationCanceledException)
-            {
-                Log.Safe("ExecuteVolumeTransition中断:OperationCanceledException");
-
-                onComplete?.Invoke();
-                if (fadeCTS != null &&
-                    fadeCTS.Token == token)
-                {
-                    State = BGMState.Idle;
-                }
-            }
+                    if (fadeCTS != null && fadeCTS.Token == token)
+                    {
+                        State = BGMState.Idle;
+                    }
+                },
+                created => fadeCTS = created);
         }
 
         public void Dispose()
