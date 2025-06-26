@@ -25,36 +25,6 @@ namespace SoundSystem
             this.loader     = loader;
             this.cache      = cache;
         }
-
-        private void CancelFade(AudioSource source)
-        {
-            if (fadeCtsMap.TryGetValue(source, out var cts))
-            {
-                cts.Cancel();
-                cts.Dispose();
-                fadeCtsMap.Remove(source);
-            }
-        }
-
-        private void RegisterKey(AudioSource source, string key)
-        {
-            playingKeyMap[source] = key;
-        }
-
-        private void UnregisterKey(AudioSource source)
-        {
-            if (playingKeyMap.TryGetValue(source, out var key))
-            {
-                cache.EndUse(key);
-                playingKeyMap.Remove(source);
-            }
-        }
-
-        private void BeginPlaying(AudioSource source, string key)
-        {
-            CancelFade(source);
-            RegisterKey(source, key);
-        }
     
         /// <param name="volume">音量(0〜1)</param>
         /// <param name="pitch">ピッチ(0〜1)</param>
@@ -81,7 +51,8 @@ namespace SoundSystem
                 return;
             }
 
-            BeginPlaying(source, resourceAddress);
+            CancelFade(source);
+            RegisterResourceAddress(source, resourceAddress);
 
             //指定の音声設定で再生
             source.pitch              = pitch;
@@ -90,7 +61,7 @@ namespace SoundSystem
             source.transform.position = position;
             source.PlayOneShot(clip);
             await UniTask.WaitWhile(() => source.isPlaying);
-            UnregisterKey(source);
+            UnregisterResourceAddress(source);
             onComplete?.Invoke();
 
             Log.Safe($"Play成功:{resourceAddress},vol = {volume},pitch = {pitch}," +
@@ -118,7 +89,8 @@ namespace SoundSystem
                 return;
             }
 
-            BeginPlaying(source, resourceAddress);
+            CancelFade(source);
+            RegisterResourceAddress(source, resourceAddress);
 
             source.pitch              = pitch;
             source.spatialBlend       = spatialBlend;
@@ -127,45 +99,16 @@ namespace SoundSystem
             source.volume             = 0f;
             source.Play();
 
-            await FadeUtility.ExecuteVolumeTransition(
-                null,
+            await ExecuteVolumeTransition(
+                source,
                 duration,
-                t => source.volume = Mathf.Lerp(0f, volume, t),
-                () => fadeCtsMap.Remove(source),
-                _ => fadeCtsMap.Remove(source),
-                created => fadeCtsMap[source] = created);
+                t => source.volume = Mathf.Lerp(0f, volume, t));
 
             await UniTask.WaitWhile(() => source.isPlaying);
-            UnregisterKey(source);
+            UnregisterResourceAddress(source);
             onComplete?.Invoke();
 
             Log.Safe($"FadeIn終了:{resourceAddress}");
-        }
-
-        private async UniTask FadeOutSource(AudioSource source, float duration)
-        {
-            CancelFade(source);
-
-            float start = source.volume;
-            await FadeUtility.ExecuteVolumeTransition(
-                null,
-                duration,
-                t => source.volume = Mathf.Lerp(start, 0f, t),
-                () =>
-                {
-                    source.Stop();
-                    source.clip = null;
-                    UnregisterKey(source);
-                    fadeCtsMap.Remove(source);
-                },
-                _ =>
-                {
-                    source.Stop();
-                    source.clip = null;
-                    UnregisterKey(source);
-                    fadeCtsMap.Remove(source);
-                },
-                created => fadeCtsMap[source] = created);
         }
 
         public async UniTask FadeOutAll(float duration, Action onComplete = null)
@@ -182,7 +125,79 @@ namespace SoundSystem
 
             Log.Safe($"FadeOut終了:dura = {duration}");
         }
-    
+
+        private async UniTask FadeOutSource(AudioSource source, float duration)
+        {
+            CancelFade(source);
+
+            float start = source.volume;
+            await ExecuteVolumeTransition(
+                source,
+                duration,
+                t => source.volume = Mathf.Lerp(start, 0f, t),
+                () =>
+                {
+                    source.Stop();
+                    source.clip = null;
+                    UnregisterResourceAddress(source);
+                });
+        }
+
+        private async UniTask ExecuteVolumeTransition(AudioSource source,
+            float duration, Action<float> onProgress, Action onComplete = null)
+        {
+            var cts = new CancellationTokenSource();
+            fadeCtsMap[source] = cts;
+
+            float elapsed = 0f;
+            var token = cts.Token;
+            while (elapsed < duration)
+            {
+                if (token.IsCancellationRequested)
+                {
+                    cts.Dispose();
+                    fadeCtsMap.Remove(source);
+                    return;
+                }
+
+                float t = elapsed / duration;
+                onProgress(t);
+
+                elapsed += Time.deltaTime;
+                await UniTask.Yield();
+            }
+
+            onProgress(1.0f);
+            onComplete?.Invoke();
+
+            cts.Dispose();
+            fadeCtsMap.Remove(source);
+        }
+
+        private void RegisterResourceAddress(AudioSource source, string resourceAddress)
+        {
+            playingKeyMap[source] = resourceAddress;
+        }
+
+        private void UnregisterResourceAddress(AudioSource source)
+        {
+            if (playingKeyMap.TryGetValue(source, out var resourceAddress))
+            {
+                cache.EndUse(resourceAddress);
+                playingKeyMap.Remove(source);
+            }
+        }
+
+        private void CancelFade(AudioSource source)
+        {
+            if (fadeCtsMap.TryGetValue(source, out var cts))
+            {
+                cts.Cancel();
+                cts.Dispose();
+                fadeCtsMap.Remove(source);
+            }
+        }
+
         public void StopAll()
         {
             Log.Safe("StopAll実行");

@@ -145,7 +145,7 @@ namespace SoundSystem
             }
             cache.BeginUse(resourceAddress);
             currentKey = resourceAddress;
-            bgmSources.active.clip = clip;
+            bgmSources.active.clip   = clip;
             bgmSources.active.volume = 0;
             bgmSources.active.Play();
 
@@ -212,10 +212,10 @@ namespace SoundSystem
                 duration,
                 progressRate =>
                 {
-                    bgmSources.active.volume = Mathf.Lerp(1f, 0f, progressRate);
+                    bgmSources.active.volume   = Mathf.Lerp(1f, 0f, progressRate);
                     bgmSources.inactive.volume = Mathf.Lerp(0f, 1f, progressRate);
                 },
-                () => //クロスフェード完遂時の処理
+                () => //onComplete
                 {
                     bgmSources.active.Stop();
                     if (currentKey != null)
@@ -234,20 +234,29 @@ namespace SoundSystem
         private async UniTask ExecuteVolumeTransition(float duration, Action<float> onProgress,
             Action onComplete = null)
         {
-            await FadeUtility.ExecuteVolumeTransition(
-                fadeCTS,
-                duration,
-                onProgress,
-                onComplete,
-                token =>
+            fadeCTS?.Cancel();
+            fadeCTS?.Dispose();
+            fadeCTS = new CancellationTokenSource();
+
+            float elapsed = 0f;
+            var token = fadeCTS.Token;
+            while (elapsed < duration)
+            {
+                if (token.IsCancellationRequested)
                 {
-                    if (fadeCTS != null && fadeCTS.Token == token)
-                    {
-                        State = BGMState.Idle;
-                    }
-                },
-                created => fadeCTS = created
-                );
+                    State = BGMState.Idle;
+                    return;
+                }
+
+                float t = elapsed / duration;
+                onProgress(t);
+
+                elapsed += Time.deltaTime;
+                await UniTask.Yield();
+            }
+
+            onProgress(1.0f);
+            onComplete?.Invoke();
         }
 
         public void Dispose()
