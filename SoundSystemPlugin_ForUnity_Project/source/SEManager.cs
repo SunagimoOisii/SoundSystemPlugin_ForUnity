@@ -126,9 +126,8 @@ namespace SoundSystem
             source.volume             = 0f;
             source.Play();
 
-            CancellationTokenSource cts = null;
             await FadeUtility.ExecuteVolumeTransition(
-                ref cts,
+                null,
                 duration,
                 t => source.volume = Mathf.Lerp(0f, volume, t),
                 () => fadeCtsMap.Remove(source),
@@ -147,9 +146,8 @@ namespace SoundSystem
             CancelFade(source);
 
             float start = source.volume;
-            CancellationTokenSource cts = null;
             await FadeUtility.ExecuteVolumeTransition(
-                ref cts,
+                null,
                 duration,
                 t => source.volume = Mathf.Lerp(start, 0f, t),
                 () =>

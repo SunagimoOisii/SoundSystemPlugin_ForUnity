@@ -235,7 +235,7 @@ namespace SoundSystem
             Action onComplete = null)
         {
             await FadeUtility.ExecuteVolumeTransition(
-                ref fadeCTS,
+                fadeCTS,
                 duration,
                 onProgress,
                 onComplete,
@@ -245,6 +245,8 @@ namespace SoundSystem
                     {
                         State = BGMState.Idle;
                     }
+                },
+                created => fadeCTS = created;
                 });
         }
 

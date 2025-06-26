@@ -11,16 +11,16 @@ namespace SoundSystem
     internal static class FadeUtility
     {
         public static async UniTask ExecuteVolumeTransition(
-            ref CancellationTokenSource cts,
+            CancellationTokenSource current,
             float duration,
             Action<float> onProgress,
             Action onComplete = null,
             Action<CancellationToken> onCanceled = null,
             Action<CancellationTokenSource> onCreated = null)
         {
-            cts?.Cancel();
-            cts?.Dispose();
-            cts = new();
+            current?.Cancel();
+            current?.Dispose();
+            var cts = new CancellationTokenSource();
             onCreated?.Invoke(cts);
             var token = cts.Token;
 
