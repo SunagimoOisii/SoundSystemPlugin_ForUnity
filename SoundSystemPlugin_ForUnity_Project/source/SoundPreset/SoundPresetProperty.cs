@@ -36,28 +36,28 @@ namespace SoundSystem
         public AudioMixerGroup seMixerG;
         public SerializedSEPresetDictionary sePresets = new();
 
-        [Header("SoundLoader設定")]
+        [Header("SoundLoader")]
 #if USE_ADDRESSABLES
         public SoundLoaderFactory.Type loaderType = SoundLoaderFactory.Type.Addressables;
 #else
         public SoundLoaderFactory.Type loaderType = SoundLoaderFactory.Type.Resources;
 #endif
 
-        [Header("SoundCache設定")]
+        [Header("SoundCache")]
         public SoundCacheFactory.Type cacheType = SoundCacheFactory.Type.LRU;
-        public bool enableAutoEvict    = false;
+        public bool  enableAutoEvict   = false;
         public float autoEvictInterval = 60f;
 
         //CustomEditor により、選択キャッシュ方式に応じた変数名がインスペクターでは表示される
         //例: idleTimeThreshold, ttlSeconds
         public float param = 30f;
 
-        [Header("AudioSourcePool設定")]
+        [Header("AudioSourcePool")]
         public AudioSourcePoolFactory.Type poolType = AudioSourcePoolFactory.Type.FIFO;
         public int initSize = 5;
         public int maxSize  = 10;
 
-        [Header("永続化設定")]
+        [Header("Persistence of generated GameObjects")]
         public bool isPersistentGameObjects = false;
     }
 }

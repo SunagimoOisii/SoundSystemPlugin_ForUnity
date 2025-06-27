@@ -10,77 +10,49 @@ namespace SoundSystem
     internal sealed class SoundPresetPropertyEditor : Editor
     {
         //BGM
-        private SerializedProperty bgmPresets;
         private SerializedProperty bgmMixerG;
+        private ToolbarSearchField bgmSearchField;
+        private Label              bgmSearchState;
         private SerializedProperty bgmPresetList;
+        private ScrollView         bgmScrollView;
 
         //SE
-        private SerializedProperty sePresets;
         private SerializedProperty seMixerG;
         private SerializedProperty sePresetList;
-
-        //検索欄
-        private ToolbarSearchField searchField;
+        private Label seSearchState;
+        private ToolbarSearchField seSearchField;
+        private ScrollView seScrollView;
 
         //SoundLoader設定
         private SerializedProperty loaderType;
 
         //SoundCache設定
         private SerializedProperty cacheType;
+        private PropertyField      cacheTypeField;
         private SerializedProperty param;
+        private VisualElement      paramContainer;
         private SerializedProperty enableAutoEvict;
+        private PropertyField      enableAutoEvictField;
         private SerializedProperty autoEvictInterval;
+        private PropertyField      autoEvictIntervalField;
 
         //AudioSourcePool設定
         private SerializedProperty poolType;
         private SerializedProperty initSize;
         private SerializedProperty maxSize;
-        private SerializedProperty persistentGameObjects;
-
-        private void BuildPresetList(SerializedProperty list, VisualElement container, string label)
-        {
-            container.Clear();
-
-            if (list == null) return;
-
-            var title = new Label(label)
-            {
-                style = { unityFontStyleAndWeight = FontStyle.Bold }
-            };
-            container.Add(title);
-
-            string filter = searchField?.value ?? string.Empty;
-            for (int i = 0; i < list.arraySize; i++)
-            {
-                SerializedProperty element = list.GetArrayElementAtIndex(i);
-                SerializedProperty nameProp = element.FindPropertyRelative("presetName");
-                if (nameProp != null && 
-                    string.IsNullOrEmpty(filter) == false)
-                {
-                    string name = nameProp.stringValue;
-                    if (name.IndexOf(filter, System.StringComparison.OrdinalIgnoreCase) < 0)
-                    {
-                        continue;
-                    }
-                }
-
-                var field = new PropertyField(element);
-                field.BindProperty(element);
-                container.Add(field);
-            }
-        }
+        private SerializedProperty persistentGameObjects;        
 
         private void OnEnable()
         {
             //BGM
-            bgmMixerG     = serializedObject.FindProperty("bgmMixerG");
-            bgmPresets    = serializedObject.FindProperty("bgmPresets");
-            bgmPresetList = bgmPresets.FindPropertyRelative("presetList");
+            bgmMixerG      = serializedObject.FindProperty("bgmMixerG");
+            var bgmPresets = serializedObject.FindProperty("bgmPresets");
+            bgmPresetList  = bgmPresets.FindPropertyRelative("presetList");
 
             //SE
-            seMixerG     = serializedObject.FindProperty("seMixerG");
-            sePresets    = serializedObject.FindProperty("sePresets");
-            sePresetList = sePresets.FindPropertyRelative("presetList");
+            seMixerG      = serializedObject.FindProperty("seMixerG");
+            var sePresets = serializedObject.FindProperty("sePresets");
+            sePresetList  = sePresets.FindPropertyRelative("presetList");
 
             //SoundLoader設定
             loaderType = serializedObject.FindProperty("loaderType");
@@ -95,79 +67,179 @@ namespace SoundSystem
             poolType              = serializedObject.FindProperty("poolType");
             initSize              = serializedObject.FindProperty("initSize");
             maxSize               = serializedObject.FindProperty("maxSize");
-            persistentGameObjects = serializedObject.FindProperty("persistentGameObjects");
+            persistentGameObjects = serializedObject.FindProperty("isPersistentGameObjects");
         }
 
         public override VisualElement CreateInspectorGUI()
         {
-            searchField                = new ToolbarSearchField();
-            var bgmContainer           = new VisualElement();
-            var seContainer            = new VisualElement();
-            var loaderField            = new PropertyField(loaderType);
-            var cacheField             = new PropertyField(cacheType);
-            var paramField             = new PropertyField(param);
-            var autoEvictField         = new PropertyField(enableAutoEvict);
-            var autoEvictIntervalField = new PropertyField(autoEvictInterval);
-            var poolTypeField          = new PropertyField(poolType);
-            var initSizeField          = new PropertyField(initSize);
-            var maxSizeField           = new PropertyField(maxSize);
-            var persistentField        = new PropertyField(persistentGameObjects);
-
             var root = new VisualElement();
-            root.Add(searchField);
+
+            //BGM 要素作成
+            bgmSearchField = new ToolbarSearchField();
+            bgmSearchField.RegisterValueChangedCallback(_ => RefreshPresetViews());
+            bgmSearchState = new Label("Searching");
+            bgmSearchState.style.unityFontStyleAndWeight = FontStyle.Bold;
+            bgmSearchState.style.display                 = DisplayStyle.None;
+            bgmScrollView = new ScrollView();
+            var bgmSearchContainer = new VisualElement();
+            bgmSearchContainer.style.flexDirection = FlexDirection.Column;
+            bgmSearchContainer.Add(bgmSearchField);
+            bgmSearchContainer.Add(bgmSearchState);
+            //要素登録
             root.Add(new PropertyField(bgmMixerG));
-            root.Add(bgmContainer);
+            root.Add(new Label("BGM Presets"));
+            root.Add(bgmSearchContainer);
+            root.Add(bgmScrollView);
+
+            //SE 要素作成
+            seSearchField = new ToolbarSearchField();
+            seSearchField.RegisterValueChangedCallback(_ => RefreshPresetViews());
+            seSearchState = new Label("Searching");
+            seSearchState.style.unityFontStyleAndWeight = FontStyle.Bold;
+            seSearchState.style.display                 = DisplayStyle.None;
+            seScrollView = new ScrollView();
+            var seSearchContainer = new VisualElement();
+            seSearchContainer.style.flexDirection = FlexDirection.Column;
+            seSearchContainer.Add(seSearchField);
+            seSearchContainer.Add(seSearchState);
+            //要素作成
             root.Add(new PropertyField(seMixerG));
-            root.Add(seContainer);
-            root.Add(loaderField);
-            root.Add(cacheField);
-            root.Add(paramField);
-            root.Add(autoEvictField);
+            root.Add(new Label("SE Presets"));
+            root.Add(seSearchContainer);
+            root.Add(seScrollView);
+
+            //SoundLoader 要素作成, 登録
+            root.Add(new PropertyField(loaderType));
+
+            //SoundCache 要素作成
+            cacheTypeField = new PropertyField(cacheType);
+            cacheTypeField.RegisterValueChangeCallback(_ => UpdateParamField());
+            paramContainer = new VisualElement();
+            enableAutoEvictField = new PropertyField(enableAutoEvict);
+            enableAutoEvictField.RegisterValueChangeCallback(_ => 
+                autoEvictIntervalField?.SetEnabled(enableAutoEvict.boolValue));
+            autoEvictIntervalField = new PropertyField(autoEvictInterval);
+            //要素登録
+            root.Add(cacheTypeField);
+            root.Add(paramContainer);
+            root.Add(enableAutoEvictField);
             root.Add(autoEvictIntervalField);
-            root.Add(poolTypeField);
-            root.Add(initSizeField);
-            root.Add(maxSizeField);
-            root.Add(persistentField);
+
+            //AudioSourcePool 要素作成, 登録
+            root.Add(new PropertyField(poolType));
+            root.Add(new PropertyField(initSize));
+            root.Add(new PropertyField(maxSize));
+            root.Add(new PropertyField(persistentGameObjects));
 
             root.Bind(serializedObject);
 
-            void Refresh()
+            UpdateParamField();
+            autoEvictIntervalField?.SetEnabled(enableAutoEvict.boolValue);
+            RefreshPresetViews();
+
+            return root;
+        }
+
+        private void UpdateParamField()
+        {
+            paramContainer.Clear();
+            switch ((SoundCacheFactory.Type)cacheType.enumValueIndex)
             {
-                BuildPresetList(bgmPresetList, bgmContainer, "BGM Presets");
-                BuildPresetList(sePresetList, seContainer, "SE Presets");
+                case SoundCacheFactory.Type.LRU:
+                    var fieldLRU = new PropertyField(param, "idleTimeThreshold");
+                    fieldLRU.Bind(serializedObject);
+                    paramContainer.Add(fieldLRU);
+                    break;
 
-                var type = (SoundCacheFactory.Type)cacheType.enumValueIndex;
-                switch (type)
+                case SoundCacheFactory.Type.TTL:
+                    var fieldTTL = new PropertyField(param, "ttlSeconds");
+                    fieldTTL.Bind(serializedObject);
+                    paramContainer.Add(fieldTTL);
+                    break;
+
+                case SoundCacheFactory.Type.Random:
+                    var intField = new IntegerField("maxCacheCount") { value = Mathf.RoundToInt(param.floatValue) };
+                    intField.RegisterValueChangedCallback(e => param.floatValue = e.newValue);
+                    paramContainer.Add(intField);
+                    break;
+            }
+        }
+
+        private void RefreshPresetViews()
+        {
+            string bgmFilter = bgmSearchField?.value ?? string.Empty;
+            string seFilter  = seSearchField?.value ?? string.Empty;
+
+            FillPresetScroll(bgmScrollView, bgmPresetList, "BGM Preset", bgmFilter);
+            FillPresetScroll(seScrollView, sePresetList, "SE Preset", seFilter);
+
+            //検索バーへの入力があれば SearchState ラベルを表示する
+            if (string.IsNullOrEmpty(bgmFilter) == false)
+            {
+                bgmSearchState.style.display = DisplayStyle.Flex;
+            }
+            else bgmSearchState.style.display = DisplayStyle.None;
+
+            if (string.IsNullOrEmpty(seFilter) == false)
+            {
+                seSearchState.style.display = DisplayStyle.Flex;
+            }
+            else seSearchState.style.display = DisplayStyle.None;
+        }
+
+        private void FillPresetScroll(ScrollView target, SerializedProperty list,
+            string label, string filter)
+        {
+            if (target == null ||
+                list   == null) return;
+
+            target.Clear();
+            for (int i = 0; i < list.arraySize; i++)
+            {
+                int index = i;
+                var element  = list.GetArrayElementAtIndex(index);
+                var nameProp = element.FindPropertyRelative("presetName");
+                if (string.IsNullOrEmpty(filter) == false &&
+                    nameProp != null)
                 {
-                    case SoundCacheFactory.Type.LRU:
-                        paramField.label = "idleTimeThreshold";
-                        paramField.style.display = DisplayStyle.Flex;
-                        break;
-
-                    case SoundCacheFactory.Type.TTL:
-                        paramField.label = "ttlSeconds";
-                        paramField.style.display = DisplayStyle.Flex;
-                        break;
-
-                    case SoundCacheFactory.Type.Random:
-                        paramField.label = "maxCacheCount";
-                        paramField.style.display = DisplayStyle.Flex;
-                        break;
-
-                    default:
-                        paramField.style.display = DisplayStyle.None;
-                        break;
+                    string name = nameProp.stringValue;
+                    if (name.IndexOf(filter, System.StringComparison.OrdinalIgnoreCase) < 0)
+                    {
+                        continue;
+                    }
                 }
 
-                autoEvictIntervalField.SetEnabled(enableAutoEvict.boolValue);
+                var field = new PropertyField(element);
+                field.style.flexGrow = 1;
+                field.Bind(serializedObject);
+
+                var container = new VisualElement();
+                container.style.flexDirection = FlexDirection.Row;
+                container.Add(field);
+
+                var removeButton = new Button(() =>
+                {
+                    list.DeleteArrayElementAtIndex(index);
+                    serializedObject.ApplyModifiedProperties();
+                    RefreshPresetViews();
+                })
+                {
+                    text = "Delete"
+                };
+                container.Add(removeButton);
+
+                target.Add(container);
             }
 
-            searchField.RegisterValueChangedCallback(_ => Refresh());
-            cacheField.RegisterValueChangeCallback(_ => Refresh());
-            autoEvictField.RegisterValueChangeCallback(_ => Refresh());
-
-            Refresh();
-            return root;
+            if (string.IsNullOrEmpty(filter) == false) return;
+            var addButton = new Button(() =>
+            {
+                list.InsertArrayElementAtIndex(list.arraySize);
+                serializedObject.ApplyModifiedProperties();
+                RefreshPresetViews();
+            });
+            addButton.text = $"Add {label}";
+            target.Add(addButton);
         }
     }
 }
