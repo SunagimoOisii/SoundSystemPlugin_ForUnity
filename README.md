@@ -8,7 +8,7 @@ Unity 上での BGM・SE 管理を一本化するためのライブラリです�
 - SE 再生：AudioSource プールで効率的に管理（FIFO または Strict）、FadeIn / 全体フェードアウト対応
 - SoundLoader：Addressables / Resources / Streaming から選択可能
 - SoundCache：LRU / TTL / Random の削除方式を提供
-- SoundPresetProperty：BGM・SE のプリセット設定を ScriptableObject として管理
+- SoundPresetProperty：BGM・SE のプリセット設定を ScriptableObject として管理（検索機能付き）
 - ListenerEffector：AudioListener へのフィルター適用・無効化
 - オートエビクト：一定間隔でキャッシュを自動削除
 - 使用中のサウンドはキャッシュから削除しない参照カウント機能

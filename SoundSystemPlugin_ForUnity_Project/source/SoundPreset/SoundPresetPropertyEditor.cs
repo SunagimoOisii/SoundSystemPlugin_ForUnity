@@ -10,10 +10,15 @@ namespace SoundSystem
         //BGM
         private SerializedProperty bgmPresets;
         private SerializedProperty bgmMixerG;
+        private SerializedProperty bgmPresetList;
 
         //SE
         private SerializedProperty sePresets;
         private SerializedProperty seMixerG;
+        private SerializedProperty sePresetList;
+
+        //検索
+        private string searchText = string.Empty;
 
         //SoundLoader設定
         private SerializedProperty loaderType;
@@ -30,15 +35,50 @@ namespace SoundSystem
         private SerializedProperty maxSize;
         private SerializedProperty persistentGameObjects;
 
+        private void DrawPresetList(SerializedProperty list, string label)
+        {
+            if (list == null)
+            {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(searchText))
+            {
+                EditorGUILayout.PropertyField(list, new GUIContent(label), true);
+            }
+            else
+            {
+                EditorGUILayout.LabelField(label, EditorStyles.boldLabel);
+                for (int i = 0; i < list.arraySize; i++)
+                {
+                    SerializedProperty element = list.GetArrayElementAtIndex(i);
+                    var nameProp = element.FindPropertyRelative("presetName");
+                    if (nameProp == null)
+                    {
+                        continue;
+                    }
+                    string name = nameProp.stringValue;
+                    if (name.IndexOf(searchText, System.StringComparison.OrdinalIgnoreCase) < 0)
+                    {
+                        continue;
+                    }
+
+                    EditorGUILayout.PropertyField(element, true);
+                }
+            }
+        }
+
         private void OnEnable()
         {
             //BGM
             bgmMixerG  = serializedObject.FindProperty("bgmMixerG");
             bgmPresets = serializedObject.FindProperty("bgmPresets");
+            bgmPresetList = bgmPresets.FindPropertyRelative("presetList");
 
             //SE
             seMixerG  = serializedObject.FindProperty("seMixerG");
             sePresets = serializedObject.FindProperty("sePresets");
+            sePresetList = sePresets.FindPropertyRelative("presetList");
 
             //SoundLoader設定
             loaderType = serializedObject.FindProperty("loaderType");
@@ -60,13 +100,16 @@ namespace SoundSystem
         {
             serializedObject.Update();
 
+            searchText = EditorGUILayout.ToolbarSearchField(searchText);
+            EditorGUILayout.Space();
+
             //BGM
             EditorGUILayout.PropertyField(bgmMixerG, true);
-            EditorGUILayout.PropertyField(bgmPresets, true);
+            DrawPresetList(bgmPresetList, "BGM Presets");
 
             //SE
             EditorGUILayout.PropertyField(seMixerG, true);
-            EditorGUILayout.PropertyField(sePresets, true);
+            DrawPresetList(sePresetList, "SE Presets");
 
             //SoundLoader設定
             EditorGUILayout.PropertyField(loaderType, true);
