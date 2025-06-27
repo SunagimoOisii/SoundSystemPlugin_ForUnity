@@ -61,7 +61,7 @@ namespace SoundSystem
             }
         }
     
-        public void ReleaseClip(AudioClip clip)
+        public void UnloadClip(AudioClip clip)
         {
             if (clip != null)
             {
