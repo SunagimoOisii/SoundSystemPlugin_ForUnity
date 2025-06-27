@@ -20,6 +20,9 @@
     <Reference Include="UnityEditor.CoreModule">
       <HintPath>ref\UnityEditor.CoreModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEditor.UIElementsModule">
+      <HintPath>ref\UnityEditor.UIElementsModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.AssetBundleModule">
       <HintPath>ref\UnityEngine.AssetBundleModule.dll</HintPath>
     </Reference>
@@ -28,9 +31,6 @@
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>ref\UnityEngine.CoreModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.IMGUIModule">
-      <HintPath>ref\UnityEngine.IMGUIModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UnityWebRequestAudioModule">
       <HintPath>ref\UnityEngine.UnityWebRequestAudioModule.dll</HintPath>

@@ -2,7 +2,9 @@
 namespace SoundSystem
 {
     using UnityEditor;
+    using UnityEditor.UIElements;
     using UnityEngine;
+    using UnityEngine.UIElements;
 
     [CustomEditor(typeof(SoundPresetProperty))]
     internal sealed class SoundPresetPropertyEditor : Editor
@@ -17,8 +19,8 @@ namespace SoundSystem
         private SerializedProperty seMixerG;
         private SerializedProperty sePresetList;
 
-        //検索
-        private string searchText = string.Empty;
+        //検索欄
+        private ToolbarSearchField searchField;
 
         //SoundLoader設定
         private SerializedProperty loaderType;
@@ -35,49 +37,49 @@ namespace SoundSystem
         private SerializedProperty maxSize;
         private SerializedProperty persistentGameObjects;
 
-        private void DrawPresetList(SerializedProperty list, string label)
+        private void BuildPresetList(SerializedProperty list, VisualElement container, string label)
         {
-            if (list == null)
-            {
-                return;
-            }
+            container.Clear();
 
-            if (string.IsNullOrEmpty(searchText))
+            if (list == null) return;
+
+            var title = new Label(label)
             {
-                EditorGUILayout.PropertyField(list, new GUIContent(label), true);
-            }
-            else
+                style = { unityFontStyleAndWeight = FontStyle.Bold }
+            };
+            container.Add(title);
+
+            string filter = searchField?.value ?? string.Empty;
+            for (int i = 0; i < list.arraySize; i++)
             {
-                EditorGUILayout.LabelField(label, EditorStyles.boldLabel);
-                for (int i = 0; i < list.arraySize; i++)
+                SerializedProperty element = list.GetArrayElementAtIndex(i);
+                SerializedProperty nameProp = element.FindPropertyRelative("presetName");
+                if (nameProp != null && 
+                    string.IsNullOrEmpty(filter) == false)
                 {
-                    SerializedProperty element = list.GetArrayElementAtIndex(i);
-                    var nameProp = element.FindPropertyRelative("presetName");
-                    if (nameProp == null)
-                    {
-                        continue;
-                    }
                     string name = nameProp.stringValue;
-                    if (name.IndexOf(searchText, System.StringComparison.OrdinalIgnoreCase) < 0)
+                    if (name.IndexOf(filter, System.StringComparison.OrdinalIgnoreCase) < 0)
                     {
                         continue;
                     }
-
-                    EditorGUILayout.PropertyField(element, true);
                 }
+
+                var field = new PropertyField(element);
+                field.BindProperty(element);
+                container.Add(field);
             }
         }
 
         private void OnEnable()
         {
             //BGM
-            bgmMixerG  = serializedObject.FindProperty("bgmMixerG");
-            bgmPresets = serializedObject.FindProperty("bgmPresets");
+            bgmMixerG     = serializedObject.FindProperty("bgmMixerG");
+            bgmPresets    = serializedObject.FindProperty("bgmPresets");
             bgmPresetList = bgmPresets.FindPropertyRelative("presetList");
 
             //SE
-            seMixerG  = serializedObject.FindProperty("seMixerG");
-            sePresets = serializedObject.FindProperty("sePresets");
+            seMixerG     = serializedObject.FindProperty("seMixerG");
+            sePresets    = serializedObject.FindProperty("sePresets");
             sePresetList = sePresets.FindPropertyRelative("presetList");
 
             //SoundLoader設定
@@ -90,62 +92,82 @@ namespace SoundSystem
             autoEvictInterval  = serializedObject.FindProperty("autoEvictInterval");
 
             //AudioSourcePool設定
-            poolType = serializedObject.FindProperty("poolType");
-            initSize = serializedObject.FindProperty("initSize");
-            maxSize  = serializedObject.FindProperty("maxSize");
+            poolType              = serializedObject.FindProperty("poolType");
+            initSize              = serializedObject.FindProperty("initSize");
+            maxSize               = serializedObject.FindProperty("maxSize");
             persistentGameObjects = serializedObject.FindProperty("persistentGameObjects");
         }
 
-        public override void OnInspectorGUI()
+        public override VisualElement CreateInspectorGUI()
         {
-            serializedObject.Update();
+            searchField                = new ToolbarSearchField();
+            var bgmContainer           = new VisualElement();
+            var seContainer            = new VisualElement();
+            var loaderField            = new PropertyField(loaderType);
+            var cacheField             = new PropertyField(cacheType);
+            var paramField             = new PropertyField(param);
+            var autoEvictField         = new PropertyField(enableAutoEvict);
+            var autoEvictIntervalField = new PropertyField(autoEvictInterval);
+            var poolTypeField          = new PropertyField(poolType);
+            var initSizeField          = new PropertyField(initSize);
+            var maxSizeField           = new PropertyField(maxSize);
+            var persistentField        = new PropertyField(persistentGameObjects);
 
-            searchText = EditorGUILayout.ToolbarSearchField(searchText);
-            EditorGUILayout.Space();
+            var root = new VisualElement();
+            root.Add(searchField);
+            root.Add(new PropertyField(bgmMixerG));
+            root.Add(bgmContainer);
+            root.Add(new PropertyField(seMixerG));
+            root.Add(seContainer);
+            root.Add(loaderField);
+            root.Add(cacheField);
+            root.Add(paramField);
+            root.Add(autoEvictField);
+            root.Add(autoEvictIntervalField);
+            root.Add(poolTypeField);
+            root.Add(initSizeField);
+            root.Add(maxSizeField);
+            root.Add(persistentField);
 
-            //BGM
-            EditorGUILayout.PropertyField(bgmMixerG, true);
-            DrawPresetList(bgmPresetList, "BGM Presets");
+            root.Bind(serializedObject);
 
-            //SE
-            EditorGUILayout.PropertyField(seMixerG, true);
-            DrawPresetList(sePresetList, "SE Presets");
-
-            //SoundLoader設定
-            EditorGUILayout.PropertyField(loaderType, true);
-
-            //SoundCache設定
-            EditorGUILayout.PropertyField(cacheType);
-            var type = (SoundCacheFactory.Type)cacheType.enumValueIndex;
-            switch (type)
+            void Refresh()
             {
-                case SoundCacheFactory.Type.LRU:
-                    EditorGUILayout.PropertyField(param, new GUIContent("idleTimeThreshold"));
-                    break;
+                BuildPresetList(bgmPresetList, bgmContainer, "BGM Presets");
+                BuildPresetList(sePresetList, seContainer, "SE Presets");
 
-                case SoundCacheFactory.Type.TTL:
-                    EditorGUILayout.PropertyField(param, new GUIContent("ttlSeconds"));
-                    break;
+                var type = (SoundCacheFactory.Type)cacheType.enumValueIndex;
+                switch (type)
+                {
+                    case SoundCacheFactory.Type.LRU:
+                        paramField.label = "idleTimeThreshold";
+                        paramField.style.display = DisplayStyle.Flex;
+                        break;
 
-                case SoundCacheFactory.Type.Random:
-                    int intVal = Mathf.RoundToInt(param.floatValue);
-                    intVal = EditorGUILayout.IntField("maxCacheCount", intVal);
-                    param.floatValue = intVal;
-                    break;
+                    case SoundCacheFactory.Type.TTL:
+                        paramField.label = "ttlSeconds";
+                        paramField.style.display = DisplayStyle.Flex;
+                        break;
+
+                    case SoundCacheFactory.Type.Random:
+                        paramField.label = "maxCacheCount";
+                        paramField.style.display = DisplayStyle.Flex;
+                        break;
+
+                    default:
+                        paramField.style.display = DisplayStyle.None;
+                        break;
+                }
+
+                autoEvictIntervalField.SetEnabled(enableAutoEvict.boolValue);
             }
 
-            EditorGUILayout.PropertyField(enableAutoEvict);
-            EditorGUI.BeginDisabledGroup(enableAutoEvict.boolValue == false);
-            EditorGUILayout.PropertyField(autoEvictInterval);
-            EditorGUI.EndDisabledGroup();
+            searchField.RegisterValueChangedCallback(_ => Refresh());
+            cacheField.RegisterValueChangeCallback(_ => Refresh());
+            autoEvictField.RegisterValueChangeCallback(_ => Refresh());
 
-            //AudioSourcePool設定
-            EditorGUILayout.PropertyField(poolType, true);
-            EditorGUILayout.PropertyField(initSize, true);
-            EditorGUILayout.PropertyField(maxSize, true);
-            EditorGUILayout.PropertyField(persistentGameObjects);
-
-            serializedObject.ApplyModifiedProperties();
+            Refresh();
+            return root;
         }
     }
 }
