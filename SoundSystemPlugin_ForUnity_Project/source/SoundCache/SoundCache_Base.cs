@@ -89,6 +89,8 @@ namespace SoundSystem
                 count--;
                 usageCount[resourceAddress] = count;
             }
+
+            if (usageCount[resourceAddress] <= 0) usageCount.Remove(resourceAddress);
         }
     }
 }
