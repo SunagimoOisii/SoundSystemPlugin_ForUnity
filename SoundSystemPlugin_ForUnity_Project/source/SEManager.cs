@@ -146,6 +146,12 @@ namespace SoundSystem
         private async UniTask ExecuteVolumeTransition(AudioSource source,
             float duration, Action<float> onProgress, Action onComplete = null)
         {
+            if (duration <= 0f)
+            {
+                Log.Warn($"ExecuteVolumeTransition中断:不正な duration {duration}");
+                return;
+            }
+
             var cts = new CancellationTokenSource();
             fadeCtsMap[source] = cts;
 
