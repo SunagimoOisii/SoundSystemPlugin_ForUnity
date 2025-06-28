@@ -259,7 +259,7 @@ namespace SoundSystem
                     onProgress(t);
 
                     elapsed += Time.deltaTime;
-                    await UniTask.Yield();
+                    await UniTask.Yield(token);
                 }
 
                 onProgress(1.0f);

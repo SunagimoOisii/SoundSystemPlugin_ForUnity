@@ -164,11 +164,16 @@ namespace SoundSystem
             {
                 while (elapsed < duration)
                 {
+                    if (token.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
                     float t = elapsed / duration;
                     onProgress(t);
 
                     elapsed += Time.deltaTime;
-                    await UniTask.Yield();
+                    await UniTask.Yield(token);
                 }
 
                 onProgress(1.0f);
