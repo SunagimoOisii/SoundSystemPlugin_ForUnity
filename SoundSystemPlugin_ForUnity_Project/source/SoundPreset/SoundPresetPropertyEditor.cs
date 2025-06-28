@@ -46,13 +46,13 @@ namespace SoundSystem
         {
             //BGM
             bgmMixerG      = serializedObject.FindProperty("bgmMixerG");
-            var bgmPresets = serializedObject.FindProperty("bgmPresets");
-            bgmPresetList  = bgmPresets.FindPropertyRelative("presetList");
+            bgmPresetList  = serializedObject.FindProperty("bgmPresets")
+                                .FindPropertyRelative("presetList");
 
             //SE
             seMixerG      = serializedObject.FindProperty("seMixerG");
-            var sePresets = serializedObject.FindProperty("sePresets");
-            sePresetList  = sePresets.FindPropertyRelative("presetList");
+            sePresetList  = serializedObject.FindProperty("sePresets")
+                                .FindPropertyRelative("presetList");
 
             //SoundLoader設定
             loaderType = serializedObject.FindProperty("loaderType");

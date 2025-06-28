@@ -32,6 +32,12 @@
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>ref\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>ref\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIElementsModule">
+      <HintPath>ref\UnityEngine.UIElementsModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.UnityWebRequestAudioModule">
       <HintPath>ref\UnityEngine.UnityWebRequestAudioModule.dll</HintPath>
     </Reference>
