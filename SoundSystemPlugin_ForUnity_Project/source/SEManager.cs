@@ -17,7 +17,9 @@ namespace SoundSystem
         private readonly ISoundLoader loader;
         private readonly ISoundCache cache;
         private readonly Dictionary<AudioSource, CancellationTokenSource> fadeCtsMap = new();
-        private readonly Dictionary<AudioSource, string> playingKeyMap = new();
+
+        //各トラック(AudioSource)でのサウンドの利用状況を追跡するために使用
+        private readonly Dictionary<AudioSource, string> usageResourceMap = new();
     
         public SEManager(IAudioSourcePool sourcePool, ISoundLoader loader, ISoundCache cache)
         {
@@ -41,9 +43,8 @@ namespace SoundSystem
                 Log.Error($"Play失敗:リソース読込に失敗,{resourceAddress}");
                 return;
             }
-            cache.BeginUse(resourceAddress);
 
-            //AudioSourcePoolを取得
+            //AudioSourceをプールから取得
             var source = sourcePool.Retrieve();
             if (source == null)
             {
@@ -74,14 +75,15 @@ namespace SoundSystem
         {
             Log.Safe($"FadeIn実行:{resourceAddress},dura = {duration},vol = {volume}");
 
+            //サウンドリソースのロード
             var (success, clip) = await loader.TryLoadClip(resourceAddress);
             if (success == false)
             {
                 Log.Error($"FadeIn失敗:リソース読込に失敗,{resourceAddress}");
                 return;
             }
-            cache.BeginUse(resourceAddress);
 
+            //AudioSourceをプールから取得
             var source = sourcePool.Retrieve();
             if (source == null)
             {
@@ -92,6 +94,7 @@ namespace SoundSystem
             CancelFade(source);
             RegisterResourceAddress(source, resourceAddress);
 
+            //指定の音声設定で再生
             source.pitch              = pitch;
             source.spatialBlend       = spatialBlend;
             source.transform.position = position;
@@ -180,15 +183,16 @@ namespace SoundSystem
 
         private void RegisterResourceAddress(AudioSource source, string resourceAddress)
         {
-            playingKeyMap[source] = resourceAddress;
+            cache.BeginUse(resourceAddress);
+            usageResourceMap[source] = resourceAddress;
         }
 
         private void UnregisterResourceAddress(AudioSource source)
         {
-            if (playingKeyMap.TryGetValue(source, out var resourceAddress))
+            if (usageResourceMap.TryGetValue(source, out var resourceAddress))
             {
                 cache.EndUse(resourceAddress);
-                playingKeyMap.Remove(source);
+                usageResourceMap.Remove(source);
             }
         }
 
