@@ -84,11 +84,6 @@ namespace SoundSystem
 
         public void EndUse(string resourceAddress)
         {
-            if(usageCount.ContainsKey(resourceAddress) == false)
-            {
-                return;
-            }
-
             if (usageCount.TryGetValue(resourceAddress, out var count))
             {
                 count--;
