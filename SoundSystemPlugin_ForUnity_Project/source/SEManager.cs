@@ -151,27 +151,25 @@ namespace SoundSystem
 
             float elapsed = 0f;
             var token = cts.Token;
-            while (elapsed < duration)
+            try
             {
-                if (token.IsCancellationRequested)
+                while (elapsed < duration)
                 {
-                    cts.Dispose();
-                    fadeCtsMap.Remove(source);
-                    return;
+                    float t = elapsed / duration;
+                    onProgress(t);
+
+                    elapsed += Time.deltaTime;
+                    await UniTask.Yield();
                 }
 
-                float t = elapsed / duration;
-                onProgress(t);
-
-                elapsed += Time.deltaTime;
-                await UniTask.Yield();
+                onProgress(1.0f);
+                onComplete?.Invoke();
             }
-
-            onProgress(1.0f);
-            onComplete?.Invoke();
-
-            cts.Dispose();
-            fadeCtsMap.Remove(source);
+            finally
+            {
+                cts.Dispose();
+                fadeCtsMap.Remove(source);
+            }
         }
 
         private void RegisterResourceAddress(AudioSource source, string resourceAddress)

@@ -235,28 +235,35 @@ namespace SoundSystem
             Action onComplete = null)
         {
             fadeCTS?.Cancel();
-            fadeCTS?.Dispose();
             fadeCTS = new CancellationTokenSource();
 
             float elapsed = 0f;
             var token = fadeCTS.Token;
-            while (elapsed < duration)
+            try
             {
-                if (token.IsCancellationRequested)
+                while (elapsed < duration)
                 {
-                    State = BGMState.Idle;
-                    return;
+                    if (token.IsCancellationRequested)
+                    {
+                        State = BGMState.Idle;
+                        return;
+                    }
+
+                    float t = elapsed / duration;
+                    onProgress(t);
+
+                    elapsed += Time.deltaTime;
+                    await UniTask.Yield();
                 }
 
-                float t = elapsed / duration;
-                onProgress(t);
-
-                elapsed += Time.deltaTime;
-                await UniTask.Yield();
+                onProgress(1.0f);
+                onComplete?.Invoke();
             }
-
-            onProgress(1.0f);
-            onComplete?.Invoke();
+            finally
+            {
+                fadeCTS.Dispose();
+                fadeCTS = null;
+            }
         }
 
         public void Dispose()
