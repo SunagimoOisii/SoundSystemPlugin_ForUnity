@@ -92,6 +92,7 @@ namespace SoundSystem
             Log.Safe("Stop実行");
 
             State = BGMState.Idle;
+            fadeCTS?.Cancel();
             bgmSources.active.Stop();
             bgmSources.active.clip = null;
 
@@ -240,6 +241,7 @@ namespace SoundSystem
                 return;
             }
 
+            //既にあるフェード処理は終了
             fadeCTS?.Cancel();
             fadeCTS = new CancellationTokenSource();
 
