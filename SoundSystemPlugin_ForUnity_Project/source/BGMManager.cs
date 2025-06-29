@@ -92,7 +92,7 @@ namespace SoundSystem
             Log.Safe("Stop実行");
 
             State = BGMState.Idle;
-            fadeCTS?.Cancel();
+            CancelFade();
             bgmSources.active.Stop();
             bgmSources.active.clip   = null;
             //クロスフェードキャンセルに対応するため
@@ -261,7 +261,7 @@ namespace SoundSystem
             }
 
             //既にあるフェード処理は終了
-            fadeCTS?.Cancel();
+            CancelFade();
             fadeCTS = new CancellationTokenSource();
 
             float elapsed = 0f;
@@ -289,7 +289,7 @@ namespace SoundSystem
 
         public void Dispose()
         {
-            fadeCTS?.Cancel();
+            CancelFade();
             fadeCTS?.Dispose();
             fadeCTS = null;
 
@@ -306,5 +306,7 @@ namespace SoundSystem
 
             bgmSources = (null, null);
         }
+
+        private void CancelFade() { fadeCTS?.Cancel(); }
     }
 }
