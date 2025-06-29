@@ -26,7 +26,7 @@ namespace SoundSystem
         private readonly ISoundLoader loader;
         private readonly ISoundCache cache;
 
-        private string currentKey;
+        private string usageResourceAddress;
 
         private readonly GameObject sourceRoot = null;
         private (AudioSource active, AudioSource inactive) bgmSources;
@@ -76,10 +76,10 @@ namespace SoundSystem
             }
 
             cache.BeginUse(resourceAddress);
-            currentKey = resourceAddress;
+            usageResourceAddress = resourceAddress;
 
             State = BGMState.Play;
-            bgmSources.active.clip = clip;
+            bgmSources.active.clip   = clip;
             bgmSources.active.volume = volume;
             bgmSources.active.Play();
             onComplete?.Invoke();
@@ -94,12 +94,16 @@ namespace SoundSystem
             State = BGMState.Idle;
             fadeCTS?.Cancel();
             bgmSources.active.Stop();
-            bgmSources.active.clip = null;
+            bgmSources.active.clip   = null;
+            //クロスフェードキャンセルに対応するため
+            //もう一つの AudioSource も停止する
+            bgmSources.inactive.Stop();
+            bgmSources.inactive.clip = null;
 
-            if (currentKey != null)
+            if (usageResourceAddress != null)
             {
-                cache.EndUse(currentKey);
-                currentKey = null;
+                cache.EndUse(usageResourceAddress);
+                usageResourceAddress = null;
             }
         }
 
@@ -145,18 +149,21 @@ namespace SoundSystem
                 return;
             }
             cache.BeginUse(resourceAddress);
-            currentKey = resourceAddress;
+            State = BGMState.FadeIn;
+            usageResourceAddress = resourceAddress;
             bgmSources.active.clip   = clip;
             bgmSources.active.volume = 0;
             bgmSources.active.Play();
 
-            State = BGMState.FadeIn;
-            var isCanceled = await ExecuteVolumeTransition(
+            //キャンセル有無の判断は、Stop() 後の State 書き換え防止のために行う
+            await ExecuteVolumeTransition(
                 duration,
                 progressRate => bgmSources.active.volume = Mathf.Lerp(0f, volume, progressRate),
-                onComplete
-                ).SuppressCancellationThrow();
-            if (isCanceled == false) State = BGMState.Play;
+                () =>
+                {
+                    State = BGMState.Play;
+                    onComplete?.Invoke();
+                }).SuppressCancellationThrow();
 
             Log.Safe($"FadeIn終了:{resourceAddress},dura = {duration},vol = {volume}");
         }
@@ -176,18 +183,19 @@ namespace SoundSystem
             await ExecuteVolumeTransition(
                 duration,
                 progressRate => bgmSources.active.volume = Mathf.Lerp(startVol, 0.0f, progressRate),
-                onComplete
-                );
+                () =>
+                {
+                    State = BGMState.Idle;
+                    bgmSources.active.Stop();
+                    bgmSources.active.clip = null;
 
-            State = BGMState.Idle;
-            bgmSources.active.Stop();
-            bgmSources.active.clip = null;
-
-            if (currentKey != null)
-            {
-                cache.EndUse(currentKey);
-                currentKey = null;
-            }
+                    if (usageResourceAddress != null)
+                    {
+                        cache.EndUse(usageResourceAddress);
+                        usageResourceAddress = null;
+                    }
+                    onComplete?.Invoke();
+                });
 
             Log.Safe($"FadeOut終了:dura = {duration}");
         }
@@ -209,6 +217,7 @@ namespace SoundSystem
             bgmSources.inactive.volume = 0f;
             bgmSources.inactive.Play();
 
+            //キャンセル有無の判断は、Stop() 後の State 書き換え防止のために行う
             var isCanceled = await ExecuteVolumeTransition(
                 duration,
                 progressRate =>
@@ -216,18 +225,30 @@ namespace SoundSystem
                     bgmSources.active.volume   = Mathf.Lerp(1f, 0f, progressRate);
                     bgmSources.inactive.volume = Mathf.Lerp(0f, 1f, progressRate);
                 },
-                () => //onComplete
+                () =>
                 {
+                    State = BGMState.Play;
+
+                    //AudioSource 入れ替え
                     bgmSources.active.Stop();
-                    if (currentKey != null)
-                    {
-                        cache.EndUse(currentKey);
-                    }
                     bgmSources = (bgmSources.inactive, bgmSources.active);
-                    currentKey = resourceAddress;
+                    
+                    //再生中リソースのアドレス更新
+                    if (usageResourceAddress != null)
+                    {
+                        cache.EndUse(usageResourceAddress);
+                    }
+                    usageResourceAddress = resourceAddress;
+                    cache.BeginUse(usageResourceAddress);
+
                     onComplete?.Invoke();
                 }).SuppressCancellationThrow();
-            if (isCanceled == false) State = BGMState.Play;
+
+            if (isCanceled)
+            {
+                //キャンセル時、フェード前 BGM の EndUse が呼ばれないためここで呼ぶ
+                cache.EndUse(usageResourceAddress);
+            }
 
             Log.Safe($"CrossFade終了:{resourceAddress}");
         }
@@ -274,10 +295,10 @@ namespace SoundSystem
             fadeCTS?.Dispose();
             fadeCTS = null;
 
-            if (currentKey != null)
+            if (usageResourceAddress != null)
             {
-                cache.EndUse(currentKey);
-                currentKey = null;
+                cache.EndUse(usageResourceAddress);
+                usageResourceAddress = null;
             }
 
             if (sourceRoot != null)
