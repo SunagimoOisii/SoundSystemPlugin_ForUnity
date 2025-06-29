@@ -145,13 +145,13 @@ namespace SoundSystem
             paramContainer.Clear();
             switch ((SoundCacheFactory.Type)cacheType.enumValueIndex)
             {
-                case SoundCacheFactory.Type.LRU:
+                case SoundCacheFactory.Type.LeastRecentlyUsed:
                     var fieldLRU = new PropertyField(param, "idleTimeThreshold");
                     fieldLRU.Bind(serializedObject);
                     paramContainer.Add(fieldLRU);
                     break;
 
-                case SoundCacheFactory.Type.TTL:
+                case SoundCacheFactory.Type.TimeToLive:
                     var fieldTTL = new PropertyField(param, "ttlSeconds");
                     fieldTTL.Bind(serializedObject);
                     paramContainer.Add(fieldTTL);

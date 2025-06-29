@@ -44,7 +44,7 @@ namespace SoundSystem
 #endif
 
         [Header("SoundCache")]
-        public SoundCacheFactory.Type cacheType = SoundCacheFactory.Type.LRU;
+        public SoundCacheFactory.Type cacheType = SoundCacheFactory.Type.LeastRecentlyUsed;
         public bool  enableAutoEvict   = false;
         public float autoEvictInterval = 60f;
 
