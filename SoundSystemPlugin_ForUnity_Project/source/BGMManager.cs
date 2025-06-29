@@ -151,12 +151,12 @@ namespace SoundSystem
             bgmSources.active.Play();
 
             State = BGMState.FadeIn;
-            await ExecuteVolumeTransition(
+            var isCanceled = await ExecuteVolumeTransition(
                 duration,
                 progressRate => bgmSources.active.volume = Mathf.Lerp(0f, volume, progressRate),
                 onComplete
-                );
-            State = BGMState.Play;
+                ).SuppressCancellationThrow();
+            if (isCanceled == false) State = BGMState.Play;
 
             Log.Safe($"FadeIn終了:{resourceAddress},dura = {duration},vol = {volume}");
         }
@@ -209,7 +209,7 @@ namespace SoundSystem
             bgmSources.inactive.volume = 0f;
             bgmSources.inactive.Play();
 
-            await ExecuteVolumeTransition(
+            var isCanceled = await ExecuteVolumeTransition(
                 duration,
                 progressRate =>
                 {
@@ -226,8 +226,8 @@ namespace SoundSystem
                     bgmSources = (bgmSources.inactive, bgmSources.active);
                     currentKey = resourceAddress;
                     onComplete?.Invoke();
-                });
-            State = BGMState.Play;
+                }).SuppressCancellationThrow();
+            if (isCanceled == false) State = BGMState.Play;
 
             Log.Safe($"CrossFade終了:{resourceAddress}");
         }
@@ -251,12 +251,6 @@ namespace SoundSystem
             {
                 while (elapsed < duration)
                 {
-                    if (token.IsCancellationRequested)
-                    {
-                        State = BGMState.Idle;
-                        return;
-                    }
-
                     float t = elapsed / duration;
                     onProgress(t);
 
