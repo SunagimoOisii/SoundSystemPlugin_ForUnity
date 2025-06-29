@@ -155,7 +155,6 @@ namespace SoundSystem
             bgmSources.active.volume = 0;
             bgmSources.active.Play();
 
-            //キャンセル有無の判断は、Stop() 後の State 書き換え防止のために行う
             await ExecuteVolumeTransition(
                 duration,
                 progressRate => bgmSources.active.volume = Mathf.Lerp(0f, volume, progressRate),
@@ -163,7 +162,7 @@ namespace SoundSystem
                 {
                     State = BGMState.Play;
                     onComplete?.Invoke();
-                }).SuppressCancellationThrow();
+                });
 
             Log.Safe($"FadeIn終了:{resourceAddress},dura = {duration},vol = {volume}");
         }
@@ -217,8 +216,7 @@ namespace SoundSystem
             bgmSources.inactive.volume = 0f;
             bgmSources.inactive.Play();
 
-            //キャンセル有無の判断は、Stop() 後の State 書き換え防止のために行う
-            var isCanceled = await ExecuteVolumeTransition(
+            var isCancelled = await ExecuteVolumeTransition(
                 duration,
                 progressRate =>
                 {
@@ -244,7 +242,7 @@ namespace SoundSystem
                     onComplete?.Invoke();
                 }).SuppressCancellationThrow();
 
-            if (isCanceled)
+            if (isCancelled)
             {
                 //キャンセル時、フェード前 BGM の EndUse が呼ばれないためここで呼ぶ
                 cache.EndUse(usageResourceAddress);
