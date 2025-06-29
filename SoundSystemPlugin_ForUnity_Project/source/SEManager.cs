@@ -20,14 +20,14 @@ namespace SoundSystem
 
         //各トラック(AudioSource)でのサウンドの利用状況を追跡するために使用
         private readonly Dictionary<AudioSource, string> usageResourceMap = new();
-    
+
         public SEManager(IAudioSourcePool sourcePool, ISoundLoader loader, ISoundCache cache)
         {
             this.sourcePool = sourcePool;
             this.loader     = loader;
             this.cache      = cache;
         }
-    
+
         /// <param name="volume">音量(0〜1)</param>
         /// <param name="pitch">ピッチ(0〜1)</param>
         /// <param name="spatialBlend">サラウンド度(0〜1)</param>
@@ -67,6 +67,52 @@ namespace SoundSystem
 
             Log.Safe($"Play成功:{resourceAddress},vol = {volume},pitch = {pitch}," +
                 $"blend = {spatialBlend}");
+        }
+
+        public void StopAll()
+        {
+            Log.Safe("StopAll実行");
+
+            //全フェード処理をキャンセル
+            var sources = sourcePool.GetAllResources();
+            foreach (var source in sources)
+            {
+                if (source == null) continue;
+                CancelFade(source);
+            }
+
+            //各 AudioSource の停止, リソース解放
+            foreach (var source in sources)
+            {
+                if (source == null) continue;
+                source.Stop();
+                source.clip = null;
+                UnregisterResourceAddress(source);
+            }
+        }
+    
+        public void ResumeAll()
+        {
+            Log.Safe("ResumeAll実行");
+
+            var sources = sourcePool.GetAllResources();
+            foreach (var source in sources)
+            {
+                if (source == null) continue;
+                source.UnPause();
+            }
+        }
+    
+        public void PauseAll()
+        {
+            Log.Safe("PauseAll実行");
+
+            var sources = sourcePool.GetAllResources();
+            foreach (var source in sources)
+            {
+                if (source == null) continue;
+                source.Pause();
+            }
         }
 
         public async UniTask FadeIn(string resourceAddress, float duration,
@@ -206,44 +252,6 @@ namespace SoundSystem
             if (fadeCtsMap.TryGetValue(source, out var cts))
             {
                 cts.Cancel();
-                cts.Dispose();
-                fadeCtsMap.Remove(source);
-            }
-        }
-
-        public void StopAll()
-        {
-            Log.Safe("StopAll実行");
-
-            var sources = sourcePool.GetAllResources();
-            foreach (var source in sources)
-            {
-                if (source == null) continue;
-                source.Stop();
-            }
-        }
-    
-        public void ResumeAll()
-        {
-            Log.Safe("ResumeAll実行");
-
-            var sources = sourcePool.GetAllResources();
-            foreach (var source in sources)
-            {
-                if (source == null) continue;
-                source.UnPause();
-            }
-        }
-    
-        public void PauseAll()
-        {
-            Log.Safe("PauseAll実行");
-
-            var sources = sourcePool.GetAllResources();
-            foreach (var source in sources)
-            {
-                if (source == null) continue;
-                source.Pause();
             }
         }
 
