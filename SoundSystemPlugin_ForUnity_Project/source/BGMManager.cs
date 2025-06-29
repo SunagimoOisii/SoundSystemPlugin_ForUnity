@@ -237,7 +237,6 @@ namespace SoundSystem
                         cache.EndUse(usageResourceAddress);
                     }
                     usageResourceAddress = resourceAddress;
-                    cache.BeginUse(usageResourceAddress);
 
                     onComplete?.Invoke();
                 }).SuppressCancellationThrow();
@@ -245,7 +244,7 @@ namespace SoundSystem
             if (isCancelled)
             {
                 //キャンセル時、フェード前 BGM の EndUse が呼ばれないためここで呼ぶ
-                cache.EndUse(usageResourceAddress);
+                cache.EndUse(resourceAddress);
             }
 
             Log.Safe($"CrossFade終了:{resourceAddress}");
