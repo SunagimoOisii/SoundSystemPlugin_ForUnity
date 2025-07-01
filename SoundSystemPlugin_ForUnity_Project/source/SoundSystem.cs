@@ -340,6 +340,7 @@ namespace SoundSystem
         {
             DisableAutoDisposeOnSceneChange();
 
+            effector.RemoveAllFilters();
             StopAutoEvict();
             bgm.Dispose();
             se.Dispose();
