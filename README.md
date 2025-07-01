@@ -81,6 +81,10 @@ soundSystem.ApplyEffectFilter<AudioReverbFilter>(f => f.reverbLevel = 1000f);
 soundSystem.DisableAllEffectFilter();
 ```
 
+### Listenerエフェクトプリセット設定
+`SoundPresetProperty` の `listenerPresets` にフィルター設定を登録しておくと、
+`SoundSystem.CreateFromPreset` 実行時に自動で適用されます。
+
 ## システム構成
 ```mermaid
 graph

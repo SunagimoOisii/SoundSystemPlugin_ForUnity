@@ -14,8 +14,9 @@ namespace SoundSystem
     /// </summary>
     public sealed class SoundSystem : IDisposable
     {
-        private SerializedBGMPresetDictionary bgmPresets;
-        private SerializedSEPresetDictionary  sePresets;
+        private SerializedBGMPresetDictionary      bgmPresets;
+        private SerializedSEPresetDictionary       sePresets;
+        private SerializedListenerPresetDictionary listenerPresets;
 
         private readonly BGMManager bgm;
         private readonly SEManager  se;
@@ -58,8 +59,13 @@ namespace SoundSystem
                             preset.seMixerG, preset.initSize, preset.maxSize, persistent);
             var ss     = new SoundSystem(loader, cache, pool, listener, mixer,
                             preset.bgmMixerG, persistent, canLogging);
-            ss.bgmPresets = preset.bgmPresets;
-            ss.sePresets  = preset.sePresets;
+            ss.bgmPresets      = preset.bgmPresets;
+            ss.sePresets       = preset.sePresets;
+            ss.listenerPresets = preset.listenerPresets;
+            foreach (var lp in ss.listenerPresets.Presets)
+            {
+                ss.effector.ApplyFilter(lp.filter);
+            }
             if (preset.enableAutoEvict) ss.StartAutoEvict(preset.autoEvictInterval);
             return ss;
         }

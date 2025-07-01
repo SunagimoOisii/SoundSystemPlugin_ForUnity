@@ -61,6 +61,27 @@ namespace SoundSystem
             configure?.Invoke(filter);
         }
 
+        public void ApplyFilter(Behaviour template)
+        {
+            if (template == null) return;
+
+            var type = template.GetType();
+            Log.Safe($"ApplyFilter実行:{type.Name}");
+            if (filterDict.TryGetValue(type, out var component) == false)
+            {
+                component = Listener.gameObject.AddComponent(type);
+                filterDict[type] = component;
+            }
+
+            var json = JsonUtility.ToJson(template);
+            JsonUtility.FromJsonOverwrite(json, component);
+
+            if (component is Behaviour b)
+            {
+                b.enabled = true;
+            }
+        }
+
         public void DisableFilter<FilterT>() where FilterT : Behaviour
         {
             Log.Safe($"DisableFilter実行:{typeof(FilterT).Name}");
