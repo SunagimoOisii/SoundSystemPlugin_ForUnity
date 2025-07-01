@@ -339,9 +339,9 @@ namespace SoundSystem
         public void Dispose()
         {
             DisableAutoDisposeOnSceneChange();
+            StopAutoEvict();
 
             effector.RemoveAllFilters();
-            StopAutoEvict();
             bgm.Dispose();
             se.Dispose();
             cache.ClearAll();

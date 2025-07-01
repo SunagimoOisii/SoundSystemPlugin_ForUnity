@@ -21,6 +21,29 @@ namespace SoundSystem
             Listener = l;
         }
 
+        /// <summary>
+        /// 現在のフィルター設定を保持したまま新しい AudioListener に差し替える
+        /// </summary>
+        public void ChangeListener(AudioListener newL)
+        {
+            if (Listener == newL) return;
+
+            foreach (var pair in new Dictionary<Type, Component>(filterDict))
+            {
+                if (pair.Value == null) continue;
+
+                //同じフィルターをアタッチし、その設定も JSON を介してコピー
+                var comp = newL.gameObject.AddComponent(pair.Key);
+                var json = JsonUtility.ToJson(pair.Value);
+                JsonUtility.FromJsonOverwrite(json, comp);
+                filterDict[pair.Key] = comp;
+
+                UnityEngine.Object.Destroy(pair.Value);
+            }
+
+            Listener = newL;
+        }
+
         /// <typeparam name="FilterT">適用するフィルターの型</typeparam>
         /// <param name="configure">フィルターの設定を行うアクション</param>
         /// <remarks>使用例: effector.ApplyFilter<AudioReverbFilter>(filter => filter.reverbLevel = Mathf.Clamp(reverbLevel, -10000f, 2000f));</remarks>
