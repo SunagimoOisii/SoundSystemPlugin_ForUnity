@@ -255,9 +255,9 @@ namespace SoundSystem
         #endregion
     
         #region ListenerEffector
-        public void SetAudioListener(AudioListener l)
+        public void SetAudioListener(AudioListener newL)
         {
-            effector.Listener = l;
+            effector.ChangeListener(newL);
         }
     
         public void ApplyEffectFilter<T>(Action<T> configure) where T : Behaviour
