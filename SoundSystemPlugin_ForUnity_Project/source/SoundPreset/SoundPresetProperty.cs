@@ -28,6 +28,13 @@ namespace SoundSystem
             [Range(0f, 1f)] public float fadeOutDuration;
         }
 
+        [System.Serializable]
+        public struct ListenerEffectPreset
+        {
+            public string   presetName;
+            public Behaviour filter;
+        }
+
         [Header("BGM")]
         public AudioMixerGroup bgmMixerG;
         public SerializedBGMPresetDictionary bgmPresets = new();
@@ -35,6 +42,9 @@ namespace SoundSystem
         [Header("SE")]
         public AudioMixerGroup seMixerG;
         public SerializedSEPresetDictionary sePresets = new();
+
+        [Header("Listener Effect Preset")]
+        public SerializedListenerPresetDictionary listenerPresets = new();
 
         [Header("SoundLoader")]
 #if USE_ADDRESSABLES

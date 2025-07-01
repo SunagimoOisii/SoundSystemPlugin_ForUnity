@@ -23,6 +23,12 @@ namespace SoundSystem
         private ToolbarSearchField seSearchField;
         private ScrollView seScrollView;
 
+        //Listener Effect
+        private SerializedProperty listenerPresetList;
+        private Label listenerSearchState;
+        private ToolbarSearchField listenerSearchField;
+        private ScrollView listenerScrollView;
+
         //SoundLoader設定
         private SerializedProperty loaderType;
 
@@ -53,6 +59,10 @@ namespace SoundSystem
             seMixerG      = serializedObject.FindProperty("seMixerG");
             sePresetList  = serializedObject.FindProperty("sePresets")
                                 .FindPropertyRelative("presetList");
+
+            //Listener Effect
+            listenerPresetList = serializedObject.FindProperty("listenerPresets")
+                                   .FindPropertyRelative("presetList");
 
             //SoundLoader設定
             loaderType = serializedObject.FindProperty("loaderType");
@@ -107,6 +117,22 @@ namespace SoundSystem
             root.Add(new Label("SE Presets"));
             root.Add(seSearchContainer);
             root.Add(seScrollView);
+
+            //Listener Effect 要素作成
+            listenerSearchField = new ToolbarSearchField();
+            listenerSearchField.RegisterValueChangedCallback(_ => RefreshPresetViews());
+            listenerSearchState = new Label("Searching");
+            listenerSearchState.style.unityFontStyleAndWeight = FontStyle.Bold;
+            listenerSearchState.style.display                 = DisplayStyle.None;
+            listenerScrollView = new ScrollView();
+            var listenerSearchContainer = new VisualElement();
+            listenerSearchContainer.style.flexDirection = FlexDirection.Column;
+            listenerSearchContainer.Add(listenerSearchField);
+            listenerSearchContainer.Add(listenerSearchState);
+            //要素作成
+            root.Add(new Label("Listener Effect Presets"));
+            root.Add(listenerSearchContainer);
+            root.Add(listenerScrollView);
 
             //SoundLoader 要素作成, 登録
             root.Add(new PropertyField(loaderType));
@@ -169,9 +195,11 @@ namespace SoundSystem
         {
             string bgmFilter = bgmSearchField?.value ?? string.Empty;
             string seFilter  = seSearchField?.value ?? string.Empty;
+            string listenerFilter = listenerSearchField?.value ?? string.Empty;
 
             FillPresetScroll(bgmScrollView, bgmPresetList, "BGM Preset", bgmFilter);
             FillPresetScroll(seScrollView, sePresetList, "SE Preset", seFilter);
+            FillPresetScroll(listenerScrollView, listenerPresetList, "Listener Preset", listenerFilter);
 
             //検索バーへの入力があれば SearchState ラベルを表示する
             if (string.IsNullOrEmpty(bgmFilter) == false)
@@ -185,6 +213,12 @@ namespace SoundSystem
                 seSearchState.style.display = DisplayStyle.Flex;
             }
             else seSearchState.style.display = DisplayStyle.None;
+
+            if (string.IsNullOrEmpty(listenerFilter) == false)
+            {
+                listenerSearchState.style.display = DisplayStyle.Flex;
+            }
+            else listenerSearchState.style.display = DisplayStyle.None;
         }
 
         private void FillPresetScroll(ScrollView target, SerializedProperty list,
