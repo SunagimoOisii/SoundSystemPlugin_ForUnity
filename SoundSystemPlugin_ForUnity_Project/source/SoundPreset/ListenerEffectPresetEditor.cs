@@ -4,7 +4,6 @@ namespace SoundSystem
     using System;
     using UnityEditor;
     using UnityEditor.UIElements;
-    using UnityEngine;
     using UnityEngine.UIElements;
 
     [CustomPropertyDrawer(typeof(SoundPresetProperty.ListenerEffectPreset))]
@@ -32,7 +31,7 @@ namespace SoundSystem
             root.Add(kindField);
             root.Add(settingsField);
 
-            // 初期状態の設定インスタンスを適用
+            //初期状態の設定インスタンスを適用
             AssignSettingInstance(settingsProp, (FilterKind)kindProp.enumValueIndex);
 
             return root;
@@ -40,7 +39,7 @@ namespace SoundSystem
 
         private static void AssignSettingInstance(SerializedProperty settings, FilterKind k)
         {
-            Type type = k switch
+            Type t = k switch
             {
                 FilterKind.AudioChorusFilter     => typeof(ChorusFilterSettings),
                 FilterKind.AudioDistortionFilter => typeof(DistortionFilterSettings),
@@ -51,16 +50,19 @@ namespace SoundSystem
                 _ => null,
             };
 
-            if (type == null)
+            if (t == null)
             {
                 settings.managedReferenceValue = null;
                 return;
             }
 
-            if (settings.managedReferenceValue == null || settings.managedReferenceValue.GetType() != type)
+            if (settings.managedReferenceValue == null ||
+                settings.managedReferenceValue.GetType() != t)
             {
-                settings.managedReferenceValue = Activator.CreateInstance(type);
+                settings.managedReferenceValue = Activator.CreateInstance(t);
             }
+
+            settings.serializedObject.ApplyModifiedProperties();
         }
     }
 }

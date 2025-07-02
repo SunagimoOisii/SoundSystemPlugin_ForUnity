@@ -30,11 +30,11 @@ namespace SoundSystem
         private ScrollView listenerScrollView;
 
         //SoundLoader設定
-        private SerializedProperty loaderType;
+        private SerializedProperty loaderKind;
 
         //SoundCache設定
-        private SerializedProperty cacheType;
-        private PropertyField      cacheTypeField;
+        private SerializedProperty cacheKind;
+        private PropertyField      cacheKindField;
         private SerializedProperty param;
         private VisualElement      paramContainer;
         private SerializedProperty enableAutoEvict;
@@ -43,7 +43,7 @@ namespace SoundSystem
         private PropertyField      autoEvictIntervalField;
 
         //AudioSourcePool設定
-        private SerializedProperty poolType;
+        private SerializedProperty poolKind;
         private SerializedProperty initSize;
         private SerializedProperty maxSize;
         private SerializedProperty persistentGameObjects;        
@@ -65,16 +65,16 @@ namespace SoundSystem
                                    .FindPropertyRelative("presetList");
 
             //SoundLoader設定
-            loaderType = serializedObject.FindProperty("loaderKind");
+            loaderKind = serializedObject.FindProperty("loaderKind");
 
             //SoundCache設定
-            cacheType          = serializedObject.FindProperty("cacheType");
+            cacheKind          = serializedObject.FindProperty("cacheKind");
             param              = serializedObject.FindProperty("param");
             enableAutoEvict    = serializedObject.FindProperty("enableAutoEvict");
             autoEvictInterval  = serializedObject.FindProperty("autoEvictInterval");
 
             //AudioSourcePool設定
-            poolType              = serializedObject.FindProperty("poolType");
+            poolKind              = serializedObject.FindProperty("poolKind");
             initSize              = serializedObject.FindProperty("initSize");
             maxSize               = serializedObject.FindProperty("maxSize");
             persistentGameObjects = serializedObject.FindProperty("isPersistentGameObjects");
@@ -135,24 +135,24 @@ namespace SoundSystem
             root.Add(listenerScrollView);
 
             //SoundLoader 要素作成, 登録
-            root.Add(new PropertyField(loaderType));
+            root.Add(new PropertyField(loaderKind));
 
             //SoundCache 要素作成
-            cacheTypeField = new PropertyField(cacheType);
-            cacheTypeField.RegisterValueChangeCallback(_ => UpdateParamField());
+            cacheKindField = new PropertyField(cacheKind);
+            cacheKindField.RegisterValueChangeCallback(_ => UpdateParamField());
             paramContainer = new VisualElement();
             enableAutoEvictField = new PropertyField(enableAutoEvict);
             enableAutoEvictField.RegisterValueChangeCallback(_ => 
                 autoEvictIntervalField?.SetEnabled(enableAutoEvict.boolValue));
             autoEvictIntervalField = new PropertyField(autoEvictInterval);
             //要素登録
-            root.Add(cacheTypeField);
+            root.Add(cacheKindField);
             root.Add(paramContainer);
             root.Add(enableAutoEvictField);
             root.Add(autoEvictIntervalField);
 
             //AudioSourcePool 要素作成, 登録
-            root.Add(new PropertyField(poolType));
+            root.Add(new PropertyField(poolKind));
             root.Add(new PropertyField(initSize));
             root.Add(new PropertyField(maxSize));
             root.Add(new PropertyField(persistentGameObjects));
@@ -169,7 +169,7 @@ namespace SoundSystem
         private void UpdateParamField()
         {
             paramContainer.Clear();
-            switch ((SoundCacheFactory.Kind)cacheType.enumValueIndex)
+            switch ((SoundCacheFactory.Kind)cacheKind.enumValueIndex)
             {
                 case SoundCacheFactory.Kind.LeastRecentlyUsed:
                     var fieldLRU = new PropertyField(param, "idleTimeThreshold");

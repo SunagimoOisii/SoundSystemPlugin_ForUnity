@@ -28,7 +28,7 @@ namespace SoundSystem
     {
         public AudioListener Listener { private get; set; }
 
-        private readonly Dictionary<System.Type, Component> filterDict = new();
+        private readonly Dictionary<Type, Component> filterDict = new();
 
         public ListenerEffector(AudioListener l)
         {

@@ -7,7 +7,7 @@ namespace SoundSystem
     /// </summary>
     public abstract class ListenerFilterSettings
     {
-        public abstract void Apply(ListenerEffector effector);
+        internal abstract void Apply(ListenerEffector effector);
     }
 
     [System.Serializable]
@@ -21,7 +21,7 @@ namespace SoundSystem
         [Range(0f, 20f)] public float rate = 0.8f;
         [Range(0f, 1f)] public float depth = 0.03f;
 
-        public override void Apply(ListenerEffector effector)
+        internal override void Apply(ListenerEffector effector)
         {
             effector.ApplyFilter<AudioChorusFilter>(f =>
             {
@@ -41,7 +41,7 @@ namespace SoundSystem
     {
         [Range(0f, 1f)] public float distortionLevel = 0f;
 
-        public override void Apply(ListenerEffector effector)
+        internal override void Apply(ListenerEffector effector)
         {
             effector.ApplyFilter<AudioDistortionFilter>(f =>
             {
@@ -58,7 +58,7 @@ namespace SoundSystem
         [Range(0f, 1f)] public float dryMix = 1f;
         [Range(0f, 1f)] public float wetMix = 1f;
 
-        public override void Apply(ListenerEffector effector)
+        internal override void Apply(ListenerEffector effector)
         {
             effector.ApplyFilter<AudioEchoFilter>(f =>
             {
@@ -76,7 +76,7 @@ namespace SoundSystem
         [Range(10f, 22000f)] public float cutoffFrequency = 5000f;
         [Range(1f, 10f)] public float resonanceQ = 1f;
 
-        public override void Apply(ListenerEffector effector)
+        internal override void Apply(ListenerEffector effector)
         {
             effector.ApplyFilter<AudioHighPassFilter>(f =>
             {
@@ -92,7 +92,7 @@ namespace SoundSystem
         [Range(10f, 22000f)] public float cutoffFrequency = 5000f;
         [Range(1f, 10f)] public float resonanceQ = 1f;
 
-        public override void Apply(ListenerEffector effector)
+        internal override void Apply(ListenerEffector effector)
         {
             effector.ApplyFilter<AudioLowPassFilter>(f =>
             {
@@ -107,7 +107,7 @@ namespace SoundSystem
     {
         public AudioReverbPreset reverbPreset = AudioReverbPreset.Off;
 
-        public override void Apply(ListenerEffector effector)
+        internal override void Apply(ListenerEffector effector)
         {
             effector.ApplyFilter<AudioReverbFilter>(f =>
             {

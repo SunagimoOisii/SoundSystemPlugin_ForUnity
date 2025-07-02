@@ -35,7 +35,7 @@ namespace SoundSystem
             public FilterKind kind;
             [SerializeReference] public ListenerFilterSettings settings;
 
-            public void ApplyTo(ListenerEffector effector)
+            internal readonly void ApplyTo(ListenerEffector effector)
             {
                 settings?.Apply(effector);
             }
@@ -70,7 +70,7 @@ namespace SoundSystem
         public float param = 30f;
 
         [Header("AudioSourcePool")]
-        public AudioSourcePoolFactory.Kind poolType = AudioSourcePoolFactory.Kind.FIFO;
+        public AudioSourcePoolFactory.Kind poolKind = AudioSourcePoolFactory.Kind.FIFO;
         public int initSize = 5;
         public int maxSize  = 10;
 
