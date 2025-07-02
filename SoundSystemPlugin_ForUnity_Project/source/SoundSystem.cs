@@ -64,7 +64,7 @@ namespace SoundSystem
             ss.listenerPresets = preset.listenerPresets;
             foreach (var lp in ss.listenerPresets.Presets)
             {
-                ss.effector.ApplyFilter(lp.filterType, lp.template);
+                ss.effector.ApplyFilter(lp.kind, lp.template);
             }
             if (preset.enableAutoEvict) ss.StartAutoEvict(preset.autoEvictInterval);
             return ss;

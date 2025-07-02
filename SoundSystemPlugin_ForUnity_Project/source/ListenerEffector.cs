@@ -5,6 +5,20 @@ namespace SoundSystem
     using System.Collections.Generic;
 
     /// <summary>
+    /// AudioListener へ適用可能なエフェクトフィルターの種類
+    /// </summary>
+    public enum FilterKind
+    {
+        None,
+        AudioChorusFilter,
+        AudioDistortionFilter,
+        AudioEchoFilter,
+        AudioHighPassFilter,
+        AudioLowPassFilter,
+        AudioReverbFilter,
+    }
+
+    /// <summary>
     /// SoundSystemが操作するクラスの１つ<para></para>
     /// AudioListenerにエフェクトフィルターを動的に追加し制御を行う
     /// (エフェクトフィルターとはAudioReverbFilterやAudioEchoFilterなどで、
@@ -14,7 +28,7 @@ namespace SoundSystem
     {
         public AudioListener Listener { private get; set; }
 
-        private readonly Dictionary<Type, Component> filterDict = new();
+        private readonly Dictionary<System.Type, Component> filterDict = new();
 
         public ListenerEffector(AudioListener l)
         {
@@ -28,7 +42,7 @@ namespace SoundSystem
         {
             if (Listener == newL) return;
 
-            foreach (var pair in new Dictionary<Type, Component>(filterDict))
+            foreach (var pair in new Dictionary<System.Type, Component>(filterDict))
             {
                 if (pair.Value == null) continue;
 
@@ -61,42 +75,40 @@ namespace SoundSystem
             configure?.Invoke(filter);
         }
 
-        public void ApplyFilter(ListenerEffectFilterType type, Behaviour template = null)
+        public void ApplyFilter(FilterKind kind, Behaviour template = null)
         {
-            if (type == ListenerEffectFilterType.None) return;
+            if (kind == FilterKind.None) return;
 
-            var filterClass = GetFilterClass(type);
+            var filterClass = GetFilterClass(kind);
             if (filterClass == null) return;
 
             Log.Safe($"ApplyFilter実行:{filterClass.Name}");
-            if (filterDict.TryGetValue(filterClass, out var component) == false)
+            if (filterDict.TryGetValue(filterClass, out var comp) == false)
             {
-                component = Listener.gameObject.AddComponent(filterClass);
-                filterDict[filterClass] = component;
+                comp = Listener.gameObject.AddComponent(filterClass);
+                filterDict[filterClass] = comp;
             }
 
+            //プリセットでのフィルター設定を適用
             if (template != null)
             {
                 var json = JsonUtility.ToJson(template);
-                JsonUtility.FromJsonOverwrite(json, component);
+                JsonUtility.FromJsonOverwrite(json, comp);
             }
 
-            if (component is Behaviour b)
-            {
-                b.enabled = true;
-            }
+            if (comp is Behaviour b) b.enabled = true;
         }
 
-        private Type GetFilterClass(ListenerEffectFilterType type)
+        private Type GetFilterClass(FilterKind type)
         {
             return type switch
             {
-                ListenerEffectFilterType.AudioChorusFilter      => typeof(AudioChorusFilter),
-                ListenerEffectFilterType.AudioDistortionFilter  => typeof(AudioDistortionFilter),
-                ListenerEffectFilterType.AudioEchoFilter        => typeof(AudioEchoFilter),
-                ListenerEffectFilterType.AudioHighPassFilter    => typeof(AudioHighPassFilter),
-                ListenerEffectFilterType.AudioLowPassFilter     => typeof(AudioLowPassFilter),
-                ListenerEffectFilterType.AudioReverbFilter      => typeof(AudioReverbFilter),
+                FilterKind.AudioChorusFilter      => typeof(AudioChorusFilter),
+                FilterKind.AudioDistortionFilter  => typeof(AudioDistortionFilter),
+                FilterKind.AudioEchoFilter        => typeof(AudioEchoFilter),
+                FilterKind.AudioHighPassFilter    => typeof(AudioHighPassFilter),
+                FilterKind.AudioLowPassFilter     => typeof(AudioLowPassFilter),
+                FilterKind.AudioReverbFilter      => typeof(AudioReverbFilter),
                 _ => null,
             };
         }
