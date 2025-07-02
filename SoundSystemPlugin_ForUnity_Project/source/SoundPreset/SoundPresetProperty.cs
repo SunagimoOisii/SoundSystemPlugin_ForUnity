@@ -33,7 +33,7 @@ namespace SoundSystem
         {
             public string presetName;
             public FilterKind kind;
-            [SerializeReference] public ListenerFilterSettings settings;
+            [SerializeReference] internal ListenerFilterSettings settings;
 
             internal readonly void ApplyTo(ListenerEffector effector)
             {

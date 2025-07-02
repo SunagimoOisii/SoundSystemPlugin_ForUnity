@@ -5,13 +5,13 @@ namespace SoundSystem
     /// <summary>
     /// AudioListener用フィルター設定の基底クラス
     /// </summary>
-    public abstract class ListenerFilterSettings
+    internal abstract class ListenerFilterSettings
     {
-        internal abstract void Apply(ListenerEffector effector);
+        public abstract void Apply(ListenerEffector effector);
     }
 
     [System.Serializable]
-    public sealed class ChorusFilterSettings : ListenerFilterSettings
+    internal sealed class ChorusFilterSettings : ListenerFilterSettings
     {
         [Range(0f, 1f)] public float dryMix  = 0.5f;
         [Range(0f, 1f)] public float wetMix1 = 0.5f;
@@ -21,7 +21,7 @@ namespace SoundSystem
         [Range(0f, 20f)] public float rate   = 0.8f;
         [Range(0f, 1f)] public float depth   = 0.03f;
 
-        internal override void Apply(ListenerEffector effector)
+        public override void Apply(ListenerEffector effector)
         {
             effector.ApplyFilter<AudioChorusFilter>(f =>
             {
@@ -37,11 +37,11 @@ namespace SoundSystem
     }
 
     [System.Serializable]
-    public sealed class DistortionFilterSettings : ListenerFilterSettings
+    internal sealed class DistortionFilterSettings : ListenerFilterSettings
     {
         [Range(0f, 1f)] public float distortionLevel = 0f;
 
-        internal override void Apply(ListenerEffector effector)
+        public override void Apply(ListenerEffector effector)
         {
             effector.ApplyFilter<AudioDistortionFilter>(f =>
             {
@@ -51,14 +51,14 @@ namespace SoundSystem
     }
 
     [System.Serializable]
-    public sealed class EchoFilterSettings : ListenerFilterSettings
+    internal sealed class EchoFilterSettings : ListenerFilterSettings
     {
         [Range(10f, 5000f)] public float delay  = 500f;
         [Range(0f, 1f)] public float decayRatio = 0.5f;
         [Range(0f, 1f)] public float dryMix     = 1f;
         [Range(0f, 1f)] public float wetMix     = 1f;
 
-        internal override void Apply(ListenerEffector effector)
+        public override void Apply(ListenerEffector effector)
         {
             effector.ApplyFilter<AudioEchoFilter>(f =>
             {
@@ -71,12 +71,12 @@ namespace SoundSystem
     }
 
     [System.Serializable]
-    public sealed class HighPassFilterSettings : ListenerFilterSettings
+    internal sealed class HighPassFilterSettings : ListenerFilterSettings
     {
         [Range(10f, 22000f)] public float cutoffFrequency = 5000f;
         [Range(1f, 10f)]     public float resonanceQ      = 1f;
 
-        internal override void Apply(ListenerEffector effector)
+        public override void Apply(ListenerEffector effector)
         {
             effector.ApplyFilter<AudioHighPassFilter>(f =>
             {
@@ -87,12 +87,12 @@ namespace SoundSystem
     }
 
     [System.Serializable]
-    public sealed class LowPassFilterSettings : ListenerFilterSettings
+    internal sealed class LowPassFilterSettings : ListenerFilterSettings
     {
         [Range(10f, 22000f)] public float cutoffFrequency = 5000f;
         [Range(1f, 10f)]     public float resonanceQ      = 1f;
 
-        internal override void Apply(ListenerEffector effector)
+        public override void Apply(ListenerEffector effector)
         {
             effector.ApplyFilter<AudioLowPassFilter>(f =>
             {
@@ -103,11 +103,11 @@ namespace SoundSystem
     }
 
     [System.Serializable]
-    public sealed class ReverbFilterSettings : ListenerFilterSettings
+    internal sealed class ReverbFilterSettings : ListenerFilterSettings
     {
         public AudioReverbPreset reverbPreset = AudioReverbPreset.Off;
 
-        internal override void Apply(ListenerEffector effector)
+        public override void Apply(ListenerEffector effector)
         {
             effector.ApplyFilter<AudioReverbFilter>(f =>
             {
