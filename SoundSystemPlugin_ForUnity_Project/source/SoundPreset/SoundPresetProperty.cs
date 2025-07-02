@@ -49,13 +49,13 @@ namespace SoundSystem
 
         [Header("SoundLoader")]
 #if USE_ADDRESSABLES
-        public SoundLoaderFactory.Type loaderType = SoundLoaderFactory.Type.Addressables;
+        public SoundLoaderFactory.Kind loaderKind = SoundLoaderFactory.Kind.Addressables;
 #else
-        public SoundLoaderFactory.Type loaderType = SoundLoaderFactory.Type.Resources;
+        public SoundLoaderFactory.Kind loaderKind = SoundLoaderFactory.Kind.Resources;
 #endif
 
         [Header("SoundCache")]
-        public SoundCacheFactory.Type cacheType = SoundCacheFactory.Type.LeastRecentlyUsed;
+        public SoundCacheFactory.Kind cacheKind = SoundCacheFactory.Kind.LeastRecentlyUsed;
         public bool  enableAutoEvict   = false;
         public float autoEvictInterval = 60f;
 
@@ -64,7 +64,7 @@ namespace SoundSystem
         public float param = 30f;
 
         [Header("AudioSourcePool")]
-        public AudioSourcePoolFactory.Type poolType = AudioSourcePoolFactory.Type.FIFO;
+        public AudioSourcePoolFactory.Kind poolType = AudioSourcePoolFactory.Kind.FIFO;
         public int initSize = 5;
         public int maxSize  = 10;
 

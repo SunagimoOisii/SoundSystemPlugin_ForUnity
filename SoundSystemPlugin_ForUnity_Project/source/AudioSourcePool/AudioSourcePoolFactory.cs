@@ -8,7 +8,7 @@ namespace SoundSystem
     /// </summary>
     public static class AudioSourcePoolFactory
     {
-        public enum Type
+        public enum Kind
         {
             FIFO,
             Strict
@@ -17,14 +17,14 @@ namespace SoundSystem
         /// <summary>
         /// 指定プール管理方式に応じたIAudioSourcePoolインスタンスを生成
         /// </summary>
-        public static IAudioSourcePool Create(Type type,
+        public static IAudioSourcePool Create(Kind k,
             AudioMixerGroup seMixerG, int initSize, int maxSize, bool persistent = false)
         {
-            return type switch
+            return k switch
             {
-                Type.FIFO   => new AudioSourcePool_FIFO(seMixerG, initSize, maxSize, persistent),
-                Type.Strict => new AudioSourcePool_Strict(seMixerG, initSize, maxSize, persistent),
-                _ => throw new ArgumentOutOfRangeException(nameof(type)),
+                Kind.FIFO   => new AudioSourcePool_FIFO(seMixerG, initSize, maxSize, persistent),
+                Kind.Strict => new AudioSourcePool_Strict(seMixerG, initSize, maxSize, persistent),
+                _ => throw new ArgumentOutOfRangeException(nameof(k)),
             };
         }
     }

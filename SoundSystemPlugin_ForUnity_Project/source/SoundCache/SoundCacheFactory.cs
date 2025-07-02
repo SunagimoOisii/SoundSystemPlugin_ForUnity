@@ -7,7 +7,7 @@ namespace SoundSystem
     /// </summary>
     public static class SoundCacheFactory
     {
-        public enum Type
+        public enum Kind
         {
             LeastRecentlyUsed,
             TimeToLive,
@@ -17,14 +17,14 @@ namespace SoundSystem
         /// <summary>
         /// キャッシュ方式とパラメータからISoundCacheを生成する
         /// </summary>
-        public static ISoundCache Create(Type t, float param)
+        public static ISoundCache Create(Kind k, float param)
         {
-            return t switch
+            return k switch
             {
-                Type.LeastRecentlyUsed    => CreateLRU(param),
-                Type.TimeToLive           => CreateTTL(param),
-                Type.Random               => CreateRandom((int)param),
-                _           => throw new ArgumentOutOfRangeException(nameof(t))
+                Kind.LeastRecentlyUsed    => CreateLRU(param),
+                Kind.TimeToLive           => CreateTTL(param),
+                Kind.Random               => CreateRandom((int)param),
+                _           => throw new ArgumentOutOfRangeException(nameof(k))
             };
         }
 

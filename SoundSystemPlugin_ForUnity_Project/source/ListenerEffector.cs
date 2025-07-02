@@ -152,7 +152,6 @@ namespace SoundSystem
             }
         }
 
-
         public void RemoveFilter<FilterT>() where FilterT : Behaviour
         {
             if (filterDict.TryGetValue(typeof(FilterT), out var component))

@@ -65,7 +65,7 @@ namespace SoundSystem
                                    .FindPropertyRelative("presetList");
 
             //SoundLoader設定
-            loaderType = serializedObject.FindProperty("loaderType");
+            loaderType = serializedObject.FindProperty("loaderKind");
 
             //SoundCache設定
             cacheType          = serializedObject.FindProperty("cacheType");
@@ -169,21 +169,21 @@ namespace SoundSystem
         private void UpdateParamField()
         {
             paramContainer.Clear();
-            switch ((SoundCacheFactory.Type)cacheType.enumValueIndex)
+            switch ((SoundCacheFactory.Kind)cacheType.enumValueIndex)
             {
-                case SoundCacheFactory.Type.LeastRecentlyUsed:
+                case SoundCacheFactory.Kind.LeastRecentlyUsed:
                     var fieldLRU = new PropertyField(param, "idleTimeThreshold");
                     fieldLRU.Bind(serializedObject);
                     paramContainer.Add(fieldLRU);
                     break;
 
-                case SoundCacheFactory.Type.TimeToLive:
+                case SoundCacheFactory.Kind.TimeToLive:
                     var fieldTTL = new PropertyField(param, "ttlSeconds");
                     fieldTTL.Bind(serializedObject);
                     paramContainer.Add(fieldTTL);
                     break;
 
-                case SoundCacheFactory.Type.Random:
+                case SoundCacheFactory.Kind.Random:
                     var intField = new IntegerField("maxCacheCount") { value = Mathf.RoundToInt(param.floatValue) };
                     intField.RegisterValueChangedCallback(e => param.floatValue = e.newValue);
                     paramContainer.Add(intField);

@@ -7,7 +7,7 @@ namespace SoundSystem
     /// </summary>
     public static class SoundLoaderFactory
     {
-        public enum Type
+        public enum Kind
         {
 #if USE_ADDRESSABLES
             Addressables,
@@ -16,16 +16,16 @@ namespace SoundSystem
             Streaming
         }
 
-        public static ISoundLoader Create(Type type, ISoundCache cache)
+        public static ISoundLoader Create(Kind k, ISoundCache cache)
         {
-            return type switch
+            return k switch
             {
 #if USE_ADDRESSABLES
-                Type.Addressables => new SoundLoader_Addressables(cache),
+                Kind.Addressables => new SoundLoader_Addressables(cache),
 #endif
-                Type.Resources    => new SoundLoader_Resources(cache),
-                Type.Streaming    => new SoundLoader_Streaming(cache),
-                _ => throw new ArgumentOutOfRangeException(nameof(type))
+                Kind.Resources    => new SoundLoader_Resources(cache),
+                Kind.Streaming    => new SoundLoader_Streaming(cache),
+                _ => throw new ArgumentOutOfRangeException(nameof(k))
             };
         }
     }
