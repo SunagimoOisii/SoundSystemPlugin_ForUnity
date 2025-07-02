@@ -28,13 +28,6 @@ namespace SoundSystem
             [Range(0f, 1f)] public float fadeOutDuration;
         }
 
-        [System.Serializable]
-        public struct ListenerEffectPreset
-        {
-            public string     presetName;
-            public FilterKind kind;
-            public Behaviour  template;
-        }
 
         [Header("BGM")]
         public AudioMixerGroup bgmMixerG;
