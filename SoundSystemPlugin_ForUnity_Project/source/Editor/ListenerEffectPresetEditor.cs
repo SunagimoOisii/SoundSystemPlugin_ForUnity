@@ -41,12 +41,12 @@ namespace SoundSystem
         {
             Type t = k switch
             {
-                FilterKind.AudioChorusFilter     => typeof(ChorusFilterSettings),
-                FilterKind.AudioDistortionFilter => typeof(DistortionFilterSettings),
-                FilterKind.AudioEchoFilter       => typeof(EchoFilterSettings),
-                FilterKind.AudioHighPassFilter   => typeof(HighPassFilterSettings),
-                FilterKind.AudioLowPassFilter    => typeof(LowPassFilterSettings),
-                FilterKind.AudioReverbFilter     => typeof(ReverbFilterSettings),
+                FilterKind.Chorus     => typeof(ChorusFilterSettings),
+                FilterKind.Distortion => typeof(DistortionFilterSettings),
+                FilterKind.Echo       => typeof(EchoFilterSettings),
+                FilterKind.HighPass   => typeof(HighPassFilterSettings),
+                FilterKind.LowPass    => typeof(LowPassFilterSettings),
+                FilterKind.Reverb     => typeof(ReverbFilterSettings),
                 _ => null,
             };
 

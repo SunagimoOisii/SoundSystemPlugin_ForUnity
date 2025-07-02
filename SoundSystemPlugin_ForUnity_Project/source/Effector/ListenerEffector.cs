@@ -10,12 +10,12 @@ namespace SoundSystem
     public enum FilterKind
     {
         None,
-        AudioChorusFilter,
-        AudioDistortionFilter,
-        AudioEchoFilter,
-        AudioHighPassFilter,
-        AudioLowPassFilter,
-        AudioReverbFilter,
+        Chorus,
+        Distortion,
+        Echo,
+        HighPass,
+        LowPass,
+        Reverb,
     }
 
     /// <summary>
@@ -109,12 +109,12 @@ namespace SoundSystem
         {
             return type switch
             {
-                FilterKind.AudioChorusFilter      => typeof(AudioChorusFilter),
-                FilterKind.AudioDistortionFilter  => typeof(AudioDistortionFilter),
-                FilterKind.AudioEchoFilter        => typeof(AudioEchoFilter),
-                FilterKind.AudioHighPassFilter    => typeof(AudioHighPassFilter),
-                FilterKind.AudioLowPassFilter     => typeof(AudioLowPassFilter),
-                FilterKind.AudioReverbFilter      => typeof(AudioReverbFilter),
+                FilterKind.Chorus      => typeof(AudioChorusFilter),
+                FilterKind.Distortion  => typeof(AudioDistortionFilter),
+                FilterKind.Echo        => typeof(AudioEchoFilter),
+                FilterKind.HighPass    => typeof(AudioHighPassFilter),
+                FilterKind.LowPass     => typeof(AudioLowPassFilter),
+                FilterKind.Reverb      => typeof(AudioReverbFilter),
                 _ => null,
             };
         }
