@@ -306,6 +306,8 @@ namespace SoundSystem
                 while (token.IsCancellationRequested == false)
                 {
                     await UniTask.Delay(TimeSpan.FromSeconds(interval), cancellationToken: token);
+
+                    Log.Safe($"AutoEvict実行:interval = {interval}");
                     cache.Evict();
                 }
             }
@@ -351,7 +353,6 @@ namespace SoundSystem
             bgm.Dispose();
             se.Dispose();
             cache.ClearAll();
-            Log.Close();
         }
     }
 }
