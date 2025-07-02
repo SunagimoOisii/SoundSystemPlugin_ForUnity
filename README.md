@@ -84,6 +84,7 @@ soundSystem.DisableAllEffectFilter();
 ### Listenerエフェクトプリセット設定
 `SoundPresetProperty` の `listenerPresets` にフィルター設定を登録しておくと、
 `SoundSystem.CreateFromPreset` 実行時に自動で適用されます。
+フィルターの種類は `ListenerEffectFilterType` から選択します。
 
 ## システム構成
 ```mermaid
