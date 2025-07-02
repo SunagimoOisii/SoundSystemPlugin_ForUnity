@@ -99,6 +99,12 @@ namespace SoundSystem
             if (comp is Behaviour b) b.enabled = true;
         }
 
+        public void ApplyPreset(ListenerEffectPreset preset)
+        {
+            Log.Safe($"ApplyPreset実行:{preset.presetName}");
+            preset.ApplyTo(this);
+        }
+
         private Type GetFilterClass(FilterKind type)
         {
             return type switch

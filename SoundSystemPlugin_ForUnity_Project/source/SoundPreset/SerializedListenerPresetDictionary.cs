@@ -4,9 +4,9 @@ namespace SoundSystem
     /// Listenerエフェクトプリセット群を保持するクラス
     /// </summary>
     [System.Serializable]
-    public sealed class SerializedListenerPresetDictionary : SerializedPresetDictionary<SoundPresetProperty.ListenerEffectPreset>
+    public sealed class SerializedListenerPresetDictionary : SerializedPresetDictionary<ListenerEffectPreset>
     {
-        protected override string GetPresetName(SoundPresetProperty.ListenerEffectPreset preset)
+        protected override string GetPresetName(ListenerEffectPreset preset)
         {
             return preset.presetName;
         }
