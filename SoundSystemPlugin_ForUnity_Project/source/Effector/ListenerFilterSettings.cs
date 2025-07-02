@@ -13,25 +13,25 @@ namespace SoundSystem
     [System.Serializable]
     public sealed class ChorusFilterSettings : ListenerFilterSettings
     {
-        [Range(0f, 1f)] public float dryMix = 0.5f;
+        [Range(0f, 1f)] public float dryMix  = 0.5f;
         [Range(0f, 1f)] public float wetMix1 = 0.5f;
         [Range(0f, 1f)] public float wetMix2 = 0.5f;
         [Range(0f, 1f)] public float wetMix3 = 0.5f;
         [Range(0f, 100f)] public float delay = 40f;
-        [Range(0f, 20f)] public float rate = 0.8f;
-        [Range(0f, 1f)] public float depth = 0.03f;
+        [Range(0f, 20f)] public float rate   = 0.8f;
+        [Range(0f, 1f)] public float depth   = 0.03f;
 
         internal override void Apply(ListenerEffector effector)
         {
             effector.ApplyFilter<AudioChorusFilter>(f =>
             {
-                f.dryMix = dryMix;
+                f.dryMix  = dryMix;
                 f.wetMix1 = wetMix1;
                 f.wetMix2 = wetMix2;
                 f.wetMix3 = wetMix3;
-                f.delay = delay;
-                f.rate = rate;
-                f.depth = depth;
+                f.delay   = delay;
+                f.rate    = rate;
+                f.depth   = depth;
             });
         }
     }
@@ -53,19 +53,19 @@ namespace SoundSystem
     [System.Serializable]
     public sealed class EchoFilterSettings : ListenerFilterSettings
     {
-        [Range(10f, 5000f)] public float delay = 500f;
+        [Range(10f, 5000f)] public float delay  = 500f;
         [Range(0f, 1f)] public float decayRatio = 0.5f;
-        [Range(0f, 1f)] public float dryMix = 1f;
-        [Range(0f, 1f)] public float wetMix = 1f;
+        [Range(0f, 1f)] public float dryMix     = 1f;
+        [Range(0f, 1f)] public float wetMix     = 1f;
 
         internal override void Apply(ListenerEffector effector)
         {
             effector.ApplyFilter<AudioEchoFilter>(f =>
             {
-                f.delay = delay;
+                f.delay      = delay;
                 f.decayRatio = decayRatio;
-                f.dryMix = dryMix;
-                f.wetMix = wetMix;
+                f.dryMix     = dryMix;
+                f.wetMix     = wetMix;
             });
         }
     }
@@ -74,13 +74,13 @@ namespace SoundSystem
     public sealed class HighPassFilterSettings : ListenerFilterSettings
     {
         [Range(10f, 22000f)] public float cutoffFrequency = 5000f;
-        [Range(1f, 10f)] public float resonanceQ = 1f;
+        [Range(1f, 10f)]     public float resonanceQ      = 1f;
 
         internal override void Apply(ListenerEffector effector)
         {
             effector.ApplyFilter<AudioHighPassFilter>(f =>
             {
-                f.cutoffFrequency = cutoffFrequency;
+                f.cutoffFrequency    = cutoffFrequency;
                 f.highpassResonanceQ = resonanceQ;
             });
         }
@@ -90,13 +90,13 @@ namespace SoundSystem
     public sealed class LowPassFilterSettings : ListenerFilterSettings
     {
         [Range(10f, 22000f)] public float cutoffFrequency = 5000f;
-        [Range(1f, 10f)] public float resonanceQ = 1f;
+        [Range(1f, 10f)]     public float resonanceQ      = 1f;
 
         internal override void Apply(ListenerEffector effector)
         {
             effector.ApplyFilter<AudioLowPassFilter>(f =>
             {
-                f.cutoffFrequency = cutoffFrequency;
+                f.cutoffFrequency   = cutoffFrequency;
                 f.lowpassResonanceQ = resonanceQ;
             });
         }

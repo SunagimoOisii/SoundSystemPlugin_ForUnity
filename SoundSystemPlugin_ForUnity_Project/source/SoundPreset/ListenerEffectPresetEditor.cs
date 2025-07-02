@@ -13,17 +13,17 @@ namespace SoundSystem
         {
             var root = new VisualElement();
 
-            var nameProp     = property.FindPropertyRelative("presetName");
-            var kindProp     = property.FindPropertyRelative("kind");
-            var settingsProp = property.FindPropertyRelative("settings");
+            var name     = property.FindPropertyRelative("presetName");
+            var kind     = property.FindPropertyRelative("kind");
+            var settings = property.FindPropertyRelative("settings");
 
-            var nameField = new PropertyField(nameProp);
-            var kindField = new PropertyField(kindProp);
-            var settingsField = new PropertyField(settingsProp);
+            var nameField     = new PropertyField(property.FindPropertyRelative("presetName"));
+            var kindField     = new PropertyField(kind);
+            var settingsField = new PropertyField(settings);
 
             kindField.RegisterValueChangeCallback(_ =>
             {
-                AssignSettingInstance(settingsProp, (FilterKind)kindProp.enumValueIndex);
+                AssignSettingInstance(settings, (FilterKind)kind.enumValueIndex);
                 settingsField.Bind(property.serializedObject);
             });
 
@@ -32,7 +32,7 @@ namespace SoundSystem
             root.Add(settingsField);
 
             //初期状態の設定インスタンスを適用
-            AssignSettingInstance(settingsProp, (FilterKind)kindProp.enumValueIndex);
+            AssignSettingInstance(settings, (FilterKind)kind.enumValueIndex);
 
             return root;
         }

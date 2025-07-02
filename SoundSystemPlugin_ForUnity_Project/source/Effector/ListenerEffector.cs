@@ -42,7 +42,7 @@ namespace SoundSystem
         {
             if (Listener == newL) return;
 
-            foreach (var pair in new Dictionary<System.Type, Component>(filterDict))
+            foreach (var pair in new Dictionary<Type, Component>(filterDict))
             {
                 if (pair.Value == null) continue;
 

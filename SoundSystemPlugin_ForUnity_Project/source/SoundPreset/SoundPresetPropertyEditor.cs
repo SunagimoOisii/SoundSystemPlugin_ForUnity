@@ -19,15 +19,15 @@ namespace SoundSystem
         //SE
         private SerializedProperty seMixerG;
         private SerializedProperty sePresetList;
-        private Label seSearchState;
+        private Label              seSearchState;
         private ToolbarSearchField seSearchField;
-        private ScrollView seScrollView;
+        private ScrollView         seScrollView;
 
         //Listener Effect
         private SerializedProperty listenerPresetList;
-        private Label listenerSearchState;
+        private Label              listenerSearchState;
         private ToolbarSearchField listenerSearchField;
-        private ScrollView listenerScrollView;
+        private ScrollView         listenerScrollView;
 
         //SoundLoader設定
         private SerializedProperty loaderKind;
