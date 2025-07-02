@@ -257,6 +257,27 @@ namespace SoundSystem
 
         public void Dispose()
         {
+            //全フェード処理停止
+            foreach (var cts in fadeCtsMap.Values)
+            {
+                cts.Cancel();
+                cts.Dispose();
+            }
+            fadeCtsMap.Clear();
+
+            //再生中の SE を停止し、キャッシュ参照解放
+            foreach (var source in sourcePool.GetAllResources())
+            {
+                if (source == null) continue;
+
+                CancelFade(source);
+                source.Stop();
+                source.clip = null;
+                UnregisterResourceAddress(source);
+            }
+            usageResourceMap.Clear();
+
+            //オーディオソースプール破棄
             sourcePool.Destroy();
         }
     }
