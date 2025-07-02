@@ -154,6 +154,11 @@ namespace SoundSystem
         {
             bgm.Pause();
         }
+
+        public void InterruptBGMFade()
+        {
+            bgm.InterruptFade();
+        }
     
         public async UniTask FadeInBGM(string resourceAddress, float duration,
             float volume = 1.0f, Action onComplete = null)
@@ -257,6 +262,11 @@ namespace SoundSystem
         public void PauseAllSE()
         {
             se.PauseAll();
+        }
+
+        public void InterruptAllSEFade()
+        {
+            se.InterruptAllFade();
         }
         #endregion
     

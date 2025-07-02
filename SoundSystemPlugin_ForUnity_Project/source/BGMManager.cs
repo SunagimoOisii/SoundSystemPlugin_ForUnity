@@ -32,6 +32,7 @@ namespace SoundSystem
         private (AudioSource active, AudioSource inactive) bgmSources;
 
         private CancellationTokenSource fadeCTS;
+        private string pendingResourceAddress;
 
         /// <param name="mixerGroup">BGM出力先のAudioMixerGroup</param>
         public BGMManager(AudioMixerGroup mixerGroup, ISoundLoader loader, ISoundCache cache, bool persistent = false)
@@ -211,6 +212,7 @@ namespace SoundSystem
                 return;
             }
             cache.BeginUse(resourceAddress);
+            pendingResourceAddress = resourceAddress;
             State = BGMState.CrossFade;
             bgmSources.inactive.clip = clip;
             bgmSources.inactive.volume = 0f;
@@ -240,6 +242,8 @@ namespace SoundSystem
 
                     onComplete?.Invoke();
                 }).SuppressCancellationThrow();
+
+            pendingResourceAddress = null;
 
             if (isCancelled)
             {
@@ -286,11 +290,57 @@ namespace SoundSystem
             }
         }
 
+        public void InterruptFade()
+        {
+            if (fadeCTS == null) return;
+
+            CancelFade();
+
+            switch (State)
+            {
+                case BGMState.FadeIn:
+                case BGMState.FadeOut:
+                    State = BGMState.Play;
+                    break;
+                case BGMState.CrossFade:
+                    HandleCrossFadeInterrupt();
+                    State = BGMState.Play;
+                    break;
+            }
+        }
+
+        private void HandleCrossFadeInterrupt()
+        {
+            if (pendingResourceAddress == null)
+            {
+                return;
+            }
+
+            if (bgmSources.inactive.volume >= bgmSources.active.volume)
+            {
+                bgmSources.active.Stop();
+                if (usageResourceAddress != null)
+                {
+                    cache.EndUse(usageResourceAddress);
+                }
+                usageResourceAddress = pendingResourceAddress;
+                bgmSources = (bgmSources.inactive, bgmSources.active);
+            }
+            else
+            {
+                bgmSources.inactive.Stop();
+                cache.EndUse(pendingResourceAddress);
+            }
+
+            pendingResourceAddress = null;
+        }
+
         public void Dispose()
         {
             CancelFade();
             fadeCTS?.Dispose();
             fadeCTS = null;
+            pendingResourceAddress = null;
 
             if (usageResourceAddress != null)
             {
