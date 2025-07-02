@@ -61,6 +61,46 @@ namespace SoundSystem
             configure?.Invoke(filter);
         }
 
+        public void ApplyFilter(ListenerEffectFilterType type, Behaviour template = null)
+        {
+            if (type == ListenerEffectFilterType.None) return;
+
+            var filterClass = GetFilterClass(type);
+            if (filterClass == null) return;
+
+            Log.Safe($"ApplyFilter実行:{filterClass.Name}");
+            if (filterDict.TryGetValue(filterClass, out var component) == false)
+            {
+                component = Listener.gameObject.AddComponent(filterClass);
+                filterDict[filterClass] = component;
+            }
+
+            if (template != null)
+            {
+                var json = JsonUtility.ToJson(template);
+                JsonUtility.FromJsonOverwrite(json, component);
+            }
+
+            if (component is Behaviour b)
+            {
+                b.enabled = true;
+            }
+        }
+
+        private Type GetFilterClass(ListenerEffectFilterType type)
+        {
+            return type switch
+            {
+                ListenerEffectFilterType.AudioChorusFilter      => typeof(AudioChorusFilter),
+                ListenerEffectFilterType.AudioDistortionFilter  => typeof(AudioDistortionFilter),
+                ListenerEffectFilterType.AudioEchoFilter        => typeof(AudioEchoFilter),
+                ListenerEffectFilterType.AudioHighPassFilter    => typeof(AudioHighPassFilter),
+                ListenerEffectFilterType.AudioLowPassFilter     => typeof(AudioLowPassFilter),
+                ListenerEffectFilterType.AudioReverbFilter      => typeof(AudioReverbFilter),
+                _ => null,
+            };
+        }
+
         public void ApplyFilter(Behaviour template)
         {
             if (template == null) return;

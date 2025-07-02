@@ -31,8 +31,9 @@ namespace SoundSystem
         [System.Serializable]
         public struct ListenerEffectPreset
         {
-            public string   presetName;
-            public Behaviour filter;
+            public string                   presetName;
+            public ListenerEffectFilterType filterType;
+            public Behaviour               template;
         }
 
         [Header("BGM")]
