@@ -32,6 +32,9 @@
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>ref\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule">
+      <HintPath>ref\UnityEngine.JSONSerializeModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>ref\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>

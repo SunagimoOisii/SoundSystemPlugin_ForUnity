@@ -7,7 +7,7 @@ namespace SoundSystem
     using UnityEngine;
     using UnityEngine.UIElements;
 
-    [CustomPropertyDrawer(typeof(ListenerEffectPreset))]
+    [CustomPropertyDrawer(typeof(SoundPresetProperty.ListenerEffectPreset))]
     internal sealed class ListenerEffectPresetDrawer : PropertyDrawer
     {
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
