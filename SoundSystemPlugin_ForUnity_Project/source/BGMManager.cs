@@ -213,6 +213,7 @@ namespace SoundSystem
             }
             cache.BeginUse(resourceAddress);
             pendingResourceAddress = resourceAddress;
+
             State = BGMState.CrossFade;
             bgmSources.inactive.clip = clip;
             bgmSources.inactive.volume = 0f;
@@ -243,13 +244,12 @@ namespace SoundSystem
                     onComplete?.Invoke();
                 }).SuppressCancellationThrow();
 
-            pendingResourceAddress = null;
-
             if (isCancelled)
             {
                 //キャンセル時、フェード前 BGM の EndUse が呼ばれないためここで呼ぶ
                 cache.EndUse(resourceAddress);
             }
+            pendingResourceAddress = null;
 
             Log.Safe($"CrossFade終了:{resourceAddress}");
         }
@@ -293,7 +293,6 @@ namespace SoundSystem
         public void InterruptFade()
         {
             if (fadeCTS == null) return;
-
             CancelFade();
 
             switch (State)
@@ -302,6 +301,7 @@ namespace SoundSystem
                 case BGMState.FadeOut:
                     State = BGMState.Play;
                     break;
+
                 case BGMState.CrossFade:
                     HandleCrossFadeInterrupt();
                     State = BGMState.Play;
@@ -311,10 +311,7 @@ namespace SoundSystem
 
         private void HandleCrossFadeInterrupt()
         {
-            if (pendingResourceAddress == null)
-            {
-                return;
-            }
+            if (pendingResourceAddress == null) return;
 
             if (bgmSources.inactive.volume >= bgmSources.active.volume)
             {

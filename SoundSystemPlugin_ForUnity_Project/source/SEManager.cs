@@ -115,14 +115,6 @@ namespace SoundSystem
             }
         }
 
-        public void InterruptAllFade()
-        {
-            foreach (var cts in fadeCtsMap.Values)
-            {
-                cts.Cancel();
-            }
-        }
-
         public async UniTask FadeIn(string resourceAddress, float duration,
             float volume, float pitch, float spatialBlend, Vector3 position,
             Action onComplete = null)
@@ -237,6 +229,14 @@ namespace SoundSystem
             {
                 cts.Dispose();
                 fadeCtsMap.Remove(source);
+            }
+        }
+
+        public void InterruptAllFade()
+        {
+            foreach (var cts in fadeCtsMap.Values)
+            {
+                cts.Cancel();
             }
         }
 

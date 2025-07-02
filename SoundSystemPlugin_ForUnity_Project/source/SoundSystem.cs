@@ -154,11 +154,6 @@ namespace SoundSystem
         {
             bgm.Pause();
         }
-
-        public void InterruptBGMFade()
-        {
-            bgm.InterruptFade();
-        }
     
         public async UniTask FadeInBGM(string resourceAddress, float duration,
             float volume = 1.0f, Action onComplete = null)
@@ -202,6 +197,14 @@ namespace SoundSystem
             {
                 await bgm.CrossFade(resourceAddress, preset.crossFadeDuration, onComplete);
             }
+        }
+
+        /// <summary>
+        /// クロスフェード中断時、音声が大きい方の再生を続行する
+        /// </summary>
+        public void InterruptBGMFade()
+        {
+            bgm.InterruptFade();
         }
         #endregion
     
