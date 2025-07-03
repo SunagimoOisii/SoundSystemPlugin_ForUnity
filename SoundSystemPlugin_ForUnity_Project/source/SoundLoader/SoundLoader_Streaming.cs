@@ -33,7 +33,7 @@ namespace SoundSystem
 
             if (resourceAddress == null)
             {
-                Log.Error($"LoadClip失敗:{nameof(resourceAddress)}がnull");
+                Log.Warn($"LoadClip失敗:{nameof(resourceAddress)}がnull");
                 return (false, null);
             }
 
