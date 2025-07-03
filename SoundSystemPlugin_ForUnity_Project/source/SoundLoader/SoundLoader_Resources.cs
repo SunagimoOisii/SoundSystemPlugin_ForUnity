@@ -37,6 +37,7 @@ namespace SoundSystem
                 return (false, null);
             }
 
+            //キャッシュを参照し、既に存在する場合はそれを返す
             var cached = cache.Retrieve(resourceAddress);
             if (cached != null)
             {

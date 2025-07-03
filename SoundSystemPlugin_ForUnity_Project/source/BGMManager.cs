@@ -100,11 +100,8 @@ namespace SoundSystem
             bgmSources.inactive.Stop();
             bgmSources.inactive.clip = null;
 
-            if (usageResourceAddress != null)
-            {
-                cache.EndUse(usageResourceAddress);
-                usageResourceAddress = null;
-            }
+            cache.EndUse(usageResourceAddress);
+            usageResourceAddress = null;
         }
 
         public void Resume()
@@ -190,11 +187,9 @@ namespace SoundSystem
                     bgmSources.active.Stop();
                     bgmSources.active.clip = null;
 
-                    if (usageResourceAddress != null)
-                    {
-                        cache.EndUse(usageResourceAddress);
-                        usageResourceAddress = null;
-                    }
+                    cache.EndUse(usageResourceAddress);
+                    usageResourceAddress = null;
+
                     onComplete?.Invoke();
                 });
 
@@ -236,10 +231,7 @@ namespace SoundSystem
                     bgmSources = (bgmSources.inactive, bgmSources.active);
 
                     //再生中リソースのアドレス更新
-                    if (usageResourceAddress != null)
-                    {
-                        cache.EndUse(usageResourceAddress);
-                    }
+                    cache.EndUse(usageResourceAddress);
                     usageResourceAddress = resourceAddress;
 
                     onComplete?.Invoke();
@@ -318,12 +310,10 @@ namespace SoundSystem
             if (bgmSources.inactive.volume >= bgmSources.active.volume)
             {
                 bgmSources.active.Stop();
-                if (usageResourceAddress != null)
-                {
-                    cache.EndUse(usageResourceAddress);
-                }
-                usageResourceAddress = pendingResourceAddress;
                 bgmSources = (bgmSources.inactive, bgmSources.active);
+
+                cache.EndUse(usageResourceAddress);
+                usageResourceAddress = pendingResourceAddress;
             }
             else
             {
@@ -342,11 +332,8 @@ namespace SoundSystem
             bgmSources             = (null, null);
             pendingResourceAddress = null;
 
-            if (usageResourceAddress != null)
-            {
-                cache.EndUse(usageResourceAddress);
-                usageResourceAddress = null;
-            }
+            cache.EndUse(usageResourceAddress);
+            usageResourceAddress = null;
 
             if (sourceRoot != null) UnityEngine.Object.Destroy(sourceRoot);
         }
