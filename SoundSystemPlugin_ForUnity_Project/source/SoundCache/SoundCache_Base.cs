@@ -19,15 +19,13 @@ namespace SoundSystem
         }
     
         /// <summary>
-        /// 指定リソースをキャッシュから取得する<para></para>
-        /// 取得時に最終アクセス時間も更新する
+        /// 指定リソースをキャッシュから取得する
         /// </summary>
         public virtual AudioClip Retrieve(string resourceAddress)
         {
-            if (cache.TryGetValue(resourceAddress, out var clip))
-            {
-                return clip;
-            }
+            if(resourceAddress == null) return null;
+
+            if (cache.TryGetValue(resourceAddress, out var clip)) return clip;
             return null;
         }
     
@@ -36,6 +34,9 @@ namespace SoundSystem
         /// </summary>
         public virtual void Add(string resourceAddress, AudioClip clip)
         {
+            if(resourceAddress == null ||
+               clip == null) return;
+
             cache[resourceAddress] = clip;
             if (usageCount.ContainsKey(resourceAddress) == false)
             {
@@ -45,6 +46,8 @@ namespace SoundSystem
     
         public virtual void Remove(string resourceAddress)
         {
+            if (resourceAddress == null) return;
+
             if (cache.TryGetValue(resourceAddress, out var clip))
             {
                 Log.Safe($"Remove実行:{resourceAddress}");
@@ -72,19 +75,16 @@ namespace SoundSystem
 
         public void BeginUse(string resourceAddress)
         {
-            if (usageCount.ContainsKey(resourceAddress))
-            {
-                usageCount[resourceAddress]++;
-            }
-            else
-            {
-                usageCount[resourceAddress] = 1;
-            }
+            if (resourceAddress == null) return;
+
+            if (usageCount.ContainsKey(resourceAddress)) usageCount[resourceAddress]++;
+            else                                         usageCount[resourceAddress] = 1;
         }
 
         public void EndUse(string resourceAddress)
         {
-            if (usageCount.TryGetValue(resourceAddress, out var count) == false) return;
+            if (resourceAddress == null ||
+                usageCount.TryGetValue(resourceAddress, out var count) == false) return;
 
             count--;
             if(count <= 0) usageCount.Remove(resourceAddress);

@@ -21,10 +21,10 @@ namespace SoundSystem
         {
             return k switch
             {
-                Kind.LeastRecentlyUsed    => CreateLRU(param),
-                Kind.TimeToLive           => CreateTTL(param),
-                Kind.Random               => CreateRandom((int)param),
-                _           => throw new ArgumentOutOfRangeException(nameof(k))
+                Kind.LeastRecentlyUsed => CreateLRU(param),
+                Kind.TimeToLive        => CreateTTL(param),
+                Kind.Random            => CreateRandom((int)param),
+                _                      => throw new ArgumentOutOfRangeException(nameof(k))
             };
         }
 

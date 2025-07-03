@@ -19,16 +19,14 @@ namespace SoundSystem
     
         public override void Evict()
         {
-            if (cache.Count <= maxCacheCount)
-            {
-                return;
-            }
+            if (cache.Count <= maxCacheCount) return;
     
             int excessCount = cache.Count - maxCacheCount;
             var keys = new List<string>();
             foreach (var k in cache.Keys)
             {
-                if (usageCount.TryGetValue(k, out var c) == false || c <= 0)
+                if (usageCount.TryGetValue(k, out var c) == false ||
+                    c <= 0)
                 {
                     keys.Add(k);
                 }

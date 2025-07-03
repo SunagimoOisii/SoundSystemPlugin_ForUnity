@@ -19,22 +19,27 @@ namespace SoundSystem
     
         public override AudioClip Retrieve(string resourceAddress)
         {
+            if(resourceAddress == null) return null;
+
             var clip = base.Retrieve(resourceAddress);
-            if (clip != null)
-            {
-                lastAccessTime[resourceAddress] = Time.time;
-            }
+            if (clip != null) lastAccessTime[resourceAddress] = Time.time;
+
             return clip;
         }
     
         public override void Add(string resourceAddress, AudioClip clip)
         {
+            if(resourceAddress == null ||
+               clip == null) return;
+
             base.Add(resourceAddress, clip);
             lastAccessTime[resourceAddress] = Time.time;
         }
     
         public override void Remove(string resourceAddress)
         {
+            if (resourceAddress == null) return;
+
             base.Remove(resourceAddress);
             lastAccessTime.Remove(resourceAddress);
         }
@@ -47,8 +52,8 @@ namespace SoundSystem
     
         public override void Evict()
         {
+            var toRemove    = new List<string>();
             var currentTime = Time.time;
-            var toRemove = new List<string>();
 
             foreach (var entry in lastAccessTime)
             {

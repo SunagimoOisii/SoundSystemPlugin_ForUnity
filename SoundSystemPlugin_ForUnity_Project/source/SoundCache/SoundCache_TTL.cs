@@ -19,12 +19,17 @@ namespace SoundSystem
     
         public override void Add(string resourceAddress, AudioClip clip)
         {
+            if (resourceAddress == null ||
+                clip == null) return;
+
             base.Add(resourceAddress, clip);
             registerTime[resourceAddress] = Time.time;
         }
     
         public override void Remove(string resourceAddress)
         {
+            if(resourceAddress == null) return;
+
             base.Remove(resourceAddress);
             registerTime.Remove(resourceAddress);
         }
@@ -37,8 +42,8 @@ namespace SoundSystem
     
         public override void Evict()
         {
+            var toRemove    = new List<string>();
             var currentTime = Time.time;
-            var toRemove = new List<string>();
     
             foreach (var entry in registerTime)
             {
