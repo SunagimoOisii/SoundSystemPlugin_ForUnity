@@ -210,10 +210,7 @@ namespace SoundSystem
             {
                 while (elapsed < duration)
                 {
-                    if (token.IsCancellationRequested)
-                    {
-                        return;
-                    }
+                    if (token.IsCancellationRequested) return;
 
                     float t = elapsed / duration;
                     onProgress(t);

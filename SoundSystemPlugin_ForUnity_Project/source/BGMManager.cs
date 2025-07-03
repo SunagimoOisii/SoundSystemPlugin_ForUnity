@@ -75,7 +75,6 @@ namespace SoundSystem
                 Log.Error($"Play失敗:リソース読込に失敗,{resourceAddress}");
                 return;
             }
-
             cache.BeginUse(resourceAddress);
             usageResourceAddress = resourceAddress;
 
@@ -91,13 +90,13 @@ namespace SoundSystem
         public void Stop()
         {
             Log.Safe("Stop実行");
-
             State = BGMState.Idle;
+
             CancelFade();
             bgmSources.active.Stop();
-            bgmSources.active.clip   = null;
-            //クロスフェードキャンセルに対応するため
-            //もう一つの AudioSource も停止する
+            bgmSources.active.clip = null;
+            //クロスフェードキャンセル対応のため
+            //もう一つの AudioSource も停止
             bgmSources.inactive.Stop();
             bgmSources.inactive.clip = null;
 
@@ -150,12 +149,13 @@ namespace SoundSystem
                 return;
             }
             cache.BeginUse(resourceAddress);
-            State = BGMState.FadeIn;
             usageResourceAddress = resourceAddress;
+
+            //フェード開始
+            State = BGMState.FadeIn;
             bgmSources.active.clip   = clip;
             bgmSources.active.volume = 0;
             bgmSources.active.Play();
-
             await ExecuteVolumeTransition(
                 duration,
                 progressRate => bgmSources.active.volume = Mathf.Lerp(0f, volume, progressRate),
@@ -177,8 +177,9 @@ namespace SoundSystem
                 Log.Warn($"FadeOut中断:Pause ステートでの実行");
                 return;
             }
-            State = BGMState.FadeOut;
 
+            //フェード開始
+            State = BGMState.FadeOut;
             float startVol = bgmSources.active.volume;
             await ExecuteVolumeTransition(
                 duration,
@@ -214,11 +215,11 @@ namespace SoundSystem
             cache.BeginUse(resourceAddress);
             pendingResourceAddress = resourceAddress;
 
+            //フェード開始
             State = BGMState.CrossFade;
             bgmSources.inactive.clip = clip;
             bgmSources.inactive.volume = 0f;
             bgmSources.inactive.Play();
-
             var isCancelled = await ExecuteVolumeTransition(
                 duration,
                 progressRate =>
@@ -263,7 +264,7 @@ namespace SoundSystem
                 return;
             }
 
-            //既にあるフェード処理は終了
+            //既に実行中のフェード処理は終了
             CancelFade();
             fadeCTS = new CancellationTokenSource();
 
@@ -273,6 +274,8 @@ namespace SoundSystem
             {
                 while (elapsed < duration)
                 {
+                    if (token.IsCancellationRequested) return;
+
                     float t = elapsed / duration;
                     onProgress(t);
 
@@ -313,6 +316,7 @@ namespace SoundSystem
         {
             if (pendingResourceAddress == null) return;
 
+            //音量が大きい方の再生を続行する
             if (bgmSources.inactive.volume >= bgmSources.active.volume)
             {
                 bgmSources.active.Stop();
@@ -336,7 +340,8 @@ namespace SoundSystem
         {
             CancelFade();
             fadeCTS?.Dispose();
-            fadeCTS = null;
+            fadeCTS                = null;
+            bgmSources             = (null, null);
             pendingResourceAddress = null;
 
             if (usageResourceAddress != null)
@@ -345,12 +350,7 @@ namespace SoundSystem
                 usageResourceAddress = null;
             }
 
-            if (sourceRoot != null)
-            {
-                UnityEngine.Object.Destroy(sourceRoot);
-            }
-
-            bgmSources = (null, null);
+            if (sourceRoot != null) UnityEngine.Object.Destroy(sourceRoot);
         }
 
         private void CancelFade() { fadeCTS?.Cancel(); }
