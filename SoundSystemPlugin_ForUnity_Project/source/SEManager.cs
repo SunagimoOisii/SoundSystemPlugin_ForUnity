@@ -210,13 +210,17 @@ namespace SoundSystem
             {
                 while (elapsed < duration)
                 {
-                    if (token.IsCancellationRequested) return;
+                    var isCancelled = await UniTask.Yield(token).SuppressCancellationThrow();
+                    if (isCancelled)
+                    {
+                        Log.Safe("ExecuteVolumeTransition中断:SuppressCancellationThrow");
+                        return;
+                    }
 
                     float t = elapsed / duration;
                     onProgress(t);
 
                     elapsed += Time.deltaTime;
-                    await UniTask.Yield(token);
                 }
 
                 onProgress(1.0f);

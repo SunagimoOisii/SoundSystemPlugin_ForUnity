@@ -184,7 +184,7 @@ namespace SoundSystem
             await ExecuteVolumeTransition(
                 duration,
                 progressRate => bgmSources.active.volume = Mathf.Lerp(startVol, 0.0f, progressRate),
-                () =>
+                () => //onComplete
                 {
                     State = BGMState.Idle;
                     bgmSources.active.Stop();
@@ -220,21 +220,21 @@ namespace SoundSystem
             bgmSources.inactive.clip = clip;
             bgmSources.inactive.volume = 0f;
             bgmSources.inactive.Play();
-            var isCancelled = await ExecuteVolumeTransition(
+            await ExecuteVolumeTransition(
                 duration,
                 progressRate =>
                 {
                     bgmSources.active.volume   = Mathf.Lerp(1f, 0f, progressRate);
                     bgmSources.inactive.volume = Mathf.Lerp(0f, 1f, progressRate);
                 },
-                () =>
+                () => //onComplete
                 {
                     State = BGMState.Play;
 
                     //AudioSource 入れ替え
                     bgmSources.active.Stop();
                     bgmSources = (bgmSources.inactive, bgmSources.active);
-                    
+
                     //再生中リソースのアドレス更新
                     if (usageResourceAddress != null)
                     {
@@ -243,15 +243,9 @@ namespace SoundSystem
                     usageResourceAddress = resourceAddress;
 
                     onComplete?.Invoke();
-                }).SuppressCancellationThrow();
+                });
 
-            if (isCancelled)
-            {
-                //キャンセル時、フェード前 BGM の EndUse が呼ばれないためここで呼ぶ
-                cache.EndUse(resourceAddress);
-            }
             pendingResourceAddress = null;
-
             Log.Safe($"CrossFade終了:{resourceAddress}");
         }
 
@@ -274,13 +268,17 @@ namespace SoundSystem
             {
                 while (elapsed < duration)
                 {
-                    if (token.IsCancellationRequested) return;
+                    var isCancelled = await UniTask.Yield(token).SuppressCancellationThrow();
+                    if (isCancelled)
+                    {
+                        Log.Safe("ExecuteVolumeTransition中断:SuppressCancellationThrow");
+                        return;
+                    }
 
                     float t = elapsed / duration;
                     onProgress(t);
 
                     elapsed += Time.deltaTime;
-                    await UniTask.Yield(token);
                 }
 
                 onProgress(1.0f);
