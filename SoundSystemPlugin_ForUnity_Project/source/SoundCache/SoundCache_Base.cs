@@ -15,7 +15,7 @@ namespace SoundSystem
 
         internal void SetLoader(ISoundLoader l)
         {
-            if (l == null) loader = l;
+            if (l != null) loader = l;
         }
     
         /// <summary>
