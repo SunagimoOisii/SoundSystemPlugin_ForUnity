@@ -32,7 +32,7 @@ namespace SoundSystem
         private (AudioSource active, AudioSource inactive) bgmSources;
 
         private CancellationTokenSource fadeCTS;
-        private string pendingResourceAddress;
+        private string pendingResourceAddress; //クロスフェード前の曲のアドレスを保持
 
         /// <param name="mixerGroup">BGM出力先のAudioMixerGroup</param>
         public BGMManager(AudioMixerGroup mixerGroup, ISoundLoader loader, ISoundCache cache, bool persistent = false)
@@ -90,9 +90,11 @@ namespace SoundSystem
         public void Stop()
         {
             Log.Safe("Stop実行");
-            State = BGMState.Idle;
 
             CancelFade();
+            if(State == BGMState.CrossFade) HandleCrossFadeInterrupt();
+
+            State = BGMState.Idle;
             bgmSources.active.Stop();
             bgmSources.active.clip = null;
             //クロスフェードキャンセル対応のため
@@ -327,13 +329,15 @@ namespace SoundSystem
         public void Dispose()
         {
             CancelFade();
+            if (State == BGMState.CrossFade) HandleCrossFadeInterrupt();
             fadeCTS?.Dispose();
             fadeCTS                = null;
             bgmSources             = (null, null);
             pendingResourceAddress = null;
 
             cache.EndUse(usageResourceAddress);
-            usageResourceAddress = null;
+            usageResourceAddress   = null;
+            pendingResourceAddress = null;
 
             if (sourceRoot != null) UnityEngine.Object.Destroy(sourceRoot);
         }
