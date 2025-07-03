@@ -85,7 +85,7 @@ namespace SoundSystem
             }
             else
             {
-                Debug.LogWarning($"SoundSystem: パラメータ '{exposedParamName}' の取得に失敗");
+                Log.Warn($"RetrieveMixerParameter失敗:exposedParamName = {exposedParamName}");
                 return null;
             }
         }
@@ -94,7 +94,7 @@ namespace SoundSystem
         {
             if (mixer.SetFloat(exposedParamName, value) == false)
             {
-                Debug.LogWarning($"SoundSystem: パラメータ '{exposedParamName}' の設定に失敗");
+                Log.Warn($"SetMixerParameter失敗:exposedParamName = {exposedParamName}");
             }
         }
     

@@ -42,7 +42,7 @@ namespace SoundSystem
 
                 if (presetDict.ContainsKey(name))
                 {
-                    Debug.LogWarning($"キーの重複:presetName = {name}");
+                    Log.Warn($"OnAfterDeserialize失敗:キー重複,presetName = {name}");
                     continue;
                 }
 
