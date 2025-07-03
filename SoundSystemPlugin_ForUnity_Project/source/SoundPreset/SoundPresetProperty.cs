@@ -63,7 +63,7 @@ namespace SoundSystem
         [Header("SoundCache")]
         public SoundCacheFactory.Kind cacheKind = SoundCacheFactory.Kind.LeastRecentlyUsed;
         public bool  enableAutoEvict   = false;
-        public float autoEvictInterval = 60f;
+        public float autoEvictIntervalSeconds = 60f;
 
         //CustomEditor により、選択キャッシュ方式に応じた変数名がインスペクターでは表示される
         //例: idleTimeThreshold, ttlSeconds

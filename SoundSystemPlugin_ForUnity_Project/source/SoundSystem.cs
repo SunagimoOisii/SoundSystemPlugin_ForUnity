@@ -66,7 +66,7 @@ namespace SoundSystem
             {
                 ss.effector.ApplyPreset(lp);
             }
-            if (preset.enableAutoEvict) ss.StartAutoEvict(preset.autoEvictInterval);
+            if (preset.enableAutoEvict) ss.StartAutoEvict(preset.autoEvictIntervalSeconds);
             return ss;
         }
 
@@ -297,12 +297,12 @@ namespace SoundSystem
 
         #region AutoEvict
 
-        public void StartAutoEvict(float interval)
+        public void StartAutoEvict(float intervalSeconds)
         {
             StopAutoEvict();
 
             autoEvictCTS = new();
-            AutoEvictLoop(interval, autoEvictCTS.Token).Forget();
+            AutoEvictLoop(intervalSeconds, autoEvictCTS.Token).Forget();
         }
 
         public void StopAutoEvict()
@@ -312,21 +312,21 @@ namespace SoundSystem
             autoEvictCTS = null;
         }
 
-        private async UniTask AutoEvictLoop(float interval, CancellationToken token)
+        private async UniTask AutoEvictLoop(float intervalSeconds, CancellationToken token)
         {
-            try
+            while (true)
             {
-                while (token.IsCancellationRequested == false)
+                var isCancelled = await UniTask
+                    .Delay(TimeSpan.FromSeconds(intervalSeconds),cancellationToken: token)
+                    .SuppressCancellationThrow();
+                if (isCancelled)
                 {
-                    await UniTask.Delay(TimeSpan.FromSeconds(interval), cancellationToken: token);
-
-                    Log.Safe($"AutoEvict実行:interval = {interval}");
-                    cache.Evict();
+                    Log.Safe("AutoEvictLoop中断:OperationCanceledException");
+                    break;
                 }
-            }
-            catch (OperationCanceledException)
-            {
-                Log.Safe("AutoEvictLoop中断:OperationCanceledException");
+
+                Log.Safe($"AutoEvict実行:intervalSeconds = {intervalSeconds}");
+                cache.Evict();
             }
         }
 
