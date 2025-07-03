@@ -29,6 +29,8 @@ namespace SoundSystem
 
         public async UniTask<(bool success, AudioClip clip)> LoadClipInternal(string resourceAddress)
         {
+            if (resourceAddress == null) return (false, null);
+
             Log.Safe($"LoadClip実行:{resourceAddress}");
 
             var cached = cache.Retrieve(resourceAddress);
@@ -67,10 +69,7 @@ namespace SoundSystem
 
         public void UnloadClip(AudioClip clip)
         {
-            if (clip != null)
-            {
-                Object.Destroy(clip);
-            }
+            if (clip != null) Object.Destroy(clip);
         }
     }
 }
