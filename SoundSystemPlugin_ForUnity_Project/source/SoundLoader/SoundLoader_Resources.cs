@@ -29,11 +29,14 @@ namespace SoundSystem
 
         public async UniTask<(bool success, AudioClip clip)> LoadClipInternal(string resourceAddress)
         {
-            if (resourceAddress == null) return (false, null);
-
             Log.Safe($"LoadClip実行:{resourceAddress}");
 
-            //キャッシュを参照し、既に存在する場合はそれを返す
+            if (resourceAddress == null)
+            {
+                Log.Error($"LoadClip失敗:{nameof(resourceAddress)}がnull");
+                return (false, null);
+            }
+
             var cached = cache.Retrieve(resourceAddress);
             if (cached != null)
             {

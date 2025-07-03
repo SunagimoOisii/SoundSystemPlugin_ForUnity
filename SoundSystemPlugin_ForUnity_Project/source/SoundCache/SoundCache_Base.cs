@@ -10,12 +10,12 @@ namespace SoundSystem
     internal abstract class SoundCache_Base : ISoundCache
     {
         protected readonly Dictionary<string, AudioClip> cache = new();
-        protected readonly Dictionary<string, int> usageCount = new();
+        protected readonly Dictionary<string, int> usageCount  = new();
         private ISoundLoader loader;
 
         internal void SetLoader(ISoundLoader l)
         {
-            loader = l;
+            if (l == null) loader = l;
         }
     
         /// <summary>
