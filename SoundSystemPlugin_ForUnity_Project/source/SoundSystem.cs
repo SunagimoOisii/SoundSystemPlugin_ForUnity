@@ -118,7 +118,7 @@ namespace SoundSystem
 
         public UniTask<(bool success, AudioClip clip)> PreloadClip(string resourceAddress)
         {
-            return loader.PreloadClip(resourceAddress);
+            return loader.TryLoadClip(resourceAddress);
         }
     
         #region BGM

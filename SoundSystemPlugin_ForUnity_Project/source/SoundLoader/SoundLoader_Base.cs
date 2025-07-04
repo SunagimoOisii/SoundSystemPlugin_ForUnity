@@ -6,7 +6,7 @@ namespace SoundSystem
     /// <summary>
     /// サウンドリソースをロードするクラスの共通基底クラス
     /// </summary>
-    public abstract class SoundLoader_Base : ISoundLoader
+    internal abstract class SoundLoader_Base : ISoundLoader
     {
         protected readonly ISoundCache cache;
 
@@ -18,9 +18,6 @@ namespace SoundSystem
                 baseCache.SetLoader(this);
             }
         }
-
-        public UniTask<(bool success, AudioClip clip)> PreloadClip(string resourceAddress)
-            => TryLoadClip(resourceAddress);
 
         public async UniTask<(bool success, AudioClip clip)> TryLoadClip(string resourceAddress)
         {

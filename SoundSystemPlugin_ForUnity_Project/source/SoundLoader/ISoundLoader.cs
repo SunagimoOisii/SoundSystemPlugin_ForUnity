@@ -5,8 +5,6 @@ namespace SoundSystem
     
     public interface ISoundLoader
     {
-        UniTask<(bool success, AudioClip clip)> PreloadClip(string resourceAddress);
-
         UniTask<(bool success, AudioClip clip)> TryLoadClip(string resourceAddress);
 
         UniTask<(bool success, AudioClip clip)> LoadClipInternal(string resourceAddress);
