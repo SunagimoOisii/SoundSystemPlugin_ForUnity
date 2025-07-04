@@ -5,13 +5,19 @@ namespace SoundSystem
     
     /// <summary>
     /// サウンドリソースのキャッシュ管理を担うクラスの基底クラス<para></para>
-    /// - 派生クラスの削除方針ごとにEvict関数をオーバーライドさせる
+    /// - 削除方針を IEvictionStrategy として外部から受け取る
     /// </summary>
-    internal abstract class SoundCache_Base : ISoundCache
+    internal class SoundCache_Base : ISoundCache
     {
         protected readonly Dictionary<string, AudioClip> cache = new();
         protected readonly Dictionary<string, int> usageCount  = new();
+        private readonly IEvictionStrategy strategy;
         private ISoundLoader loader;
+
+        internal SoundCache_Base(IEvictionStrategy strategy)
+        {
+            this.strategy = strategy;
+        }
 
         internal void SetLoader(ISoundLoader l)
         {
@@ -25,7 +31,11 @@ namespace SoundSystem
         {
             if(resourceAddress == null) return null;
 
-            if (cache.TryGetValue(resourceAddress, out var clip)) return clip;
+            if (cache.TryGetValue(resourceAddress, out var clip))
+            {
+                strategy?.OnRetrieve(resourceAddress);
+                return clip;
+            }
             return null;
         }
     
@@ -42,6 +52,7 @@ namespace SoundSystem
             {
                 usageCount[resourceAddress] = 0;
             }
+            strategy?.OnAdd(resourceAddress);
         }
     
         public virtual void Remove(string resourceAddress)
@@ -54,6 +65,7 @@ namespace SoundSystem
                 loader?.UnloadClip(clip);
                 cache.Remove(resourceAddress);
                 usageCount.Remove(resourceAddress);
+                strategy?.OnRemove(resourceAddress);
             }
         }
     
@@ -69,9 +81,21 @@ namespace SoundSystem
             }
             cache.Clear();
             usageCount.Clear();
+            strategy?.OnClear();
         }
 
-        public abstract void Evict();
+        public virtual void Evict()
+        {
+            if (strategy == null) return;
+
+            var keys = strategy.SelectKeys(cache, usageCount);
+            var toRemove = new List<string>(keys);
+            Log.Safe($"Evict実行:{toRemove.Count}件削除");
+            foreach (var key in toRemove)
+            {
+                Remove(key);
+            }
+        }
 
         public void BeginUse(string resourceAddress)
         {
