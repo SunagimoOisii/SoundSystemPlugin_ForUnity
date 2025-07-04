@@ -8,7 +8,7 @@ namespace SoundSystem
     /// - Resourcesを介してAudioClipを非同期にロード<para></para>
     /// - ロード結果をキャッシュ管理クラス(ISoundCache)に委譲
     /// </summary>
-    public class SoundLoader_Resources : SoundLoader_Base
+    internal class SoundLoader_Resources : SoundLoader_Base
     {
         public SoundLoader_Resources(ISoundCache cache) : base(cache) { }
 
