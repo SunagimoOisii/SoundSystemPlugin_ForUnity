@@ -11,63 +11,28 @@ namespace SoundSystem
     /// - Addressableを介してAudioClipを非同期にロード<para></para>
     /// - ロード結果をキャッシュ管理クラス(ISoundCache)に委譲
     /// </summary>
-    public class SoundLoader_Addressables : ISoundLoader
+    public class SoundLoader_Addressables : SoundLoader_Base
     {
-        private readonly ISoundCache cache;
+        public SoundLoader_Addressables(ISoundCache cache) : base(cache) { }
 
-        public SoundLoader_Addressables(ISoundCache cache)
+        public override async UniTask<(bool success, AudioClip clip)> LoadClipInternal(string resourceAddress)
         {
-            this.cache = cache;
-            if (cache is SoundCache_Base baseCache)
-            {
-                baseCache.SetLoader(this);
-            }
-        }
-        
-        public UniTask<(bool success, AudioClip clip)> PreloadClip(string resourceAddress)
-            => LoadClipInternal(resourceAddress);
-
-        public UniTask<(bool success, AudioClip clip)> TryLoadClip(string resourceAddress)
-            => LoadClipInternal(resourceAddress);
-
-        public async UniTask<(bool success, AudioClip clip)> LoadClipInternal(string resourceAddress)
-        {
-            Log.Safe($"LoadClip実行:{resourceAddress}");
-
-            if (resourceAddress == null)
-            {
-                Log.Warn($"LoadClip失敗:{nameof(resourceAddress)}がnull");
-                return (false, null);
-            }
-
-            //キャッシュを参照し、既に存在する場合はそれを返す
-            var cached = cache.Retrieve(resourceAddress);
-            if (cached != null)
-            {
-                Log.Safe($"LoadClip成功:CacheHit,{resourceAddress}");
-                return (success: true, cached);
-            }
-
             var handle = Addressables.LoadAssetAsync<AudioClip>(resourceAddress);
             var clip   = await handle.Task;
-    
-            if (clip != null &&
-                handle.Status == AsyncOperationStatus.Succeeded)
+
+            if (clip != null && handle.Status == AsyncOperationStatus.Succeeded)
             {
-                cache.Add(resourceAddress, clip);
-                Log.Safe($"LoadClip成功:{resourceAddress}");
-                return (success: true, clip);
+                return (true, clip);
             }
             else
             {
                 Log.Error($"LoadClip失敗:{resourceAddress},Status = {handle.Status}");
-                cache.Remove(resourceAddress);
                 Addressables.Release(handle);
-                return (success: false, null);
+                return (false, null);
             }
         }
     
-        public void UnloadClip(AudioClip clip)
+        public override void UnloadClip(AudioClip clip)
         {
             if (clip != null) Addressables.Release(clip);
         }
