@@ -56,36 +56,28 @@ namespace SoundSystem
     
         /// <param name="category">未入力なら呼び出し元のクラス名が入る</param>
         public static void Safe(string message, [CallerFilePath] string category = "")
-        {
-            category = Path.GetFileNameWithoutExtension(category);
-            Output(LogLevel.Info, category, message);
-        }
+            => Output(LogLevel.Info, category, message);
+        
     
         /// <param name="category">未入力なら呼び出し元のクラス名が入る</param>
         public static void Warn(string message, [CallerFilePath] string category = "")
-        {
-            category = Path.GetFileNameWithoutExtension(category);
-            Output(LogLevel.Warn, category, message);
-        }
+            => Output(LogLevel.Warn, category, message);
+
     
         /// <param name="category">未入力なら呼び出し元のクラス名が入る</param>
         public static void Error(string message, [CallerFilePath] string category = "")
-        {
-            category = Path.GetFileNameWithoutExtension(category);
-            Output(LogLevel.Error, category, message);
-        }
+            => Output(LogLevel.Error, category, message);
+        
     
         private static void Output(LogLevel level, string category, string message)
         {
-            if (fileWriter == null)
-            {
-                return;
-            }
+            if (fileWriter == null) return;
     
+            string catePath    = Path.GetFileNameWithoutExtension(category);
             string timestamp   = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-            string fullMessage = $"[{timestamp}] [{level}] [{category}] {message}";
-    
-    #if UNITY_EDITOR
+            string fullMessage = $"[{timestamp}] [{level}] [{catePath}] {message}";
+
+#if UNITY_EDITOR
             switch (level)
             {
                 case LogLevel.Info:
@@ -100,13 +92,10 @@ namespace SoundSystem
                     Debug.LogError(fullMessage);
                     break;
             }
-    #endif
-    
+#endif
+
             //競合防止(呼び出し側に非同期処理が多いため)
-            lock (locker)
-            {
-                fileWriter.WriteLine(fullMessage);
-            }
+            lock (locker) fileWriter.WriteLine(fullMessage);
         }
     
         public static void Close()
