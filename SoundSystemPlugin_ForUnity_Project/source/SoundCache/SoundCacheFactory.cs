@@ -21,27 +21,27 @@ namespace SoundSystem
         {
             IEvictionStrategy strategy = k switch
             {
-                Kind.LeastRecentlyUsed => new LRUEvictionStrategy(param),
-                Kind.TimeToLive        => new TTLEvictionStrategy(param),
-                Kind.Random            => new RandomEvictionStrategy((int)param),
+                Kind.LeastRecentlyUsed => new EvictionStrategy_LRU(param),
+                Kind.TimeToLive        => new EvictionStrategy_TTL(param),
+                Kind.Random            => new EvictionStrategy_Random((int)param),
                 _                      => throw new ArgumentOutOfRangeException(nameof(k))
             };
-            return new SoundCache_Base(strategy);
+            return new SoundCache(strategy);
         }
 
         public static ISoundCache CreateLRU(float idleTimeThreshold)
         {
-            return new SoundCache_Base(new LRUEvictionStrategy(idleTimeThreshold));
+            return new SoundCache(new EvictionStrategy_LRU(idleTimeThreshold));
         }
 
         public static ISoundCache CreateTTL(float ttlSeconds)
         {
-            return new SoundCache_Base(new TTLEvictionStrategy(ttlSeconds));
+            return new SoundCache(new EvictionStrategy_TTL(ttlSeconds));
         }
 
         public static ISoundCache CreateRandom(int maxCacheCount)
         {
-            return new SoundCache_Base(new RandomEvictionStrategy(maxCacheCount));
+            return new SoundCache(new EvictionStrategy_Random(maxCacheCount));
         }
     }
 }

@@ -13,7 +13,7 @@ namespace SoundSystem
         protected SoundLoader_Base(ISoundCache cache)
         {
             this.cache = cache;
-            if (cache is SoundCache_Base baseCache)
+            if (cache is SoundCache baseCache)
             {
                 baseCache.SetLoader(this);
             }
@@ -38,7 +38,8 @@ namespace SoundSystem
 
             var (success, clip) = await LoadClipInternal(resourceAddress);
 
-            if (success && clip != null)
+            if (success && 
+                clip != null)
             {
                 cache.Add(resourceAddress, clip);
                 Log.Safe($"LoadClip成功:{resourceAddress}");

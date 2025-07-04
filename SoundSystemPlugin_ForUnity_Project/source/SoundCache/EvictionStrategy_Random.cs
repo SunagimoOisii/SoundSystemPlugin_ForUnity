@@ -7,31 +7,20 @@ namespace SoundSystem
     /// <summary>
     /// ランダムに削除する戦略
     /// </summary>
-    internal sealed class RandomEvictionStrategy : IEvictionStrategy
+    internal sealed class EvictionStrategy_Random : IEvictionStrategy
     {
         private readonly int maxCacheCount;
-        private readonly Random random = new();
+        private readonly System.Random random = new();
 
-        public RandomEvictionStrategy(int maxCacheCount)
+        public EvictionStrategy_Random(int maxCacheCount)
         {
             this.maxCacheCount = maxCacheCount;
         }
 
-        public void OnAdd(string key)
-        {
-        }
-
-        public void OnRetrieve(string key)
-        {
-        }
-
-        public void OnRemove(string key)
-        {
-        }
-
-        public void OnClear()
-        {
-        }
+        public void OnAdd(string key) { }
+        public void OnRetrieve(string key) { }
+        public void OnRemove(string key) { }
+        public void OnClear() { }
 
         public IEnumerable<string> SelectKeys(
             IReadOnlyDictionary<string, AudioClip> cache,
@@ -43,7 +32,8 @@ namespace SoundSystem
             var keys = new List<string>();
             foreach (var k in cache.Keys)
             {
-                if (!usageCount.TryGetValue(k, out var c) || c <= 0)
+                if (usageCount.TryGetValue(k, out var c) == false ||
+                    c <= 0)
                 {
                     keys.Add(k);
                 }

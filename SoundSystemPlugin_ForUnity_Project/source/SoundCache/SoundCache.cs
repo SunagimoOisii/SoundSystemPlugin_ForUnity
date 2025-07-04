@@ -4,19 +4,19 @@ namespace SoundSystem
     using UnityEngine;
     
     /// <summary>
-    /// サウンドリソースのキャッシュ管理を担うクラスの基底クラス<para></para>
+    /// サウンドリソースのキャッシュ管理を担うクラス<para></para>
     /// - 削除方針を IEvictionStrategy として外部から受け取る
     /// </summary>
-    internal class SoundCache_Base : ISoundCache
+    internal sealed class SoundCache : ISoundCache
     {
-        protected readonly Dictionary<string, AudioClip> cache = new();
-        protected readonly Dictionary<string, int> usageCount  = new();
+        private readonly Dictionary<string, AudioClip> cache = new();
+        private readonly Dictionary<string, int> usageCount  = new();
         private readonly IEvictionStrategy strategy;
         private ISoundLoader loader;
 
-        internal SoundCache_Base(IEvictionStrategy strategy)
+        internal SoundCache(IEvictionStrategy s)
         {
-            this.strategy = strategy;
+            strategy = s;
         }
 
         internal void SetLoader(ISoundLoader l)
@@ -27,7 +27,7 @@ namespace SoundSystem
         /// <summary>
         /// 指定リソースをキャッシュから取得する
         /// </summary>
-        public virtual AudioClip Retrieve(string resourceAddress)
+        public AudioClip Retrieve(string resourceAddress)
         {
             if(resourceAddress == null) return null;
 
@@ -42,7 +42,7 @@ namespace SoundSystem
         /// <summary>
         /// 指定リソースをキャッシュに追加する<para></para>
         /// </summary>
-        public virtual void Add(string resourceAddress, AudioClip clip)
+        public void Add(string resourceAddress, AudioClip clip)
         {
             if(resourceAddress == null ||
                clip == null) return;
@@ -54,25 +54,27 @@ namespace SoundSystem
             }
             strategy?.OnAdd(resourceAddress);
         }
-    
-        public virtual void Remove(string resourceAddress)
-        {
-            if (resourceAddress == null) return;
 
-            if (cache.TryGetValue(resourceAddress, out var clip))
+        public void Remove(string resourceAddress)
+        {
+            Log.Safe($"Remove実行:{resourceAddress}");
+            if (resourceAddress == null ||
+                cache.TryGetValue(resourceAddress, out var clip) == false)
             {
-                Log.Safe($"Remove実行:{resourceAddress}");
-                loader?.UnloadClip(clip);
-                cache.Remove(resourceAddress);
-                usageCount.Remove(resourceAddress);
-                strategy?.OnRemove(resourceAddress);
+                Log.Warn($"Remove失敗:不正なアドレス:{resourceAddress}");
+                return;
             }
+
+            loader?.UnloadClip(clip);
+            cache.Remove(resourceAddress);
+            usageCount.Remove(resourceAddress);
+            strategy?.OnRemove(resourceAddress);
         }
     
         /// <summary>
         /// キャッシュ内のAudioClipを全て破棄する
         /// </summary>
-        public virtual void ClearAll()
+        public void ClearAll()
         {
             Log.Safe("ClearAll実行");
             foreach (var clip in cache.Values)
@@ -84,17 +86,15 @@ namespace SoundSystem
             strategy?.OnClear();
         }
 
-        public virtual void Evict()
+        public void Evict()
         {
             if (strategy == null) return;
 
             var keys = strategy.SelectKeys(cache, usageCount);
             var toRemove = new List<string>(keys);
+
             Log.Safe($"Evict実行:{toRemove.Count}件削除");
-            foreach (var key in toRemove)
-            {
-                Remove(key);
-            }
+            foreach (var key in toRemove) Remove(key);
         }
 
         public void BeginUse(string resourceAddress)

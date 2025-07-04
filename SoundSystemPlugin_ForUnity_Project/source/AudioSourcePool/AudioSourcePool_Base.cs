@@ -21,16 +21,13 @@ namespace SoundSystem
 
         public AudioSourcePool_Base(AudioMixerGroup seMixerG, int initSize, int maxSize, bool persistent = false)
         {
-            pool          = new();
-            sourceRoot    = new("SE_AudioSources");
-            if (persistent)
-            {
-                Object.DontDestroyOnLoad(sourceRoot);
-            }
+            pool       = new();
+            sourceRoot = new("SE_AudioSources");
+            if (persistent) Object.DontDestroyOnLoad(sourceRoot);
+
             this.maxSize  = maxSize;
             this.initSize = initSize;
             this.seMixerG = seMixerG;
-            
             if(this.initSize > maxSize) this.initSize = maxSize;
 
             //プール初期化
@@ -45,7 +42,7 @@ namespace SoundSystem
         {
             Log.Safe("Retrieve実行");
 
-            // 未使用 AudioSource を検索
+            //未使用 AudioSource を検索
             for (int i = 0; i < pool.Count; i++)
             {
                 var source = pool.Dequeue();
@@ -57,7 +54,7 @@ namespace SoundSystem
                 pool.Enqueue(source);
             }
 
-            // すべて使用中だがプールが満杯ではない場合は新規作成
+            //全て使用中だがプールが満杯ではない場合、新規作成
             if (pool.Count < maxSize)
             {
                 var created = CreateSourceWithOwnerGameObject();
@@ -65,7 +62,7 @@ namespace SoundSystem
                 return created;
             }
 
-            // プールが埋まっている場合は派生クラスに処理を委ねる
+            //プールが埋まっている場合、派生クラスに処理を委ねる
             return RetrieveWhenPoolFull();
         }
 
