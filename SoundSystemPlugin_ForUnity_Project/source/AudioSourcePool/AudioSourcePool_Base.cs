@@ -6,7 +6,8 @@ namespace SoundSystem
     
     /// <summary>
     /// SE向けにAudioSourceをプールで管理するクラスの基底クラス<para></para>
-    /// - 派生クラスの方針ごとにRetrieve関数をオーバーライドさせる
+    /// - 未使用 AudioSource を返す処理を共通化
+    /// - プールが埋まった場合の挙動のみ派生クラスで制御する
     /// </summary>
     internal abstract class AudioSourcePool_Base : IAudioSourcePool
     {
@@ -40,7 +41,35 @@ namespace SoundSystem
             }
         }
 
-        public abstract AudioSource Retrieve();
+        public AudioSource Retrieve()
+        {
+            Log.Safe("Retrieve実行");
+
+            // 未使用 AudioSource を検索
+            for (int i = 0; i < pool.Count; i++)
+            {
+                var source = pool.Dequeue();
+                if (source.isPlaying == false)
+                {
+                    pool.Enqueue(source);
+                    return source;
+                }
+                pool.Enqueue(source);
+            }
+
+            // すべて使用中だがプールが満杯ではない場合は新規作成
+            if (pool.Count < maxSize)
+            {
+                var created = CreateSourceWithOwnerGameObject();
+                pool.Enqueue(created);
+                return created;
+            }
+
+            // プールが埋まっている場合は派生クラスに処理を委ねる
+            return RetrieveWhenPoolFull();
+        }
+
+        protected abstract AudioSource RetrieveWhenPoolFull();
     
         public void Reinitialize()
         {
