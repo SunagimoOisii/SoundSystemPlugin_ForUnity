@@ -53,7 +53,7 @@ namespace SoundSystem
             AudioListener listener, AudioMixer mixer, bool persistent = false,
             bool canLogging = true)
         {
-            var cache  = SoundCacheFactory.Create(preset.cacheKind, preset.param);
+            var cache  = SoundCacheFactory.Create(preset.cacheStrategy, preset.param);
             var loader = SoundLoaderFactory.Create(preset.loaderKind, cache);
             var pool   = AudioSourcePoolFactory.Create(preset.poolKind,
                             preset.seMixerG, preset.initSize, preset.maxSize, persistent);

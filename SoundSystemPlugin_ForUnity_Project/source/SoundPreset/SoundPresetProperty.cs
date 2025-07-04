@@ -61,8 +61,8 @@ namespace SoundSystem
 #endif
 
         [Header("SoundCache")]
-        public SoundCacheFactory.Kind cacheKind = SoundCacheFactory.Kind.LeastRecentlyUsed;
-        public bool  enableAutoEvict   = false;
+        public SoundCacheFactory.Strategy cacheStrategy = SoundCacheFactory.Strategy.LeastRecentlyUsed;
+        public bool  enableAutoEvict          = false;
         public float autoEvictIntervalSeconds = 60f;
 
         //CustomEditor により、選択キャッシュ方式に応じた変数名がインスペクターでは表示される
