@@ -19,28 +19,29 @@ namespace SoundSystem
         /// </summary>
         public static ISoundCache Create(Kind k, float param)
         {
-            return k switch
+            IEvictionStrategy strategy = k switch
             {
-                Kind.LeastRecentlyUsed => CreateLRU(param),
-                Kind.TimeToLive        => CreateTTL(param),
-                Kind.Random            => CreateRandom((int)param),
+                Kind.LeastRecentlyUsed => new LRUEvictionStrategy(param),
+                Kind.TimeToLive        => new TTLEvictionStrategy(param),
+                Kind.Random            => new RandomEvictionStrategy((int)param),
                 _                      => throw new ArgumentOutOfRangeException(nameof(k))
             };
+            return new SoundCache_Base(strategy);
         }
 
         public static ISoundCache CreateLRU(float idleTimeThreshold)
         {
-            return new SoundCache_LRU(idleTimeThreshold);
+            return new SoundCache_Base(new LRUEvictionStrategy(idleTimeThreshold));
         }
 
         public static ISoundCache CreateTTL(float ttlSeconds)
         {
-            return new SoundCache_TTL(ttlSeconds);
+            return new SoundCache_Base(new TTLEvictionStrategy(ttlSeconds));
         }
 
         public static ISoundCache CreateRandom(int maxCacheCount)
         {
-            return new SoundCache_Random(maxCacheCount);
+            return new SoundCache_Base(new RandomEvictionStrategy(maxCacheCount));
         }
     }
 }

@@ -7,7 +7,7 @@ Unity 上での BGM・SE 管理を一本化するためのライブラリです�
 - BGM 再生：FadeIn / FadeOut / CrossFade に対応、フェード処理の中断が可能
 - SE 再生：AudioSource プールで効率的に管理（FIFO または Strict）、FadeIn / 全体フェードアウト対応、フェード処理の中断
 - SoundLoader：Addressables / Resources / Streaming から選択可能
-- SoundCache：LRU / TTL / Random の削除方式を提供
+- SoundCache：戦略クラスで LRU / TTL / Random の削除方式を切り替え
 - SoundPresetProperty：BGM・SE のプリセット設定を ScriptableObject として管理（検索機能付き）
 - ListenerEffector：AudioListener へのフィルター適用・無効化
 - オートエビクト：一定間隔でキャッシュを自動削除
@@ -115,9 +115,10 @@ SoundLoader_Streaming
 SoundLoaderFactory
 ISoundCache
 SoundCache_Base
-SoundCache_LRU
-SoundCache_TTL
-SoundCache_Random
+IEvictionStrategy
+LRUEvictionStrategy
+TTLEvictionStrategy
+RandomEvictionStrategy
 SoundCacheFactory
 
 %% Pool
@@ -144,12 +145,14 @@ BGMManager -->|利用| ISoundLoader
 SEManager -->|利用| ISoundLoader
 SEManager -->|利用| IAudioSourcePool
 
-SoundCacheFactory -->|生成| SoundCache_LRU
-SoundCacheFactory -->|生成| SoundCache_TTL
-SoundCacheFactory -->|生成| SoundCache_Random
-SoundCache_LRU -->|継承| SoundCache_Base
-SoundCache_TTL -->|継承| SoundCache_Base
-SoundCache_Random -->|継承| SoundCache_Base
+SoundCacheFactory -->|生成| SoundCache_Base
+SoundCacheFactory -->|生成| LRUEvictionStrategy
+SoundCacheFactory -->|生成| TTLEvictionStrategy
+SoundCacheFactory -->|生成| RandomEvictionStrategy
+SoundCache_Base -->|利用| IEvictionStrategy
+LRUEvictionStrategy -->|実装| IEvictionStrategy
+TTLEvictionStrategy -->|実装| IEvictionStrategy
+RandomEvictionStrategy -->|実装| IEvictionStrategy
 
 AudioSourcePoolFactory -->|生成| AudioSourcePool_FIFO
 AudioSourcePoolFactory -->|生成| AudioSourcePool_Strict
