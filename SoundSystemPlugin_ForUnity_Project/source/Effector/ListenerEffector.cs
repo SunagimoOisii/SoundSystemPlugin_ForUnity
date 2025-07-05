@@ -9,7 +9,6 @@ namespace SoundSystem
     /// </summary>
     public enum FilterKind
     {
-        None,
         Chorus,
         Distortion,
         Echo,
@@ -77,8 +76,6 @@ namespace SoundSystem
 
         public void ApplyFilter(FilterKind kind, Behaviour template = null)
         {
-            if (kind == FilterKind.None) return;
-
             var filterClass = GetFilterClass(kind);
             if (filterClass == null) return;
 
@@ -117,27 +114,6 @@ namespace SoundSystem
                 FilterKind.Reverb      => typeof(AudioReverbFilter),
                 _ => null,
             };
-        }
-
-        public void ApplyFilter(Behaviour template)
-        {
-            if (template == null) return;
-
-            var type = template.GetType();
-            Log.Safe($"ApplyFilter実行:{type.Name}");
-            if (filterDict.TryGetValue(type, out var component) == false)
-            {
-                component = Listener.gameObject.AddComponent(type);
-                filterDict[type] = component;
-            }
-
-            var json = JsonUtility.ToJson(template);
-            JsonUtility.FromJsonOverwrite(json, component);
-
-            if (component is Behaviour b)
-            {
-                b.enabled = true;
-            }
         }
 
         public void DisableFilter<FilterT>() where FilterT : Behaviour
