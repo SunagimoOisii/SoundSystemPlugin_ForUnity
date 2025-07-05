@@ -53,6 +53,7 @@ namespace SoundSystem
             }
 
             CancelFade(source);
+            UnregisterResourceAddress(source);
             RegisterResourceAddress(source, resourceAddress);
 
             //指定の音声設定で再生
@@ -138,6 +139,7 @@ namespace SoundSystem
             }
 
             CancelFade(source);
+            UnregisterResourceAddress(source);
             RegisterResourceAddress(source, resourceAddress);
 
             //指定の音声設定で再生
