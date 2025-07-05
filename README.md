@@ -99,8 +99,9 @@ graph
 classDef highlight stroke-width:8px
 SoundSystem:::highlight
 SoundPresetProperty
-SerializedBGMSettingDictionary
-SerializedSESettingDictionary
+SerializedBGMPresetDictionary
+SerializedSEPresetDictionary
+SerializedListenerPresetDictionary
 
 %% Player
 BGMManager
@@ -114,11 +115,11 @@ SoundLoader_Resources
 SoundLoader_Streaming
 SoundLoaderFactory
 ISoundCache
-SoundCache_Base
+SoundCache
 IEvictionStrategy
-LRUEvictionStrategy
-TTLEvictionStrategy
-RandomEvictionStrategy
+EvictionStrategy_LRU
+EvictionStrategy_TTL
+EvictionStrategy_Random
 SoundCacheFactory
 
 %% Pool
@@ -145,22 +146,23 @@ BGMManager -->|利用| ISoundLoader
 SEManager -->|利用| ISoundLoader
 SEManager -->|利用| IAudioSourcePool
 
-SoundCacheFactory -->|生成| SoundCache_Base
-SoundCacheFactory -->|生成| LRUEvictionStrategy
-SoundCacheFactory -->|生成| TTLEvictionStrategy
-SoundCacheFactory -->|生成| RandomEvictionStrategy
-SoundCache_Base -->|利用| IEvictionStrategy
-LRUEvictionStrategy -->|実装| IEvictionStrategy
-TTLEvictionStrategy -->|実装| IEvictionStrategy
-RandomEvictionStrategy -->|実装| IEvictionStrategy
+SoundCacheFactory -->|生成| SoundCache
+SoundCacheFactory -->|生成| EvictionStrategy_LRU
+SoundCacheFactory -->|生成| EvictionStrategy_TTL
+SoundCacheFactory -->|生成| EvictionStrategy_Random
+SoundCache -->|利用| IEvictionStrategy
+EvictionStrategy_LRU -->|実装| IEvictionStrategy
+EvictionStrategy_TTL -->|実装| IEvictionStrategy
+EvictionStrategy_Random -->|実装| IEvictionStrategy
 
 AudioSourcePoolFactory -->|生成| AudioSourcePool_FIFO
 AudioSourcePoolFactory -->|生成| AudioSourcePool_Strict
 AudioSourcePool_FIFO -->|継承| AudioSourcePool_Base
 AudioSourcePool_Strict -->|継承| AudioSourcePool_Base
 
-SoundPresetProperty -->|BGMプリセット| SerializedBGMSettingDictionary
-SoundPresetProperty -->|SEプリセット| SerializedSESettingDictionary
+SoundPresetProperty -->|BGMプリセット| SerializedBGMPresetDictionary
+SoundPresetProperty -->|SEプリセット| SerializedSEPresetDictionary
+SoundPresetProperty -->|Listenerエフェクトプリセット| SerializedListenerPresetDictionary
 ```
 
 ## 既存コードへの影響
