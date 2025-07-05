@@ -44,9 +44,6 @@ namespace SoundSystem
         /// </summary>
         public void Add(string resourceAddress, AudioClip clip)
         {
-            if(resourceAddress == null ||
-               clip == null) return;
-
             cache[resourceAddress] = clip;
             if (usageCount.ContainsKey(resourceAddress) == false)
             {
@@ -90,6 +87,7 @@ namespace SoundSystem
         {
             if (strategy == null) return;
 
+            //本クラスでキャッシュ内部戦略を知る必要はない
             var keys = strategy.SelectKeys(cache, usageCount);
             var toRemove = new List<string>(keys);
 
