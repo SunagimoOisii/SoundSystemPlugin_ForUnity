@@ -13,9 +13,9 @@ namespace SoundSystem
         protected SoundLoader_Base(ISoundCache cache)
         {
             this.cache = cache;
-            if (cache is SoundCache baseCache)
+            if (cache is SoundCache c)
             {
-                baseCache.SetLoader(this);
+                c.SetLoader(this);
             }
         }
 
@@ -23,12 +23,14 @@ namespace SoundSystem
         {
             Log.Safe($"LoadClip実行:{resourceAddress}");
 
-            if (resourceAddress == null)
+            if (resourceAddress == null ||
+                string.IsNullOrWhiteSpace(resourceAddress))
             {
-                Log.Warn($"LoadClip失敗:{nameof(resourceAddress)}がnull");
+                Log.Warn($"LoadClip失敗:不正なアドレス:{resourceAddress}");
                 return (false, null);
             }
 
+            //読込対象が既にキャッシュで存在していれば返す
             var cached = cache.Retrieve(resourceAddress);
             if (cached != null)
             {
@@ -36,13 +38,13 @@ namespace SoundSystem
                 return (true, cached);
             }
 
+            //読込開始(読込方法は派生クラスごとに定義)
             var (success, clip) = await LoadClipInternal(resourceAddress);
-
             if (success && 
                 clip != null)
             {
-                cache.Add(resourceAddress, clip);
                 Log.Safe($"LoadClip成功:{resourceAddress}");
+                cache.Add(resourceAddress, clip);
                 return (true, clip);
             }
             else
