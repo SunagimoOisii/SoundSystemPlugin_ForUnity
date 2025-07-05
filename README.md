@@ -29,9 +29,9 @@ Unity 上での BGM・SE 管理を一本化するためのライブラリです�
 ### 手動構成
 ```csharp
 var cache  = SoundCacheFactory.CreateLRU(30f);
-var loader = SoundLoaderFactory.Create(SoundLoaderFactory.Type.Streaming, cache);
+var loader = SoundLoaderFactory.Create(SoundLoaderFactory.Kind.Streaming, cache);
 var pool   = AudioSourcePoolFactory.Create(
-    AudioSourcePoolFactory.Type.FIFO,
+    AudioSourcePoolFactory.Kind.FIFO,
     mixerGroup,
     initSize: 8,
     maxSize: 32);
