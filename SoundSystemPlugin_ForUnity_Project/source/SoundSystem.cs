@@ -50,15 +50,15 @@ namespace SoundSystem
         }
 
         public static SoundSystem CreateFromPreset(SoundPresetProperty preset,
-            AudioListener listener, AudioMixer mixer, bool persistent = false,
-            bool canLogging = true)
+            AudioListener listener, AudioMixer mixer, bool canLogging = true)
         {
             var cache  = SoundCacheFactory.Create(preset.cacheStrategy, preset.param);
             var loader = SoundLoaderFactory.Create(preset.loaderKind, cache);
             var pool   = AudioSourcePoolFactory.Create(preset.poolKind,
-                            preset.seMixerG, preset.initSize, preset.maxSize, persistent);
+                            preset.seMixerG, preset.initSize, preset.maxSize, 
+                            preset.isPersistentGameObjects);
             var ss     = new SoundSystem(loader, cache, pool, listener, mixer,
-                            preset.bgmMixerG, persistent, canLogging);
+                            preset.bgmMixerG, preset.isPersistentGameObjects, canLogging);
             ss.bgmPresets      = preset.bgmPresets;
             ss.sePresets       = preset.sePresets;
             ss.listenerPresets = preset.listenerPresets;
@@ -68,13 +68,6 @@ namespace SoundSystem
             }
             if (preset.enableAutoEvict) ss.StartAutoEvict(preset.autoEvictIntervalSeconds);
             return ss;
-        }
-
-        public static SoundSystem CreateFromPreset(SoundPresetProperty preset,
-            AudioListener listener, AudioMixer mixer, bool canLogging = true)
-        {
-            return CreateFromPreset(preset, listener, mixer,
-                preset.isPersistentGameObjects, canLogging);
         }
     
         public float? RetrieveMixerParameter(string exposedParamName)
