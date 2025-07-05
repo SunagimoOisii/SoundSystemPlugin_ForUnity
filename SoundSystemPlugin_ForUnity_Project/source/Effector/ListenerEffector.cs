@@ -74,7 +74,7 @@ namespace SoundSystem
             configure?.Invoke(filter);
         }
 
-        public void ApplyFilter(FilterKind kind, Behaviour template = null)
+        public void ApplyFilter(FilterKind kind, Behaviour filterSettings = null)
         {
             var filterClass = GetFilterClass(kind);
             if (filterClass == null) return;
@@ -87,16 +87,16 @@ namespace SoundSystem
             }
 
             //プリセットでのフィルター設定を適用
-            if (template != null)
+            if (filterSettings != null)
             {
-                var json = JsonUtility.ToJson(template);
+                var json = JsonUtility.ToJson(filterSettings);
                 JsonUtility.FromJsonOverwrite(json, comp);
             }
 
             if (comp is Behaviour b) b.enabled = true;
         }
 
-        public void ApplyPreset(SoundPresetProperty.ListenerEffectPreset preset)
+        public void ApplyFromPreset(SoundPresetProperty.ListenerEffectPreset preset)
         {
             Log.Safe($"ApplyPreset実行:{preset.presetName}");
             preset.ApplyTo(this);

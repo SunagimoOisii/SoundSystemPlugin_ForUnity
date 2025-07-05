@@ -33,8 +33,8 @@ namespace SoundSystem
         private SerializedProperty loaderKind;
 
         //SoundCache設定
-        private SerializedProperty cacheKind;
-        private PropertyField      cacheKindField;
+        private SerializedProperty cacheStrategy;
+        private PropertyField      cacheStrategyField;
         private SerializedProperty param;
         private VisualElement      paramContainer;
         private SerializedProperty enableAutoEvict;
@@ -68,7 +68,7 @@ namespace SoundSystem
             loaderKind = serializedObject.FindProperty("loaderKind");
 
             //SoundCache設定
-            cacheKind          = serializedObject.FindProperty("cacheKind");
+            cacheStrategy          = serializedObject.FindProperty("cacheStrategy");
             param              = serializedObject.FindProperty("param");
             enableAutoEvict    = serializedObject.FindProperty("enableAutoEvict");
             autoEvictInterval  = serializedObject.FindProperty("autoEvictInterval");
@@ -138,15 +138,15 @@ namespace SoundSystem
             root.Add(new PropertyField(loaderKind));
 
             //SoundCache 要素作成
-            cacheKindField = new PropertyField(cacheKind);
-            cacheKindField.RegisterValueChangeCallback(_ => UpdateParamField());
+            cacheStrategyField = new PropertyField(cacheStrategy);
+            cacheStrategyField.RegisterValueChangeCallback(_ => UpdateParamField());
             paramContainer = new VisualElement();
             enableAutoEvictField = new PropertyField(enableAutoEvict);
             enableAutoEvictField.RegisterValueChangeCallback(_ => 
                 autoEvictIntervalField?.SetEnabled(enableAutoEvict.boolValue));
             autoEvictIntervalField = new PropertyField(autoEvictInterval);
             //要素登録
-            root.Add(cacheKindField);
+            root.Add(cacheStrategyField);
             root.Add(paramContainer);
             root.Add(enableAutoEvictField);
             root.Add(autoEvictIntervalField);
@@ -169,21 +169,21 @@ namespace SoundSystem
         private void UpdateParamField()
         {
             paramContainer.Clear();
-            switch ((SoundCacheFactory.Kind)cacheKind.enumValueIndex)
+            switch ((SoundCacheFactory.Strategy)cacheStrategy.enumValueIndex)
             {
-                case SoundCacheFactory.Kind.LeastRecentlyUsed:
+                case SoundCacheFactory.Strategy.LeastRecentlyUsed:
                     var fieldLRU = new PropertyField(param, "idleTimeThreshold");
                     fieldLRU.Bind(serializedObject);
                     paramContainer.Add(fieldLRU);
                     break;
 
-                case SoundCacheFactory.Kind.TimeToLive:
+                case SoundCacheFactory.Strategy.TimeToLive:
                     var fieldTTL = new PropertyField(param, "ttlSeconds");
                     fieldTTL.Bind(serializedObject);
                     paramContainer.Add(fieldTTL);
                     break;
 
-                case SoundCacheFactory.Kind.Random:
+                case SoundCacheFactory.Strategy.Random:
                     var intField = new IntegerField("maxCacheCount") { value = Mathf.RoundToInt(param.floatValue) };
                     intField.RegisterValueChangedCallback(e => param.floatValue = e.newValue);
                     paramContainer.Add(intField);
