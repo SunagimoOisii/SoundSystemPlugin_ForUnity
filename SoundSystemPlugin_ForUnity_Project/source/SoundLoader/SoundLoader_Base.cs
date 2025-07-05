@@ -50,7 +50,6 @@ namespace SoundSystem
             else
             {
                 Log.Error($"LoadClip失敗:{resourceAddress}");
-                cache.Remove(resourceAddress);
                 return (false, null);
             }
         }
