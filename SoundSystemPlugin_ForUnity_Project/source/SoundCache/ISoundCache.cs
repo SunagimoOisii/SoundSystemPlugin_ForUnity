@@ -1,9 +1,14 @@
 namespace SoundSystem
 {
+    using System.Collections.Generic;
     using UnityEngine;
     
     public interface ISoundCache
     {
+        int Count { get; }
+
+        IEnumerable<string> Keys { get; }
+
         AudioClip Retrieve(string resourceAddress);
 
         void Add(string resourceAddress, AudioClip clip);

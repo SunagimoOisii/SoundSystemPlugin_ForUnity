@@ -14,6 +14,10 @@ namespace SoundSystem
         private readonly IEvictionStrategy strategy;
         private ISoundLoader loader;
 
+        public int Count => cache.Count;
+
+        public IEnumerable<string> Keys => cache.Keys;
+
         internal SoundCache(IEvictionStrategy s)
         {
             strategy = s;

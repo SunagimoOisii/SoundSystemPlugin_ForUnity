@@ -83,6 +83,15 @@ soundSystem.ApplyEffectFilter<AudioReverbFilter>(f => f.reverbLevel = 1000f);
 soundSystem.DisableAllEffectFilter();
 ```
 
+### キャッシュ状況の確認
+```csharp
+int count = cache.Count;
+foreach (var key in cache.Keys)
+{
+    Debug.Log($"Cached:{key}");
+}
+```
+
 ### Listenerエフェクトプリセット設定
 `SoundPresetProperty` の `listenerPresets` にフィルター設定を登録しておくと、
 `SoundSystem.CreateFromPreset` 実行時に自動で適用されます。
@@ -167,7 +176,8 @@ SoundPresetProperty -->|Listenerエフェクトプリセット| SerializedListen
 
 ## 既存コードへの影響
 `ISoundCache` に参照カウント用の `BeginUse` / `EndUse` が追加されました。
-既存の実装クラスを利用している場合は、これらのメソッドを適宜呼び出す必要があります。
+加えて、キャッシュ件数を取得する `Count` プロパティと、登録キーを列挙する `Keys` プロパティを実装しました。
+既存の実装クラスを利用している場合は、これらのメンバーを適宜利用してください。
 
 ## ライセンス
 本リポジトリは MIT ライセンスで公開されています。詳細は [LICENSE](LICENSE) を参照してください。
