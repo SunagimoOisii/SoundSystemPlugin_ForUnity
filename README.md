@@ -101,74 +101,74 @@ foreach (var key in cache.Keys)
 別Assetを開かなくても設定が完結します。
 
 ## システム構成
-```mermaid
-graph
 
-%% API
+### SoundSystem
+```mermaid
+graph TD
 classDef highlight stroke-width:8px
 SoundSystem:::highlight
-SoundPresetProperty
-SerializedBGMPresetDictionary
-SerializedSEPresetDictionary
-SerializedListenerPresetDictionary
-
-%% Player
 BGMManager
 SEManager
 ListenerEffector
+SoundLoader群
+SoundCache群
+SoundPresetProperty
+SoundSystem -->|利用| BGMManager
+SoundSystem -->|利用| SEManager
+SoundSystem -->|利用| ListenerEffector
+SoundSystem -->|依存| SoundLoader群
+SoundSystem -->|依存| SoundCache群
+SoundSystem -->|プリセット読込| SoundPresetProperty
+```
 
-%% Loader & Cache
+### SoundLoader
+```mermaid
+graph TD
+classDef highlight stroke-width:8px
+SoundLoaderFactory:::highlight
 ISoundLoader
 SoundLoader_Addressables
 SoundLoader_Resources
 SoundLoader_Streaming
-SoundLoaderFactory
-ISoundCache
+SoundCache群
+SoundLoaderFactory -->|生成| SoundLoader_Addressables
+SoundLoaderFactory -->|生成| SoundLoader_Resources
+SoundLoaderFactory -->|生成| SoundLoader_Streaming
+SoundLoader_Addressables -->|依存| SoundCache群
+SoundLoader_Resources -->|依存| SoundCache群
+SoundLoader_Streaming -->|依存| SoundCache群
+```
+
+### SoundCache
+```mermaid
+graph TD
+classDef highlight stroke-width:8px
+ISoundCache:::highlight
 SoundCache
+SoundCacheFactory
 IEvictionStrategy
 EvictionStrategy_LRU
 EvictionStrategy_TTL
 EvictionStrategy_Random
-SoundCacheFactory
-
-%% Pool
-IAudioSourcePool
-AudioSourcePool_Base
-AudioSourcePool_FIFO
-AudioSourcePool_Strict
-AudioSourcePoolFactory
-
-%% Relations
-SoundSystem -->|利用| BGMManager
-SoundSystem -->|利用| SEManager
-SoundSystem -->|利用| ListenerEffector
-SoundSystem -->|プリセット読込| SoundPresetProperty
-SoundSystem -->|生成| SoundLoaderFactory
-SoundLoaderFactory -->|生成| SoundLoader_Addressables
-SoundLoaderFactory -->|生成| SoundLoader_Resources
-SoundLoaderFactory -->|生成| SoundLoader_Streaming
-SoundLoader_Addressables -->|依存| ISoundCache
-SoundLoader_Resources -->|依存| ISoundCache
-SoundLoader_Streaming -->|依存| ISoundCache
-SoundLoader_Addressables -->|間接依存| SoundCacheFactory
-BGMManager -->|利用| ISoundLoader
-SEManager -->|利用| ISoundLoader
-SEManager -->|利用| IAudioSourcePool
-
 SoundCacheFactory -->|生成| SoundCache
 SoundCacheFactory -->|生成| EvictionStrategy_LRU
 SoundCacheFactory -->|生成| EvictionStrategy_TTL
 SoundCacheFactory -->|生成| EvictionStrategy_Random
+SoundCache -->|実装| ISoundCache
 SoundCache -->|利用| IEvictionStrategy
 EvictionStrategy_LRU -->|実装| IEvictionStrategy
 EvictionStrategy_TTL -->|実装| IEvictionStrategy
 EvictionStrategy_Random -->|実装| IEvictionStrategy
+```
 
-AudioSourcePoolFactory -->|生成| AudioSourcePool_FIFO
-AudioSourcePoolFactory -->|生成| AudioSourcePool_Strict
-AudioSourcePool_FIFO -->|継承| AudioSourcePool_Base
-AudioSourcePool_Strict -->|継承| AudioSourcePool_Base
-
+### SoundPreset
+```mermaid
+graph TD
+classDef highlight stroke-width:8px
+SoundPresetProperty:::highlight
+SerializedBGMPresetDictionary
+SerializedSEPresetDictionary
+SerializedListenerPresetDictionary
 SoundPresetProperty -->|BGMプリセット| SerializedBGMPresetDictionary
 SoundPresetProperty -->|SEプリセット| SerializedSEPresetDictionary
 SoundPresetProperty -->|Listenerエフェクトプリセット| SerializedListenerPresetDictionary
