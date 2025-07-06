@@ -91,27 +91,10 @@ namespace SoundSystem
             }
         }
     
-        private bool TryRetrieveBGMPreset(string presetName,
-            out SoundPresetProperty.BGMPreset preset)
-        {
-            return bgmPresets.TryGetValue(presetName, out preset);
-        }
-    
-        private bool TryRetrieveSEPreset(string presetName,
-            out SoundPresetProperty.SEPreset preset)
-        {
-            return sePresets.TryGetValue(presetName, out preset);
-        }
-    
         public void MuteAllSound()
         {
             bgm.Stop();
             se.StopAll();
-        }
-
-        public UniTask<(bool success, AudioClip clip)> PreloadClip(string resourceAddress)
-        {
-            return loader.TryLoadClip(resourceAddress);
         }
     
         #region BGM
@@ -192,6 +175,12 @@ namespace SoundSystem
             }
         }
 
+        private bool TryRetrieveBGMPreset(string presetName,
+            out SoundPresetProperty.BGMPreset preset)
+        {
+            return bgmPresets.TryGetValue(presetName, out preset);
+        }
+
         /// <summary>
         /// クロスフェード中断時、音声が大きい方の再生を続行する
         /// </summary>
@@ -202,6 +191,7 @@ namespace SoundSystem
         #endregion
     
         #region SE
+
         public async UniTask PlaySE(string resourceAddress, Vector3 position = default,
             float volume = 0.5f, float pitch = 1.0f, float spatialBlend = 1.0f,
             Action onComplete = null)
@@ -219,6 +209,21 @@ namespace SoundSystem
                     preset.volume, preset.pitch, preset.spatialBlend, preset.position,
                     onComplete);
             }
+        }
+
+        public void StopAllSE()
+        {
+            se.StopAll();
+        }
+    
+        public void ResumeAllSE()
+        {
+            se.ResumeAll();
+        }
+    
+        public void PauseAllSE()
+        {
+            se.PauseAll();
         }
 
         public async UniTask FadeInSE(string resourceAddress, float duration,
@@ -244,20 +249,11 @@ namespace SoundSystem
         {
             await se.FadeOutAll(duration, onComplete);
         }
-    
-        public void StopAllSE()
+
+        private bool TryRetrieveSEPreset(string presetName,
+            out SoundPresetProperty.SEPreset preset)
         {
-            se.StopAll();
-        }
-    
-        public void ResumeAllSE()
-        {
-            se.ResumeAll();
-        }
-    
-        public void PauseAllSE()
-        {
-            se.PauseAll();
+            return sePresets.TryGetValue(presetName, out preset);
         }
 
         public void InterruptAllSEFade()
@@ -287,6 +283,30 @@ namespace SoundSystem
             effector.DisableAllFilters();
         }
         #endregion
+
+        #region Loader
+
+        public UniTask<(bool success, AudioClip clip)> PreloadClip(string resourceAddress)
+        {
+            return loader.TryLoadClip(resourceAddress);
+        }
+
+        #endregion
+
+        #region Cache
+
+        public void RemoveCache(string resourceAddress)
+        {
+            cache.Remove(resourceAddress);
+        }
+
+        public void ClearCache()
+        {
+            cache.ClearAll();
+        }
+
+        #endregion
+
 
         #region AutoEvict
 
