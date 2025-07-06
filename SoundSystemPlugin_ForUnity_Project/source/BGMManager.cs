@@ -35,14 +35,15 @@ namespace SoundSystem
         private string pendingResourceAddress; //クロスフェード前の曲のアドレスを保持
 
         /// <param name="mixerGroup">BGM出力先のAudioMixerGroup</param>
-        public BGMManager(AudioMixerGroup mixerGroup, ISoundLoader loader, ISoundCache cache, bool persistent = false)
+        public BGMManager(AudioMixerGroup mixerGroup, ISoundLoader loader, ISoundCache cache,
+            bool isPersistent = false)
         {
             this.loader = loader;
             this.cache  = cache;
 
             //BGM専用AudioSourceとそれがアタッチされたGameObjectを作成
             sourceRoot = new("BGM_AudioSources");
-            if (persistent)
+            if (isPersistent)
             {
                 UnityEngine.Object.DontDestroyOnLoad(sourceRoot);
             }

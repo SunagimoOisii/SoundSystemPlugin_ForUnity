@@ -11,9 +11,9 @@ namespace SoundSystem
         {
             public string presetName;
             [Range(0f, 1f)] public float volume;
-            [Range(0f, 1f)] public float fadeInDuration;
-            [Range(0f, 1f)] public float fadeOutDuration;
-            [Range(0f, 1f)] public float crossFadeDuration;
+            [Range(0f, 60f)] public float fadeInDuration;
+            [Range(0f, 60f)] public float fadeOutDuration;
+            [Range(0f, 60f)] public float crossFadeDuration;
         }
     
         [System.Serializable]
@@ -24,8 +24,8 @@ namespace SoundSystem
             [Range(0f, 1f)] public float pitch;
             [Range(0f, 1f)] public float spatialBlend; //0 = 2D, 1 = 3D
             public Vector3 position;
-            [Range(0f, 1f)] public float fadeInDuration;
-            [Range(0f, 1f)] public float fadeOutDuration;
+            [Range(0f, 60f)] public float fadeInDuration;
+            [Range(0f, 60f)] public float fadeOutDuration;
         }
 
         [System.Serializable]
