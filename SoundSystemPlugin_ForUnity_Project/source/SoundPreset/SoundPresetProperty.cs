@@ -76,5 +76,8 @@ namespace SoundSystem
 
         [Header("Persistence of generated GameObjects")]
         public bool isPersistentGameObjects = false;
+
+        [Header("Writing Log")]
+        public bool canWriteLog = false;
     }
 }

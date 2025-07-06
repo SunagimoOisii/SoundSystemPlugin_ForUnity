@@ -50,7 +50,7 @@ namespace SoundSystem
         }
 
         public static SoundSystem CreateFromPreset(SoundPresetProperty preset,
-            AudioListener listener, AudioMixer mixer, bool canLogging = true)
+            AudioListener listener, AudioMixer mixer)
         {
             var cache  = SoundCacheFactory.Create(preset.cacheStrategy, preset.param);
             var loader = SoundLoaderFactory.Create(preset.loaderKind, cache);
@@ -58,7 +58,7 @@ namespace SoundSystem
                             preset.seMixerG, preset.initSize, preset.maxSize, 
                             preset.isPersistentGameObjects);
             var ss     = new SoundSystem(loader, cache, pool, listener, mixer,
-                            preset.bgmMixerG, preset.isPersistentGameObjects, canLogging);
+                            preset.bgmMixerG, preset.isPersistentGameObjects, preset.canWriteLog);
             ss.bgmPresets      = preset.bgmPresets;
             ss.sePresets       = preset.sePresets;
             ss.listenerPresets = preset.listenerPresets;
