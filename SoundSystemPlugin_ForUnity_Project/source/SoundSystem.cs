@@ -272,6 +272,11 @@ namespace SoundSystem
         {
             effector.ApplyFilter(configure);
         }
+
+        public void ApplyEffectFilterFromPreset(SoundPresetProperty.ListenerEffectPreset preset)
+        {
+            effector.ApplyFromPreset(preset);
+        }
     
         public void DisableEffectFilter<T>() where T : Behaviour
         {
@@ -306,7 +311,6 @@ namespace SoundSystem
         }
 
         #endregion
-
 
         #region AutoEvict
 
