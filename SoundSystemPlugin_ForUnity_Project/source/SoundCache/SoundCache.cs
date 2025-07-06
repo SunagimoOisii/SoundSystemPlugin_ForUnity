@@ -59,10 +59,14 @@ namespace SoundSystem
         public void Remove(string resourceAddress)
         {
             Log.Safe($"Remove実行:{resourceAddress}");
-            if (resourceAddress == null ||
-                cache.TryGetValue(resourceAddress, out var clip) == false)
+            if (resourceAddress == null)
             {
-                Log.Warn($"Remove失敗:不正なアドレス:{resourceAddress}");
+                Log.Warn($"Remove失敗:アドレスが null");
+                return;
+            }
+            if (cache.TryGetValue(resourceAddress, out var clip) == false)
+            {
+                Log.Warn($"Remove失敗:指定アドレスの clip が存在しない:{resourceAddress}");
                 return;
             }
 
