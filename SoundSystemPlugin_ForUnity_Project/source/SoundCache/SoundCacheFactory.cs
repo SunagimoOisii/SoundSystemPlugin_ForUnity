@@ -34,7 +34,7 @@ namespace SoundSystem
 
         public static ISoundCache CreateNone()
         {
-            return new SoundCache(null);
+            return new SoundCache_None();
         }
 
         public static ISoundCache CreateLRU(float idleTimeThreshold)
