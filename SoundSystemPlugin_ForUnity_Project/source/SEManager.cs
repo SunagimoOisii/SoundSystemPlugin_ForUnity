@@ -222,7 +222,7 @@ namespace SoundSystem
                     float t = elapsed / duration;
                     onProgress(t);
 
-                    elapsed += Time.deltaTime;
+                    elapsed += Time.unscaledDeltaTime;
                 }
 
                 onProgress(1.0f);

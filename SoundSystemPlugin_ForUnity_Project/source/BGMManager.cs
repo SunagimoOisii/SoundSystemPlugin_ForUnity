@@ -257,6 +257,7 @@ namespace SoundSystem
             CancelFade();
             fadeCTS = new CancellationTokenSource();
 
+            //フェード開始
             float elapsed = 0f;
             var token = fadeCTS.Token;
             try
@@ -273,7 +274,7 @@ namespace SoundSystem
                     float t = elapsed / duration;
                     onProgress(t);
 
-                    elapsed += Time.deltaTime;
+                    elapsed += Time.unscaledDeltaTime;
                 }
 
                 onProgress(1.0f);
