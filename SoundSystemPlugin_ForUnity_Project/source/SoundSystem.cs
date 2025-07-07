@@ -64,7 +64,7 @@ namespace SoundSystem
             ss.listenerPresets = preset.listenerPresets;
             foreach (var lp in ss.listenerPresets.Presets)
             {
-                ss.effector.ApplyFromPreset(lp);
+                lp.ApplyTo(ss.effector);
             }
             if (preset.enableAutoEvict) ss.StartAutoEvict(preset.autoEvictIntervalSeconds);
             return ss;
@@ -273,9 +273,12 @@ namespace SoundSystem
             effector.ApplyFilter(configure);
         }
 
-        public void ApplyEffectFilterFromPreset(SoundPresetProperty.ListenerEffectPreset preset)
+        public void ApplyEffectFilterFromPreset(string presetName)
         {
-            effector.ApplyFromPreset(preset);
+            if (listenerPresets.TryGetValue(presetName, out var preset))
+            {
+                preset.ApplyTo(effector);
+            }
         }
     
         public void DisableEffectFilter<T>() where T : Behaviour
