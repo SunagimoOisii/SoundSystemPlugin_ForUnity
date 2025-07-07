@@ -334,7 +334,6 @@ namespace SoundSystem
             fadeCTS?.Dispose();
             fadeCTS                = null;
             bgmSources             = (null, null);
-            pendingResourceAddress = null;
 
             cache.EndUse(usageResourceAddress);
             usageResourceAddress   = null;

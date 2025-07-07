@@ -383,6 +383,7 @@ namespace SoundSystem
             bgm.Dispose();
             se.Dispose();
             cache.ClearAll();
+            Log.Close();
         }
     }
 }
