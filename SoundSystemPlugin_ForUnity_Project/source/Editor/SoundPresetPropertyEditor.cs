@@ -180,6 +180,9 @@ namespace SoundSystem
             paramContainer.Clear();
             switch ((SoundCacheFactory.Strategy)cacheStrategy.enumValueIndex)
             {
+                case SoundCacheFactory.Strategy.None:
+                    return;
+
                 case SoundCacheFactory.Strategy.LeastRecentlyUsed:
                     var fieldLRU = new PropertyField(param, "idleTimeThreshold");
                     fieldLRU.Bind(serializedObject);

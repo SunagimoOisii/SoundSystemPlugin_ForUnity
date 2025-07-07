@@ -9,6 +9,7 @@ namespace SoundSystem
     {
         public enum Strategy
         {
+            None,
             LeastRecentlyUsed,
             TimeToLive,
             Random
@@ -19,6 +20,8 @@ namespace SoundSystem
         /// </summary>
         public static ISoundCache Create(Strategy k, float param)
         {
+            if(k == Strategy.None) return CreateNone();
+
             IEvictionStrategy strategy = k switch
             {
                 Strategy.LeastRecentlyUsed => new EvictionStrategy_LRU(param),
@@ -27,6 +30,11 @@ namespace SoundSystem
                 _ => throw new ArgumentOutOfRangeException(nameof(k))
             };
             return new SoundCache(strategy);
+        }
+
+        public static ISoundCache CreateNone()
+        {
+            return new SoundCache(null);
         }
 
         public static ISoundCache CreateLRU(float idleTimeThreshold)
