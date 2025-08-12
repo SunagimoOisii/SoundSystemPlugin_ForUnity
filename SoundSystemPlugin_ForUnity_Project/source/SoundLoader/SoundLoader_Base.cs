@@ -19,7 +19,7 @@ namespace SoundSystem
             }
         }
 
-        public async UniTask<(bool success, AudioClip clip)> TryLoadClip(string resourceAddress)
+        public UniTask<(bool success, AudioClip clip)> TryLoadClip(string resourceAddress)
         {
             Log.Safe($"LoadClip実行:{resourceAddress}");
 
@@ -27,7 +27,7 @@ namespace SoundSystem
                 string.IsNullOrWhiteSpace(resourceAddress))
             {
                 Log.Warn($"LoadClip失敗:不正なアドレス:{resourceAddress}");
-                return (false, null);
+                return UniTask.FromResult((false, (AudioClip)null));
             }
 
             //読込対象が既にキャッシュで存在していれば返す
@@ -35,23 +35,26 @@ namespace SoundSystem
             if (cached != null)
             {
                 Log.Safe($"LoadClip成功:CacheHit,{resourceAddress}");
-                return (true, cached);
+                return UniTask.FromResult((true, cached));
             }
 
             //読込開始(読込方法は派生クラスごとに定義)
-            var (success, clip) = await LoadClipInternal(resourceAddress);
-            if (success && 
-                clip != null)
+            return LoadClipInternal(resourceAddress).ContinueWith(result =>
             {
-                Log.Safe($"LoadClip成功:{resourceAddress}");
-                cache.Add(resourceAddress, clip);
-                return (true, clip);
-            }
-            else
-            {
-                Log.Error($"LoadClip失敗:{resourceAddress}");
-                return (false, null);
-            }
+                var (success, clip) = result;
+                if (success &&
+                    clip != null)
+                {
+                    Log.Safe($"LoadClip成功:{resourceAddress}");
+                    cache.Add(resourceAddress, clip);
+                    return (true, clip);
+                }
+                else
+                {
+                    Log.Error($"LoadClip失敗:{resourceAddress}");
+                    return (false, (AudioClip)null);
+                }
+            });
         }
 
         public abstract UniTask<(bool success, AudioClip clip)> LoadClipInternal(string resourceAddress);
